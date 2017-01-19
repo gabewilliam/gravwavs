@@ -1,0 +1,24 @@
+Variables:
+Begin first word w/ lower case, subsequent words w/ upper case. No underscore, 
+
+e.g fooBar
+-----------------------------------------------------------------------------------
+Data Members:
+Same as variables but begin with 'f'
+
+e.g. fBaz
+-----------------------------------------------------------------------------------
+Classes:
+Begin all words w/ capital
+
+e.g. MyBigBoyClass
+-----------------------------------------------------------------------------------
+Functions & Methods:
+Same as variables,
+
+e.g. fooBar()
+-----------------------------------------------------------------------------------
+Pre-processor Constants
+All capital, begin with C_
+
+e.g. C_BAZ
