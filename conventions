@@ -1,3 +1,10 @@
+Command Structures:
+Opening brace on the SAME LINE as the declaration. Closing brace on a new line.
+
+e.g. if(this == notTheBestWay){
+          //You are wrong.
+     }
+-----------------------------------------------------------------------------------     
 Variables:
 Begin first word w/ lower case, subsequent words w/ upper case. No underscore, 
 
