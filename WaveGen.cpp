@@ -29,9 +29,30 @@ double arbitrarilyIncreasingAmplitude(double lastAmp){
 	return 2.0*lastAmp;
 }
 
-double initialSeparation(double mA, double mB){
+double initialSeparation(double mA, double mB, double lowLimit){
 	double G = 6.67E-11;
-	return pow((G*(mA + mB)/pow(20.0*M_PI, 2.0)), (1.0/3.0));
+	
+	return pow((G*(mA + mB)/pow(2.0*M_PI*lowLimit, 2.0)), (1.0/3.0));
+}
+
+double waveAmplitude(double chirpM, double nextFreq, double lumD){
+	double G = 6.67E-11;
+	double c = 3.0E8;
+	double A = G/pow(c, 2.0);
+    double B = (chirpM/lumD);
+	double C = G/pow(c, 3.0);
+	
+	return 4.0*A*B*pow(C*M_PI*nextFreq*chirpM, (2.0/3.0));
+}
+
+double chirpMagnitude(double chirpM, double nextFreq){
+	double G = 6.67E-11;
+	double c = 3.0E8;
+	double A = (96.0/5.0);
+	double B = pow(c, 3.0)/G;
+	double C = nextFreq/chirpM;
+	
+	return A*B*C*pow(C*M_PI*nextFreq*chirpM, (8.0/3.0));
 }
 
 double timeTilMerge(double mA, double mB, double sep){
@@ -42,6 +63,7 @@ double timeTilMerge(double mA, double mB, double sep){
 	double C = pow(c, 5.0);
 	double D = pow(G, 3.0);
 	double E = mA*mB*(mA + mB);
+	
     return (A*B*C)/(D*E);
 }
 
@@ -59,8 +81,18 @@ int main(){
 	double M1 = 30.0*solarMass;
 	double M2 = 30.0*solarMass;
 	
+	// Calculate the Chirp Mass
+	double chirpMass = pow(M1*M2, (3.0/5.0))/pow((M1 + M2), (1.0/5.0));
+	
+	// Set the luminosity distance
+	double MPc = 3.086E22;
+	double lumDist = 500.0*MPc;
+	
+	// Set lower sensitivity of LIGO band
+	double lowBound = 20;
+	
 	// Find separation of binary for frequency within LIGO band
-	double a = initialSeparation(M1, M2);
+	double a = initialSeparation(M1, M2, lowBound/2.0);
 	
 	cout << "Initial separation is " << a << endl;
 	
@@ -70,23 +102,28 @@ int main(){
 	cout << "Merging time is " << mergingTime << endl;
 	
 	// Set number of data points to generate
-	int nData = 10000;
+	int nData = 1000000;
 	
-	// Initialise the starting amplitude of the wave
-	double A = 1.0;
+	// Set the initial time of the signal
+	double tLast = 0.0;
 	
 	// Loop over increasing time
 	for (int i=0; i<=nData; i++){	
 	
-		// Find the current time for the output
-		double tCurrent = i*(mergingTime/nData);
-
 		// Update the time until merge
 		double tMerge = mergingTime - tCurrent;
 		
 		// Generate oscillating function with increasing frequency and amplitude
 		double freq = newtonianFrequency(M1, M2, tMerge);
-		double waveForm = A*sin(2.0*M_PI*tCurrent*freq);
+	
+		// Find the current time for the output
+		double tCurrent = tLast + (mergingTime/nData)*(1.0/freq);
+
+		double firstTerm = 2.0*M_PI*freq*tCurrent;
+		double secondTerm = M_PI*chirpMagnitude(chirpMass, freq)*pow(tCurrent, 2.0);
+		double phase = 0.0;
+		double insideBrackets = firstTerm + secondTerm + phase;
+		double waveForm = waveAmplitude(chirpMass, freq, lumDist)*cos(2.0*M_PI*freq*tCurrent);
 		
 		// Send output to data file
 		WaveData << tCurrent << "," 
