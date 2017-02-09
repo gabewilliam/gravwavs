@@ -1,90 +1,88 @@
-//                         GRAVITATIONAL WAVE ASTRONOMY                            //
-//                                Data Generation                                  //
-
-#include <fstream>
 #include <iostream>
-#include <cstdlib>
 #include <cmath>
-#include <time.h>
+#include <stdlib.h>
+#include <fstream>
+#include <iomanip>
+
+#define C_PI 3.1415926536
 
 using namespace std;
 
-// We should have these as globals somewhere at the root of the final code structure
-int C_PRECISION  = 17;
-const int C_DATASIZE = 1000;
-
-typedef double dataVect[C_DATASIZE];
-
-double gaussianNoise(double mean, 
-					 double stdDev, 
-					 double value){
-
-		return (1.0/(stdDev*sqrt(2.0*M_PI)))*exp(-(value - mean)/(2.0*pow(stdDev, 2.0)));			   		
-}
+void sigDriver( double (*generator)(), double sigLength, int samples);
+double noiseGenGaussian();
 
 int main(){
 	
-	// Set output precision
-	cout.precision(C_PRECISION);
-    // Initialise output file
-	ofstream Noise;
-	Noise.open("Noise.txt", std::ios_base::app);
-
-	// Create or import bare signal
-	dataVect signalArray;
-	dataVect timeArray;
-	// Just create a simple siusoid for now
-	double amp = 0.5;
-	double freq = 20.0;
-	for(int i=0; i<C_DATASIZE; i++){
-		timeArray[i] = i*0.001;
-		signalArray[i] = amp*sin(2.0*M_PI*freq*timeArray[i]);
-	}
-	// Create vector to store noise to add to signal
-	dataVect addedNoise;
-	// Create vector to store final noisy signal
-	dataVect noisyData;
+	sigDriver(noiseGenGaussian, 100, 1000);
 	
-	// Initialise mean (parameter vector) and standard deviation (sigma) for Gaussian distribution
-	double paramVect = 1.0;
-	double sigma = 1.0;
-	
-	// Initialise added noise array of all zeroes
-	for (int i=0; i<C_DATASIZE; i++){
-		addedNoise[i] = 0.0;
-	}
-	
-	bool addGaussian = true;
-	bool addRandom = false;
-	
-	// Create random seed
-	srand (time(NULL));
-	double largestNoise = 5.0;
-	double scalingFactor = double(RAND_MAX);
-	
-	// Gaussian noise
-	if (addGaussian){
-		for(int i=0; i<C_DATASIZE; i++){
-			double randomVal = ((double(rand())/scalingFactor) - 0.5);
-			addedNoise[i] += gaussianNoise(paramVect, sigma, randomVal);
-		}
-	}
-	
-	// Random noise
-	if (addRandom){
-		for(int i=0; i<C_DATASIZE; i++){
-			addedNoise[i] += ((double(rand())/scalingFactor) - 0.5) * largestNoise;
-		}
-	}
-	
-	// Add complete noise vector to signal
-	for(int i=0; i<C_DATASIZE; i++){
-		noisyData[i] = signalArray[i] + addedNoise[i];
-		// Send final results to data file
-		Noise << timeArray[i] << "\t" 
-			  << signalArray[i] << "\t" 
-			  << addedNoise[i] << "\t" 
-			  << noisyData[i] << endl;
-	}
+	return 0;
 	
 }
+
+void sigDriver( double (*generator)(), double sigLength, int samples){
+
+	double t=0;
+	double dt = sigLength/samples;
+	double time[samples];
+	double amp[samples];
+	
+	ofstream sigFile;
+	sigFile.open("signal.csv");
+	
+	for(int i = 0; i<samples; i++){
+		
+		amp[i] += (*generator)();
+		
+		time[i] = t;
+		
+		t+=dt;
+		
+		sigFile<<time[i]<<","<<amp[i]<<"\n";
+		
+	}
+
+}
+
+/*
+		LITERALLY COPIED FROM SOMEBODY ONLINE
+		
+		MUST BE CHANGED SO AS NOT TO VIOLATE UNIVERSITY/HUMAN RIGHTS LAW
+		
+		DON'T LET IT BE SEEN BY ANY MEMBERS OF STAFF
+*/
+double noiseGenGaussian(){/* Generates additive white Gaussian Noise samples with zero mean and a standard deviation of 1. */
+ 
+  double temp1;
+  double temp2;
+  double result;
+  int p;
+
+  p = 1;
+
+  while( p > 0 )
+  {
+	temp2 = ( rand() / ( (double)RAND_MAX ) ); /*  rand() function generates an
+                                                       integer between 0 and  RAND_MAX,
+                                                       which is defined in stdlib.h.
+                                                   */
+
+    if ( temp2 == 0 )
+    {// temp2 is >= (RAND_MAX / 2)
+      p = 1;
+    }// end if
+    else
+    {// temp2 is < (RAND_MAX / 2)
+       p = -1;
+    }// end else
+
+  }// end while()
+
+  temp1 = cos( ( 2.0 * (double)C_PI ) * rand() / ( (double)RAND_MAX ) );
+  result = sqrt( -2.0 * log( temp2 ) ) * temp1;
+
+  return result;	// return the generated random sample to the caller
+
+}// end AWGN_generator()
+/*
+		CONSIDER YOURSELF WARNED
+*/
