@@ -34,7 +34,7 @@ int main() {
 	/ which is sampled to find the next x and y value [N(0,nSigma)]. The
 	/ distribution from which the random number is drawn is 1/10 the width of
 	/ the likelihood distribution. This is somewhat arbitrary, but means it
-	/ wont be too wide. A slightly wider distribution would maybe give faster
+	/ won't be too wide. A slightly wider distribution would maybe give faster
 	/ convergence.*/
 	std::cout << "Enter the standard deviation, sigma, of the likelihood:" 
 			  << std::endl;
@@ -74,6 +74,7 @@ int main() {
 	//Opens the output text file
 	FILE * outFile;
 	outFile = fopen("2DMonte.txt","w");
+	fprintf(outFile,"%.15g,%.15g,%.15g\n",sigma,a,b);
 
 
 	//Sets the starting point for the routine (pretty arbitrary)
@@ -81,7 +82,7 @@ int main() {
 	y = 0;
 
 
-	/*Loops over the number of iterations speified by the input. In each run,
+	/*Loops over the number of iterations specified by the input. In each run,
 	/ the likelihood function is evaluated at (x,y). Then, one of the RNGs is
 	/ used to draw values from a normal distribution of width nSigma. The
 	/ values obtained in this way are then used to find a new trial (x,y) pair
@@ -112,8 +113,8 @@ int main() {
 			y = yPrime;
 
 		}
-
-		fprintf(outFile,"%25.15g%25.15g\n",x,y);
+		
+		fprintf(outFile,"%.15g,%.15g\n",x,y);
 
 	}
 
@@ -130,11 +131,11 @@ int main() {
 }
 
 
-/*Defines a likelihood function, which is a Gaussian of (x,y) centred on (a,b)
+/*Defines a normalised likelihood function, which is a Gaussian of (x,y) centred on (a,b)
 / and with a standard deviation of s.*/
 double likelihood(double x, double y, double a, double b, double s) {
 
-	return exp(-(pow((x-a),2) + pow((y-b),2))/(2*s*s));
+	return 1/(2*atan(1)/4*s*s)*exp(-(pow((x-a),2) + pow((y-b),2))/(2*s*s));
 
 }
 
@@ -143,7 +144,7 @@ double likelihood(double x, double y, double a, double b, double s) {
 / with a width of w.*/
 double prior(double x, double y, double w) {
 
-	if((std::abs(x) < (w/2)) && (std::abs(y) < (w/2))) { return 1; }
+	if((std::abs(x) < (w/2)) && (std::abs(y) < (w/2))) { return 1/(w*w); }
 	else { return 0; }
 
 }
