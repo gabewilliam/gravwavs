@@ -98,31 +98,34 @@ int main(){
 	
 	// Find time that binary signal will spend within LIGO band before merging
 	double mergingTime = timeTilMerge(M1, M2, a);
+	double tMerge = mergingTime;
 	
 	cout << "Merging time is " << mergingTime << endl;
 	
-	// Set number of data points to generate
-	int nData = 1000000;
-	
 	// Set the initial time of the signal
 	double tLast = 0.0;
+	double tCurrent = 0.0;
+	
+	// Declare the granularity of the signal
+	double granularity = 100000.0;
 	
 	// Loop over increasing time
-	for (int i=0; i<=nData; i++){	
+	while (tMerge >= 0.0){	
 	
 		// Update the time until merge
-		double tMerge = mergingTime - tCurrent;
+		tMerge = mergingTime - tCurrent;
 		
 		// Generate oscillating function with increasing frequency and amplitude
 		double freq = newtonianFrequency(M1, M2, tMerge);
 	
+		// Define the variable time increment
+		double dt = 1.0/(freq*granularity);
+	
 		// Find the current time for the output
-		double tCurrent = tLast + (mergingTime/nData)*(1.0/freq);
+		tCurrent = tLast + dt;
+		// Update the variable storing the previous time
+		tLast = tCurrent;
 
-		double firstTerm = 2.0*M_PI*freq*tCurrent;
-		double secondTerm = M_PI*chirpMagnitude(chirpMass, freq)*pow(tCurrent, 2.0);
-		double phase = 0.0;
-		double insideBrackets = firstTerm + secondTerm + phase;
 		double waveForm = waveAmplitude(chirpMass, freq, lumDist)*cos(2.0*M_PI*freq*tCurrent);
 		
 		// Send output to data file
