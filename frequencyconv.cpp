@@ -138,7 +138,7 @@ int main(){	//main is used to load the data
 	}
 	
 	std::vector<double> filterTime;
-	std::vector<std::vector<double> > filters;
+	std::vector<double> filter;
 	
 	double c,d;
 	
@@ -155,7 +155,7 @@ int main(){	//main is used to load the data
 	}
 	int pushcounter;
 	while (filter.size()>signal.size()){
-		signal.push_front(0.0);
+		signal.insert(signal.begin() , 0.0);
 		++pushcounter;
 	}
 	convolution(&signal,&filter,signalTime);	
