@@ -55,9 +55,9 @@ void convolution(std::vector<double> *signal, std::vector<double> *filter,std::v
 	
 
 }
-void frequencyDomainConvolution (std::vector<double> *signal, std::vector<double> *filter,std::vector<double> signalTime){
+void frequencyDomainConvolution (std::vector<double> *signal, std::vector<double> *filter, std::vector<double> signalTime){
 	size_t N = (*signal).size();
-	double stride = signalTime[N-1]/N;
+	double stride = 1;
 	
 	//computes the real FFT for the signal and filter
 	gsl_fft_real_wavetable * real;
@@ -158,7 +158,7 @@ int main(){	//main is used to load the data
 		signal.insert(signal.begin() , 0.0);
 		++pushcounter;
 	}
-	convolution(&signal,&filter,signalTime);	
-	frequencyDomainConvolution (&signal,&filter,signalTime);
+	convolution(&signal, &filter,signalTime);	
+	frequencyDomainConvolution(&signal,&filter,signalTime);
 	return 0;
 }
