@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cmath>
 #include <cstdio>
+#include <ctime>
 
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_randist.h>
@@ -14,9 +15,18 @@ double prior(double x, double y, double w);
 int main() {
 
 
-	//Initialises two random number generators
+	/*Sets up a random number generator to seed the other two generators, and
+	/ seeds this based on the system time.*/
+	gsl_rng * seedGen = gsl_rng_alloc(gsl_rng_taus);
+	gsl_rng_set(seedGen,(long unsigned int) time);
+	
+
+	/*Initialises two random number generators to be used in the Markov-Chain
+	/ routine, and seeds them using values from the previous RNG.*/
 	gsl_rng * normGen = gsl_rng_alloc(gsl_rng_taus);
+	gsl_rng_set(normGen, gsl_rng_get(seedGen));
 	gsl_rng * rGen = gsl_rng_alloc(gsl_rng_taus);
+	gsl_rng_set(rGen, gsl_rng_get(seedGen));
 	
 
 	/*Takes an input for the standard deviation, sigma of the likelihood
@@ -112,6 +122,7 @@ int main() {
 	/ number generators.*/
 	fclose(outFile);
 
+	gsl_rng_free(seedGen);
 	gsl_rng_free(normGen);
 	gsl_rng_free(rGen);
 	
