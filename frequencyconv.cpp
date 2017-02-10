@@ -13,35 +13,21 @@
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_fft_real.h>
 #include <gsl/gsl_fft_halfcomplex.h>
+#include "ReadandPrint.h"//print function
 
 
-void outputWriter(std::vector<double>Frequency,std::vector<double> fourierAmplitude){//This function writes out the two vectors to a file which can be plotted in MATLAB
-	
-	std::ofstream newfile;
-	newfile.open("Outputforgraphing.csv");
-	const int m=fourierAmplitude.size();
 
-for(int j=0;j<m;j++){
-	
-	newfile<<Frequency[j]<<","<<fourierAmplitude[j]<<std::endl;
-	//std::cout<<fTime[i]<<"Ampl  "<<fAmplitude[i]<<std::endl;
-	//i++;
-}
-}
 //computes the convolution of the data with the template
-void convolution(std::vector<double> *signal, std::vector<double> *filter){ 
+void convolution(std::vector<double> *signal, std::vector<double> *filter,std::vector<double> Time){ 
 
 	
 	size_t N = signal->size();
 	//if the data sets are different sizes then doesnt compute the result
-	if (N != filter->size()){
-		std::cerr << "unmatched data size"<< std::endl;	
-	}
-	else{
+	
 		//array for the convolution
 		double h[N];
 		std::vector<double> Convolution;
-		std::vector<double> Time;
+
 		for (size_t t = 0; t < N; t++){
 	
 			h[t] = 0;
@@ -55,48 +41,60 @@ void convolution(std::vector<double> *signal, std::vector<double> *filter){
 				
 			}
 			Convolution.push_back(h[t]);
-			Time.push_back(t);
+			
 		}
-		
-
-		outputWriter(Time,Convolution);
+		std::vector<std::vector<double> > printer;//create 
+		printer.push_back(Time);
+		printer.push_back(Convolution);
 	
-	}
+		
+		outputWriter(printer);
+	
+	
 	
 	
 
 }
-void frequencyDomainConvolution (std::vector<double> *signal, std::vector<double> *filter){
+void frequencyDomainConvolution (std::vector<double> *signal, std::vector<double> *filter,std::vector<double> signalTime){
 	size_t N = (*signal).size();
-	double stride = 1;
+	double stride = signalTime[N-1]/N;
+	
 	//computes the real FFT for the signal and filter
 	gsl_fft_real_wavetable * real;
 	gsl_fft_real_workspace * work;
 	work = gsl_fft_real_workspace_alloc (N);
 	real = gsl_fft_real_wavetable_alloc (N);
+	
 	gsl_fft_real_transform(&(*signal)[0], stride, N, real, work);
 	gsl_fft_real_transform(&(*filter)[0], stride, N, real, work); 
 	gsl_fft_real_wavetable_free (real);
+	
 	//initialises the convolution vector as the complex conjugate 
 	std::vector <double> convolution;
+	
 	for(size_t i = 0; i < N/2; i++){ 
 		convolution.push_back((*signal)[i]*(*filter)[i]);
 	}
 	for(size_t i = N/2; i < N; i++){
 		convolution.push_back(-(*signal)[i]*(*filter)[i]);
 	}
+	
 	//the inverse transform is taken to get back to the real convolution
 	gsl_fft_halfcomplex_wavetable *hc;
 	hc = gsl_fft_halfcomplex_wavetable_alloc (N);
 	gsl_fft_halfcomplex_inverse (&convolution[0], stride, N, hc, work);
 	gsl_fft_halfcomplex_wavetable_free (hc);
 	gsl_fft_real_workspace_free (work);
-	FILE *fout;
-	fout = fopen("frequencyConvolution.csv","w");
-	for (size_t t = 0; t < N; t++){
-		fprintf(fout, "%f,%lu\n",convolution[t],t);
-	} 
+	
+	std::vector<std::vector<double> > printer;
+	printer.push_back(signalTime);
+	printer.push_back(convolution);
+	
+	outputWriter(printer);
+	
 }
+
+
 int main(){	//main is used to load the data
 
 
@@ -111,28 +109,22 @@ int main(){	//main is used to load the data
 	if(in_file.fail())
 	{
 		std::cout << "Input file not found" << std::endl;
-		//return false;
+		return false;
 	}
 	
 	std::vector<double> signalTime;
 	std::vector<double> signal;
 	
 	double a,b;
-	
-	
-	
+
 	while (!in_file.eof()){	
-		//if(){
+
 			in_file>>a>>b;
 			signalTime.push_back(a);
 			signal.push_back(b);
-		//}else{
-		//	loop = false;
-		//}			
+		
 	}
 	
-	//User input for filename
-
 	
 	//Setting up input stream
 	std::ifstream in_file2;
@@ -142,25 +134,31 @@ int main(){	//main is used to load the data
 	if(in_file2.fail())
 	{
 		std::cout << "Input file not found" << std::endl;
-		//return false;
+		return false;
 	}
 	
 	std::vector<double> filterTime;
-	std::vector<double> filter;
+	std::vector<std::vector<double> > filters;
 	
 	double c,d;
-
+	
 	while (!in_file2.eof()){	
-		//if(){
-			in_file2>>c>>d;
-			filterTime.push_back(c);
-			filter.push_back(d);
-		//}else{
-		//	loop = false;
-		//}			
+
+		in_file2>>c>>d;
+		filterTime.push_back(c);
+		filter.push_back(d);
+		
 	}
-	std::cout<<filter.size();
-	convolution(&signal,&filter);	
-	frequencyDomainConvolution (&signal,&filter);
+	
+	while (filter.size()<signal.size()){
+		filter.push_back(0.0);
+	}
+	int pushcounter;
+	while (filter.size()>signal.size()){
+		signal.push_front(0.0);
+		++pushcounter;
+	}
+	convolution(&signal,&filter,signalTime);	
+	frequencyDomainConvolution (&signal,&filter,signalTime);
 	return 0;
 }
