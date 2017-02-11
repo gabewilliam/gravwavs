@@ -47,8 +47,8 @@ void convolution(std::vector<double> *signal, std::vector<double> *filter,std::v
 		printer.push_back(Time);
 		printer.push_back(Convolution);
 	
-		
-		outputWriter(printer);
+		std::string filename="Output1.csv";
+		outputWriter(printer,filename);
 	
 	
 	
@@ -89,8 +89,8 @@ void frequencyDomainConvolution (std::vector<double> *signal, std::vector<double
 	std::vector<std::vector<double> > printer;
 	printer.push_back(signalTime);
 	printer.push_back(convolution);
-	
-	outputWriter(printer);
+	std::string filename="Output2.csv";
+	outputWriter(printer,filename);
 	
 }
 
