@@ -7,19 +7,30 @@
 
 typedef std::vector<double> vec_d;
 
-enum delim {tab, csv};
+enum delimiter {tab, csv};
 
 //Template Struct to handle template waveforms & parameters
 struct Template 
 {
-	vec_d waveform; 
+	vec_d waveform[2]; 
 	double param[2];
 };
 
-bool load_templates(std::string filename, std::vector<Template>* temps, delim de)
+bool load_templates(std::string filename, std::vector<Template>* temps, delimiter delim)
 {
 	std::ifstream in_file;
-	in_file.open(filename.c_str());	
+	in_file.open(filename.c_str());
+
+	char de;
+
+	switch(delim)
+	{
+		case tab : de = '\t';
+				   break;
+	
+		case csv : de = ',';
+				   break;
+	}
 
 	if(in_file.fail())
 	{
@@ -29,48 +40,37 @@ bool load_templates(std::string filename, std::vector<Template>* temps, delim de
 
 	double d;
 	std::string line, element;
-	std::string::size_type st;
 
 	while(getline(in_file, line))
 	{
 		Template temp;
-
 		std::istringstream iss(line);
 
+		//loading parametres from first line of template
 		for(int i=0; i<2; i++)
 		{
-			switch(de)
-			{
-				case tab : getline(iss, element, '\t');
-						   break;
-			
-				case csv : getline(iss, element, ',');
-						   break;
-			}
+			getline(iss, element, de);
 
 			std::istringstream is(element);
 			is >> d;
 			temp.param[i] = d;
 		}
 
-		switch(de)
+		//looping over the next two lines to extract the time and waveform data
+		for(int i=0; i<2; i++)
 		{
-			case tab : while(getline(iss, element, '\t'))
-					   {
-						   std::istringstream is(element);
-						   is >> d;
-						   temp.waveform.push_back(d);	
-					   };
-					   break;
-		
-			case csv : while(getline(iss, element, ','))
-					   {
-						   std::istringstream is(element);
-						   is >> d;
-						   temp.waveform.push_back(d);	
-					   };
-					   break;
-		}
+			getline(in_file, line);
+
+			std::istringstream iss(line);
+			
+			//looping until the end of the line whilst extracting elements
+			while(getline(iss, element, de))
+			{
+		   	  	std::istringstream is(element);
+			   	is >> d;
+			  	temp.waveform[i].push_back(d);	
+			}
+	  	}
 
 		temps->push_back(temp);
 	}
@@ -78,7 +78,7 @@ bool load_templates(std::string filename, std::vector<Template>* temps, delim de
 	return true;
 }
 
-bool save_templates(std::string filename, std::vector<Template>* temps, delim de)
+bool save_templates(std::string filename, std::vector<Template>* temps, delimiter delim)
 {
 	std::ofstream out_file;
 	out_file.open(filename.c_str());	
@@ -89,10 +89,21 @@ bool save_templates(std::string filename, std::vector<Template>* temps, delim de
 		return false;
 	}
 
-	int I, J;
-	Template temp;
+	char de;
+
+	switch(delim)
+	{
+		case tab : de = '\t';
+				   break;
+	
+		case csv : de = ',';
+				   break;
+	}
 
 	std::vector<Template> templates = *temps;
+
+	int I, K;
+	Template temp;
 
 	I = templates.size();
 
@@ -100,31 +111,20 @@ bool save_templates(std::string filename, std::vector<Template>* temps, delim de
 	{
 		temp = templates[i];
 
-		switch(de)
-		{
-			case tab : out_file << temp.param[0] << "\t" << temp.param[1];
-					   break;
-			
-			case csv : out_file << temp.param[0] << "," << temp.param[1];
-					   break;
-		}
+		out_file << temp.param[0] << de << temp.param[1] << "\n";
 
-		J = temp.waveform.size();
 
-		for(int j=0; j<J; j++)
+		K = temp.waveform[0].size();
+
+		for(int j=0; j<2; j++)
 		{
-			switch(de)
+			for(int k=0; k<K; k++)
 			{
-				case tab : out_file << "\t" << temp.waveform[j];
-						   break;
-			
-				case csv : out_file << "," << temp.waveform[j];
-						   break;
+				out_file << temp.waveform[j][k] << de;		
 			}
 			
+			out_file << "\n";
 		}
-
-		out_file << std::endl;
 	}
 
 	return true;
