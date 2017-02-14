@@ -1,5 +1,5 @@
-#ifndef SIGREANDWRITE_H
-#define SIGREANDWRITE_H
+#ifndef SIGREADWRITE_H
+#define SIGREADWRITE_H
 
 #include <iostream>
 #include <istream>
@@ -238,4 +238,4 @@ bool saveSignals(std::string filename, std::vector<Signal>* sigs, delimiter deli
 	return true;
 }
 
-#endif //SIGREANDWRITE_H
+#endif //SIGREADWRITE_H
