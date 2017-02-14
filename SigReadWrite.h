@@ -20,7 +20,8 @@ struct Template
 };
 
 //Signal struct for just waveforms without parametersstruct Template 
-struct Signal{
+struct Signal
+{
 	vec_d waveform[2]; 
 };
 
