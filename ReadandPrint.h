@@ -4,13 +4,9 @@
 #include <iostream>
 #include <vector>
 
-void outputWriter(std::vector<std::vector<double> > pointers){//This function writes any number of vectors to a file, to use it create a vector of the vectors you want to print and put it in the function, it will only print for the size of the first vector
+void outputWriter(std::vector<std::vector<double> > pointers, std::string filename){//This function writes any number of vectors to a file, to use it create a vector of the vectors you want to print and put it in the function, it will only print for the size of the first vector
 	
 	std::ofstream newfile;
-	
-	std::string filename;
-	std::cout << "Enter Output file name..." << std::endl;
-	std::cin >> filename;
 	
 	newfile.open(filename.c_str());
 	for(std::vector<std::vector<double> >::iterator i=pointers.begin();i!=pointers.end();++i){
