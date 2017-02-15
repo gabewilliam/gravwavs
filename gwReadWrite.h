@@ -152,24 +152,26 @@ bool loadSignals(std::string filename, std::vector<Signal>* sigs, delimiter deli
 	while(getline(inFile, line))
 	{
 		Signal sig;
-		std::istringstream iss(line);
+		std::istringstream iss1(line);
 
-		//looping over the next two lines to extract the time and waveform data
-		for(int i=0; i<2; i++)
+		while(getline(iss1, element, de))
 		{
-			getline(inFile, line);
+	   	  	std::istringstream is(element);
+		   	is >> d;
+		  	sig.waveform[0].push_back(d);	
+		}
 
-			std::istringstream iss(line);
-			
-			//looping until the end of the line whilst extracting elements
-			while(getline(iss, element, de))
-			{
-		   	  	std::istringstream is(element);
-			   	is >> d;
-			  	sig.waveform[i].push_back(d);	
-			}
-	  	}
+		getline(inFile, line);
 
+		std::istringstream iss2(line);
+
+		while(getline(iss2, element, de))
+		{
+	   	  	std::istringstream is(element);
+		   	is >> d;
+		  	sig.waveform[1].push_back(d);	
+		}
+ 
 		sigs->push_back(sig);
 	}
 
