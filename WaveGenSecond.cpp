@@ -68,28 +68,17 @@ double timeTilMerge(double mA, double mB, double sep){
     return (A*B*C)/(D*E);
 }
 
-bool binaryInspiral(double mA_z, 
+void binaryInspiral(double mA_z, 
 				    double mB_z,
 				    double lumD,
-				    double sense){
-						  
-	// Initialise output file
-	ofstream WaveData;
+				    double sense,
+					std::vector<Template> * tmps){
 	
 	// Initialise storage for template
-	Template *temp;
+	Template temp;
 	
-	temp->param[0] = mA_z;
-	temp->param[1] = mB_z;
-	
-	ostringstream s1, s2;
-	s1 << mA_z;
-	s2 << mB_z;
-	std::string fileIdentity = s1.str() + "_" + s2.str() + ".csv";
-	WaveData.open(fileIdentity.c_str(), std::ios_base::app);
-	// Set output precision
-	cout.precision(C_PRECISION);
-	WaveData.precision(C_PRECISION);	
+	temp.param[0] = mA_z;
+	temp.param[1] = mB_z;
 	
 	double MPc = 3.086E24;
 	double dLum = lumD*MPc;
@@ -114,7 +103,7 @@ bool binaryInspiral(double mA_z,
 	double tCurrent = 0.0;
 	
 	// Declare the granularity of the signal
-	double granularity = 10000.0;
+	double granularity = 10.0;
 	
 		// Loop over increasing time
 	while (tMerge > 0.0){	
@@ -135,21 +124,14 @@ bool binaryInspiral(double mA_z,
 
 		double waveForm = waveAmplitude(chirpMass, freq, dLum)*cos(2.0*M_PI*freq*tCurrent);
 		
-		temp->waveform[0].push_back(tCurrent);
-		temp->waveform[1].push_back(waveForm);
-		
-		// Send output to data file
-		WaveData << tCurrent << "," 
-			     << waveForm << endl;
-				 
-		
-		
+		temp.waveform[0].push_back(tCurrent);
+		temp.waveform[1].push_back(waveForm);				 		
 		
 	}
-
-	WaveData.close();
 	
-	return saveTemplates(fileIdentity, temp, tab);
+	// Add to the vector of templates
+	tmps->push_back(temp);
+	
 }
 
 int main(){
@@ -163,6 +145,10 @@ int main(){
 	// Set lower sensitivity of LIGO band
 	double lowBound = 20.0;
 	
+	// Initialise vector of templates to save all generated data to
+	std::vector<Template> templ;
+	std::vector<Template> * t = &templ;
+	
 	// Loop over all mass pairs
 	for (int Mp = int(minM); Mp <= int(maxM); Mp++){
 		// Primary mass
@@ -170,16 +156,18 @@ int main(){
 		for (int Ms = int(minM); Ms <= int(maxM - M1); Ms++){
 			// Secondary mass
 			M2 = double(Ms);
-			if (binaryInspiral(M1, M2, lumDist, lowBound)){
-				cout << "Template " << M1 << ", " << M2 << " complete" << endl;
-			}
-			else{
-				cout << "Template " << M1 << ", " << M2 << " error" << endl;
-				return 1;
-			}
+			binaryInspiral(M1, M2, lumDist, lowBound, t);
+			cout << "Mass 1: " << M1 << ", Mass 2: " << M2 << endl;
 		}
 	}
 	
-	return 0;
+	if(saveTemplates("Templates.dat", t, tab)){
+		cout << "Templates stored successfully" << endl;
+		return 0;
+	}
+	else{
+		cout << "There was an error" << endl;
+		return 1;
+	}
 	
 }
