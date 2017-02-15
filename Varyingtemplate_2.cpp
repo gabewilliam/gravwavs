@@ -14,13 +14,12 @@
 #include <gsl/gsl_fft_real.h>
 #include <gsl/gsl_fft_halfcomplex.h>
 #include "ReadandPrint.h"//print function
-
-
+#include "templates.h" //for Template struct
 
 //computes the convolution of the data with the template
-void convolution(std::vector<double> *signal, std::vector<std::vector<double> > filters,std::vector<double> Time){ 
+void convolution(std::vector<double> *signal, std::vector<Template> filters,std::vector<double> Time){ 
 	
-	std::vector<std::vector<double> > printer;//create 
+	std::vector<std::vector<double> > printer;//create
 	size_t NoFilters=filters.size();
 
 	size_t N = signal->size();
@@ -44,7 +43,7 @@ void convolution(std::vector<double> *signal, std::vector<std::vector<double> > 
 			//the only elements of f that are accesible are the elements that correspond to g(t=0)
 			//the number of accesible elements decreases as this is looped through
 			for(size_t tau = 0; tau <= N-t; tau++){
-				h[t] += (*signal)[t+tau]*(filters[i])[tau];
+				h[t] += (*signal)[t+tau]*filters[i].waveform[tau];
 					
 			}
 			Convolution[i].push_back(h[t]);
@@ -60,7 +59,7 @@ void convolution(std::vector<double> *signal, std::vector<std::vector<double> > 
 	outputWriter(printer,filename);
 }
 
-void frequencyDomainConvolution (std::vector<double> *signal, std::vector<std::vector<double> >filters,std::vector<double> signalTime){
+void frequencyDomainConvolution (std::vector<double> *signal, std::vector<Template> filters, std::vector<double> signalTime){
 	
 	size_t N = (*signal).size();
 	double stride = 1;
@@ -87,7 +86,7 @@ void frequencyDomainConvolution (std::vector<double> *signal, std::vector<std::v
 		
 		work = gsl_fft_real_workspace_alloc (N);
 		real = gsl_fft_real_wavetable_alloc (N);
-	    filter=filters[r];
+	    filter=filters[r].waveform;
 	  
 		gsl_fft_real_transform(&filter[0], stride, N, real, work); 
 		gsl_fft_real_wavetable_free (real);
@@ -129,19 +128,18 @@ int main(){	//main is used to load the data
 
 	//User input for filename
 
-
-	//Setting up input stream
+	//Setting up input stream for signal
 	std::ifstream in_file;
-	in_file.open("signalA.dat");
+	in_file.open("signalB.dat");
 	
 	//Checking if stream is setup succesfully
 	if(in_file.fail())
 	{
 		std::cout << "Input file not found" << std::endl;
-		return false;
+		return 0;
 	}
 	
-	
+	//transfer signal to vector
 	std::vector<double> signalTime;
 	std::vector<double> signal;
 	
@@ -155,46 +153,22 @@ int main(){	//main is used to load the data
 		
 	}
 	
-
-	
-	//Setting up input stream
-	std::ifstream in_file2;
-	in_file2.open("o.txt");
-	
-	//Checking if stream is setup succesfully
-	if(in_file2.fail())
-	{
-		std::cout << "Input file not found" << std::endl;
-		return false;
-	}
-	
+	//import filters
 	std::vector	<double> filterTime;
-	std::vector<std::vector<double> >filters;
-	
-	int c=0;
-	const size_t noofFilters=3;
-	for(size_t l=0;l<noofFilters;l++){
-			std::vector<double> *filter= new std::vector<double>;
-			filters.push_back(*filter);
-	}
-	
-	double d;
-	std::cout<<"hello?";
-	while (!in_file2.eof()){	
+	std::vector<Template>filters;
 
-		for(size_t c=0;c<noofFilters;++c){
-			in_file2>>d;		
-			filters[c].push_back(d);
-		}
+	if !load_templates("templates2.csv",&filters,csv){
+		std::cout<<"Template file not found"<<std::endl;
+		return 0;
 	}
-		
-	for(size_t j=0;j<noofFilters;++j){
-		while (filters[j].size()<signal.size()){
-			filters[j].push_back(0.0);
+	for(size_t j=0;j<filters.size();++j){
+		while (filters[j].waveform.size()<signal.size()){
+			filters[j].waveform.push_back(0.0);
 		}
 	}
 	
 	int pushcounter;
+
 	/*
 	while (filter.size()>signal.size()){
 		signal.insert(signal.begin() , 0.0);
