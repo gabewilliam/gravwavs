@@ -220,7 +220,7 @@ bool saveSignals(std::string filename, std::vector<Signal>* sigs, delimiter deli
 				outFile << sig.waveform[j][k] << de;		
 			}
 			
-			outFile << "\n";
+			outFile << "\r\n";
 		}
 	}
 
