@@ -1,12 +1,15 @@
 %Loads the data from the text file into the workspace
 fid=fopen('2DMonte.txt');
 
-test=fscanf(fid,'%g,%g,%g',3)
-XY=fscanf(fid,'%g,%g\n',[2 Inf])
+test = fscanf(fid,'%g,%g,%g',3);
+XY = fscanf(fid,'%g,%g\n',[2 Inf]);
+XY = XY';
+X = XY(:,1);
+Y = XY(:,2);
 
-s=test(1);
-a=test(2);
-b=test(3);
+s = test(1);
+a = test(2);
+b = test(3);
 
 %Creates circles of radius 1sigma and 2sigma, for ilustrative purposes
 x12 = linspace(-s+a,s+a,10000);
@@ -20,7 +23,7 @@ y4 = b - sqrt(4*s^2 - (x34-a).^2);
 %Also now features a nice colourmap, and rings showing 1 and 2 sigma.
 %It only really looks good when you maximise the plot window.
 subplot(2,2,1)
-samp = scatter(XY(1,:),XY(2,:),'.')
+samp = scatter(X,Y,'.')
 xlabel('x')
 ylabel('y')
 hold on
@@ -33,18 +36,18 @@ legend([samp,c1,c2],{'(x,y) Samples','1\sigma Contour','2\sigma Contour'})
 hold off;
 
 subplot(2,2,[2,4])
-hist3(XY',[20 20])
+hist3(XY,[20 20])
 xlabel('x')
 ylabel('y')
 zlabel('Sample Density')
 set(get(gca,'child'),'FaceColor','interp','CDataMode','auto')
 
 subplot(2,2,3)
-n = hist3(XY',[20 20]);
+n = hist3(XY,[20 20]);
 n1 = n';
 n1(size(n,1) + 1, size(n,2) + 1) = 0;
-xb = linspace(min(XY(1,:)),max(XY(1,:)),size(n,1)+1);
-yb = linspace(min(XY(2,:)),max(XY(2,:)),size(n,1)+1);
+xb = linspace(min(X),max(X),size(n,1)+1);
+yb = linspace(min(Y),max(Y),size(n,1)+1);
 h = pcolor(xb,yb,n1);
 h.ZData = ones(size(n1)) * -max(max(n));
 colormap(hsv)
