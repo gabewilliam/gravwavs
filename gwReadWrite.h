@@ -112,11 +112,11 @@ bool saveTemplates(std::string filename, std::vector<Template>* temps, delimiter
 
 		for(int j=0; j<2; j++)
 		{
-			for(int k=0; k<K; k++)
+			for(int k=0; k<(K-1); k++)
 			{
 				outFile << temp.waveform[j][k] << de;		
 			}
-			
+			outFile << temp.waveform[j][k+1];
 			outFile << "\n";
 		}
 	}
@@ -215,11 +215,11 @@ bool saveSignals(std::string filename, std::vector<Signal>* sigs, delimiter deli
 
 		for(int j=0; j<2; j++)
 		{
-			for(int k=0; k<K; k++)
+			for(int k=0; k<(K-1); k++)
 			{
 				outFile << sig.waveform[j][k] << de;		
 			}
-			
+			outFile << sig.waveform[j][k+1];
 			outFile << "\r\n";
 		}
 	}
