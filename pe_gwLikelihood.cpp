@@ -15,15 +15,17 @@ vec_d NoiseFunction( vec_d ); //This is used to create the noise probability as 
 double PdhFunction( double m1, double m2, std::string signalFile ){
 	
 	Signal *dt;//Data signal (time domain)
+	std::vector< Signal >* idt; //loadSignals requires std::vector
 	Signal *df;//Data signal (freq domain)
 	Signal *ht;//Model signal (time domain)
 	Signal *hf;//Model signal (freq domain)
 
-	bool loadSignals(signalFile, dt, csv); //Loads signal into dt
+	bool loadSignals(signalFile, idt, ','); //Loads signal into dt
+	idt[0] = dt;//converts from vector of signals to signal
 
 	vec_d ht2 = ParameterFunction( m1, m2, dt->waveform[0] );//Creates model function for given masses.
 
-	ht->waveform[0] = dt[0]; //ht uses same time scale as dt
+	ht->waveform[0] = dt->waveform[0]; //ht uses same time scale as dt
 	ht->waveform[1] = ht2;	//sets ht equal to vector produced by function
 	
 	Extractor Fourier = Extractor(); //performs fourier transforms on each of the time domain signals 
