@@ -1,5 +1,6 @@
 #include <cmath>
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include "gwDataTypes.h"
 #include "gwReadWrite.h"
@@ -11,18 +12,14 @@
 vec_d ParameterFunction( double, double, vec_d );//This function is used to create model function ht to compare with the data
 vec_d NoiseFunction( vec_d ); //This is used to create the noise probability as a function of frequency
 
-int main(){
+double PdhFunction( double m1, double m2, std::string signalFile ){
 	
 	Signal *dt;//Data signal (time domain)
 	Signal *df;//Data signal (freq domain)
 	Signal *ht;//Model signal (time domain)
 	Signal *hf;//Model signal (freq domain)
 
-	std::string signalFile = "";//INSERT FILE NAME OF SIGNAL HERE
 	bool loadSignals(signalFile, dt, csv); //Loads signal into dt
-	
-	double m1;//Masses
-	double m2;
 
 	vec_d ht2 = ParameterFunction( m1, m2, dt.waveform[0] );//Creates model function for given masses.
 
@@ -40,10 +37,10 @@ int main(){
 	int n = df.waveform[0].size();//finds number of elements in freq domain signal
 
 	double sum = 0.0;
-	vec_d vdf = df.waveform[1]; //stores parts of signals as std::vectors for use in loop
+	vec_d vdf = df.waveform[1]; //splits signal into std::vectors for use in loop
 	vec_d vhf = hf.waveform[1];
 	
-	for( int i = 0; i < n; i++ ){ //sums: absolute difference between df and hf, squared then divided by sf	
+	for( int i = 0; i < n; i++ ){ //evaluates the sum part in equation A20	
 		x = pow( abs( vdf[i] - vhf[i] ), 2 )/sf[i]; 		
 		sum = sum + x;	
 	}
@@ -52,9 +49,9 @@ int main(){
 	int n2 = t.size();//finds the number of elements	
 	double T = t[n2];//takes the last element for T (total time elapsed)
 	
-	double pdh = exp( ( -2 * sum ) / T );//calculates p(d|h)
+	double pdh = exp( (-2/T) * sum );//calculates p(d|h)
 	
-	return 0;
+	return pdh;
 }
 
 vec_d ParameterFunction( double m1, double m2, vec_d t ){ 
@@ -63,7 +60,7 @@ vec_d ParameterFunction( double m1, double m2, vec_d t ){
 	vec_d ht;
 
 	for( int i = 0; i < n; i++ ){
-		ht.push_back( m1*m2*t[i] ); //PLACEHOLDER: INSERT PARAMETER FUNCTION HERE
+		ht.push_back( m1*m2*t[i] ); //PLACEHOLDER: INSERT PARAMETER FUNCTION IN PARENTHESIS
 	}
 
 	return ht;
@@ -75,7 +72,7 @@ vec_d NoiseFunction( vec_d f ){
 	vec_d sf;
 
 	for( int i = 0; i < n; i++ ){
-		sf.push_back( f[i] ); //PLACEHOLDER: INSERT NOISE FUNCTION HERE
+		sf.push_back( f[i] ); //PLACEHOLDER: INSERT NOISE FUNCTION IN PARENTHESIS
 	}
 
 	return sf;
