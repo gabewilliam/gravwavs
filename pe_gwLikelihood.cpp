@@ -21,7 +21,7 @@ double PdhFunction( double m1, double m2, std::string signalFile ){
 
 	bool loadSignals(signalFile, dt, csv); //Loads signal into dt
 
-	vec_d ht2 = ParameterFunction( m1, m2, dt.waveform[0] );//Creates model function for given masses.
+	vec_d ht2 = ParameterFunction( m1, m2, dt->waveform[0] );//Creates model function for given masses.
 
 	ht.waveform[0] = dt[0]; //ht uses same time scale as dt
 	ht.waveform[1] = ht2;	//sets ht equal to vector produced by function
@@ -32,20 +32,20 @@ double PdhFunction( double m1, double m2, std::string signalFile ){
 	Fourier.setSignal(ht);
 	Fourier.fft(hf);
 
-	vec_d sf = NoiseFunction( df.waveform[0] ); //creates noise probability function
+	vec_d sf = NoiseFunction( df->waveform[0] ); //creates noise probability function
 
-	int n = df.waveform[0].size();//finds number of elements in freq domain signal
+	int n = df->waveform[0].size();//finds number of elements in freq domain signal
 
 	double sum = 0.0;
-	vec_d vdf = df.waveform[1]; //splits signal into std::vectors for use in loop
-	vec_d vhf = hf.waveform[1];
+	vec_d vdf = df->waveform[1]; //splits signal into std::vectors for use in loop
+	vec_d vhf = hf->waveform[1];
 	
 	for( int i = 0; i < n; i++ ){ //evaluates the sum part in equation A20	
-		x = pow( abs( vdf[i] - vhf[i] ), 2 )/sf[i]; 		
+		double x = pow( std::abs( vdf[i] - vhf[i] ), 2 )/sf[i]; 		
 		sum = sum + x;	
 	}
 	
-	vec_d t = dt.waveform[0];//takes the time vector
+	vec_d t = dt->waveform[0];//takes the time vector
 	int n2 = t.size();//finds the number of elements	
 	double T = t[n2];//takes the last element for T (total time elapsed)
 	
