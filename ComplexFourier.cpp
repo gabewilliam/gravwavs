@@ -102,7 +102,7 @@ int main(){
 		IMAG(convolutionData, i) = -IMAG(filterData, i)*IMAG(signalData, i);
 	}
 	
-	gsl_fft_complex_backward (convolutionData, stride, N, wavetable, workspace);
+	gsl_fft_complex_inverse (convolutionData, stride, N, wavetable, workspace);
 
 	gsl_fft_complex_wavetable_free(wavetable);
 	gsl_fft_complex_workspace_free(workspace);
