@@ -15,7 +15,7 @@ int main(){
 	
 	//Setting up input stream
 	std::ifstream in_file;
-	in_file.open("signalA.dat");
+	in_file.open("a.dat");
 	
 	//Checking if stream is setup succesfully
 	if(in_file.fail())
@@ -40,7 +40,7 @@ int main(){
 	
 	//Setting up input stream
 	std::ifstream in_file2;
-	in_file2.open("filterB.dat");
+	in_file2.open("a.dat");
 	
 	//Checking if stream is setup succesfully
 	if(in_file2.fail())
@@ -102,7 +102,7 @@ int main(){
 		IMAG(convolutionData, i) = -IMAG(filterData, i)*IMAG(signalData, i);
 	}
 	
-	gsl_fft_complex_inverse(convolutionData, stride, N, wavetable, workspace);
+	gsl_fft_complex_backward (convolutionData, stride, N, wavetable, workspace);
 
 	gsl_fft_complex_wavetable_free(wavetable);
 	gsl_fft_complex_workspace_free(workspace);
@@ -111,7 +111,7 @@ int main(){
 	std::vector<double> convolution;
 	
 	for (i = 0; i < N; i++){
-		convolution.push_back(REAL(convolutionData, i));
+		convolution.push_back(REAL(convolutionData, i)*REAL(convolutionData, i)+IMAG(convolutionData,i)*IMAG(convolutionData,i));
 	}
 	
 	
@@ -120,8 +120,8 @@ int main(){
 	printer.push_back(signalTime);
 	printer.push_back(convolution);
 	
-		
-	outputWriter(printer);
+	std::string filename="Output2.csv";
+	outputWriter(printer,filename);
 	
 	
 	
