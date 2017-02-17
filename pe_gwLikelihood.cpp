@@ -23,8 +23,8 @@ double PdhFunction( double m1, double m2, std::string signalFile ){
 
 	vec_d ht2 = ParameterFunction( m1, m2, dt->waveform[0] );//Creates model function for given masses.
 
-	ht.waveform[0] = dt[0]; //ht uses same time scale as dt
-	ht.waveform[1] = ht2;	//sets ht equal to vector produced by function
+	ht->waveform[0] = dt[0]; //ht uses same time scale as dt
+	ht->waveform[1] = ht2;	//sets ht equal to vector produced by function
 	
 	Extractor Fourier = Extractor(); //performs fourier transforms on each of the time domain signals 
 	Fourier.setSignal(dt);
