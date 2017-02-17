@@ -116,8 +116,8 @@ bool saveTemplates(std::string filename, std::vector<Template>* temps, delimiter
 			{
 				outFile << temp.waveform[j][k] << de;		
 			}
-			outFile << temp.waveform[j][k+1];
-			outFile << "\n";
+			outFile << temp.waveform[j][K-1];
+			outFile << "\r\n";
 		}
 	}
 
@@ -219,7 +219,7 @@ bool saveSignals(std::string filename, std::vector<Signal>* sigs, delimiter deli
 			{
 				outFile << sig.waveform[j][k] << de;		
 			}
-			outFile << sig.waveform[j][k+1];
+			outFile << sig.waveform[j][K-1];
 			outFile << "\r\n";
 		}
 	}
