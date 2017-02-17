@@ -1,6 +1,5 @@
 #include <gsl/gsl_fft_real.h>
 #include <gsl/gsl_fft_halfcomplex.h>
-#include <iostream>
 
 #include "gwSignalExtraction.h"
 
