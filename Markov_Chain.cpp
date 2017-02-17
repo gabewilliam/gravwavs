@@ -6,11 +6,13 @@
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_randist.h>
 
+#include "gwReadWrite.h"  //Commented out two functions in header file that we don't use but cause errors
+
 
 //Prototype for the likelihood calculation function
-double likelihood(double x, double y, double a, double b, double s, double (*function)(double,double,double,double,double));
-double gaussian(double x, double y, double a, double b, double s);
-double prior(double x, double y, double w);
+double likelihood(double, double, double, double, double, double (*function)(double,double,double,double,double));
+double gaussian(double, double, double, double, double);
+double prior(double, double, double, double, double, double);
 
 
 int main() {
@@ -22,13 +24,14 @@ int main() {
 	gsl_rng_set(seedGen,(long unsigned int) time);
 	
 
-	/*Initialises two random number generators to be used in the Markov-Chain
+	/*Initialises random number generators to be used in the Markov-Chain
 	/ routine, and seeds them using values from the previous RNG.*/
 	gsl_rng * normGen = gsl_rng_alloc(gsl_rng_taus);
 	gsl_rng_set(normGen, gsl_rng_get(seedGen));
 	gsl_rng * rGen = gsl_rng_alloc(gsl_rng_taus);
 	gsl_rng_set(rGen, gsl_rng_get(seedGen));
-	
+	gsl_rng * startGen = gsl_rng_alloc(gsl_rng_taus);
+	gsl_rng_set(startGen, gsl_rng_get(seedGen));
 
 	/*Takes an input for the standard deviation, sigma of the likelihood
 	/ distribution, and then calculates a value to use in the distribution
@@ -55,10 +58,19 @@ int main() {
 	std::cin >> b;
 
 
-	//Takes an input for the width of the prior's step function
-	std::cout<< "Enter the width of the prior:" << std::endl;
-	double w;
-	std::cin >> w;
+	//Takes x limits for the prior function
+	double xLower,xUpper;
+	std::cout<< "Enter the x upper limit:" << std::endl;
+	std::cin >> xUpper;
+	std::cout<< "Enter the x lower limit:" << std::endl;
+	std::cin >> xLower;
+
+	//Takes y limits for the prior function
+	double yLower,yUpper;
+	std::cout<< "Enter the y upper limit:" << std::endl;
+	std::cin >> yUpper;
+	std::cout<< "Enter the y lower limit:" << std::endl;
+	std::cin >> yLower;
 
 	
 	//Takes an input for the number of samples used in the Monte Carlo routine
@@ -78,9 +90,14 @@ int main() {
 	fprintf(outFile,"%.15g,%.15g,%.15g\n",sigma,a,b);
 
 
-	//Sets the starting point for the routine (pretty arbitrary)
-	x = 0;
-	y = 0;
+	//std::vector<Signal>* data;
+
+	//loadSignals(" ", data, tab);
+
+
+	//Sets the starting x and y values for the routine as random integers in the range [-50,50]
+	x = gsl_rng_uniform(startGen)*(xUpper-xLower)+xLower;
+	y = gsl_rng_uniform(startGen)*(yUpper-yLower)+yLower;
 
 
 	/*Loops over the number of iterations specified by the input. In each run,
@@ -95,14 +112,14 @@ int main() {
 	for(int i = 1; i <= N; i++) {
 		
 
-		p = likelihood (x,y,a,b,sigma,gaussian)*prior(x,y,w);
+		p = likelihood (x,y,a,b,sigma,gaussian)*prior(x,y,xUpper,xLower,yUpper,yLower);
 
 		nZeroX = gsl_ran_gaussian(normGen, nSigma);
 		nZeroY = gsl_ran_gaussian(normGen, nSigma);
 
 		xPrime = x + nZeroX;
 		yPrime = y + nZeroY;
-		pPrime = likelihood(xPrime,yPrime,a,b,sigma,gaussian)*prior(xPrime,yPrime,w);
+		pPrime = likelihood(xPrime,yPrime,a,b,sigma,gaussian)*prior(xPrime,yPrime,xUpper,xLower,yUpper,yLower);
 
 		alpha = pPrime/p;
 
@@ -115,7 +132,9 @@ int main() {
 
 		}
 		
-		fprintf(outFile,"%.15g,%.15g\n",x,y);
+		if (i%100==0){
+			fprintf(outFile,"%.15g,%.15g\n",x,y);
+		}
 
 	}
 
@@ -131,7 +150,8 @@ int main() {
 
 }
 
-//Defines a general likelihood function, which can take any function containing the appropriate arguments as input
+/*Defines a general likelihood function, which can take any function containing the appropriate arguments as 
+/ input.*/
 double likelihood(double x, double y, double a, double b, double s, double (*function)(double,double,double,double,double)) {
 
 	double g;
@@ -151,9 +171,11 @@ double gaussian(double x, double y, double a, double b, double s) {
 
 /*Defines a prior function which is a step of height 1, centred on the origin,
 / with a width of w.*/
-double prior(double x, double y, double w) {
+double prior(double x, double y, double xUpper, double xLower, double yUpper, double yLower) {
 
-	if((std::abs(x) < (w/2)) && (std::abs(y) < (w/2))) { return 1/(w*w); }
+	if((x < xUpper && x > xLower) 
+	&& (y < yUpper && y > yLower)) { return 1/((xUpper-xLower)*(yUpper-yLower)); }
+
 	else { return 0; }
 
 }
