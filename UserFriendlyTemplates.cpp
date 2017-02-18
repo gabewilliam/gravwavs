@@ -127,38 +127,43 @@ void binaryInspiral(double mA_z,
 
 int main(){
 		
-	double lowM, highM, samplingFreq;
+	double lowM, highM, samplingFreq, massStep;
 	cout << "Please enter the lower mass limit of the binary in solar masses: ";
 	cin >> lowM;
 	cout << endl << "Please enter the higher mass limit of the binary in solar masses: ";
 	cin >> highM;
-	cout << endl << "Please specify the desired sampling frequency:";
+	cout << endl << "Please specify the desired sampling frequency: ";
 	cin >> samplingFreq;
+	cout << endl << "Please enter the required mass increment: ";
+	cin >> massStep;
+	cout << endl;
 	
-	if (lowM > highM || lowM == 0.0 || samplingFreq == 0.0){
+	if (lowM > highM 
+		|| lowM == 0.0 
+		|| samplingFreq == 0.0 
+		|| massStep == 0.0 
+		|| (lowM+massStep) > highM){
 		cout << "Incorrect input parameters" << endl;
 		return 1;
 	}
 	else{
-		int Max = 5;
-		int Min = 1;
 		double M1, M2;	
 		// Set luminosity distance in MPc
 		double lumDist = 500.0;	
 		// Set lower sensitivity of LIGO band
 		double lowBound = 20.0;
 		
-		// Initialise vector of templates to save all generated data to
+		// Initialise vector of templates to save all generated data
 		std::vector<Template> templ;
 		std::vector<Template> * t = &templ;
 		
 		// Loop over all mass pairs
-		for (int Mp = Min; Mp <= Max; Mp++){
+		for (double Mp = lowM; Mp <= highM; Mp=Mp+massStep){
 			// Primary mass
-			M1 = double(Mp)*(highM-lowM)/double(Max) + lowM;
-			for (int Ms = Min; Ms <= Max-Mp; Ms++){
+			M1 = Mp;
+			for (double Ms = lowM; Ms <= highM-Mp; Ms=Ms+massStep){
 				// Secondary mass
-				M2 = double(Ms)*(highM-lowM)/double(Max) + lowM;
+				M2 = Ms;
 				binaryInspiral(M1, M2, samplingFreq, lumDist, lowBound, t);
 				cout << "Mass 1: " << M1 << ", Mass 2: " << M2 << endl;
 			}
