@@ -126,66 +126,100 @@ void binaryInspiral(double mA_z,
 }
 
 int main(){
-		
-	double lowM, highM, samplingFreq, massStep;
-	cout << "Please enter the lower mass limit of the binary in solar masses: ";
-	cin >> lowM;
-	cout << endl << "Please enter the higher mass limit of the binary in solar masses: ";
-	cin >> highM;
-	cout << endl << "Please specify the desired sampling frequency: ";
-	cin >> samplingFreq;
-	cout << endl << "Please enter the required mass increment: ";
-	cin >> massStep;
-	cout << endl;
 	
-	if (lowM > highM 
-		|| lowM == 0.0 
-		|| samplingFreq == 0.0 
-		|| massStep == 0.0 
-		|| (lowM+massStep) > highM){
-		cout << "Incorrect input parameters" << endl;
+	bool templateDatabase = true;
+	int userIn;
+	cout << "To model a specific system, press 1. To create a data bank, press 2." << endl;
+	cin >> userIn;
+		if (userIn != 1 
+		&& userIn != 2){
+		cout << "Incorrect input" << endl;
 		return 1;
 	}
 	else{
-		double M1, M2;	
-		// Set luminosity distance in MPc
-		double lumDist = 500.0;	
-		// Set lower sensitivity of LIGO band
-		double lowBound = 20.0;
-		
-		// Initialise vector of templates to save all generated data
-		std::vector<Template> templ;
-		std::vector<Template> * t = &templ;
-		
-		// Loop over all mass pairs
-		for (double Mp = lowM; Mp <= highM; Mp=Mp+massStep){
-			// Primary mass
-			M1 = Mp;
-			for (double Ms = lowM; Ms <= highM-Mp; Ms=Ms+massStep){
-				// Secondary mass
-				M2 = Ms;
-				binaryInspiral(M1, M2, samplingFreq, lumDist, lowBound, t);
-				cout << "Mass 1: " << M1 << ", Mass 2: " << M2 << endl;
-			}
+		if (userIn ==1){
+			templateDatabase = false;
 		}
 		
-		// Set up name for output file
-		ostringstream s1, s2, s3;
-		s1 << lowM;
-		s2 << highM;
-		string del = "csv";
-		s3 << del;
-		std::string fileIdentity = s1.str() + "_" + s2.str() + "." + s3.str();
+		double lowM, highM, samplingFreq, massStep;	
 		
-		// Save the templates, check the success of the program and exit
-		if(saveTemplates(fileIdentity.c_str(), t, tab)){
-			cout << "Templates stored successfully in file " << fileIdentity.c_str() << "." << endl;
-			return 0;
+		if (templateDatabase){
+			cout << "Please enter the lower mass limit of the binary in solar masses: ";
+			cin >> lowM;
+			cout << endl << "Please enter the higher mass limit of the binary in solar masses: ";
+			cin >> highM;
+			cout << endl << "Please specify the desired sampling frequency: ";
+			cin >> samplingFreq;
+			cout << endl << "Please enter the required mass increment: ";
+			cin >> massStep;
+			cout << endl;
 		}
-		else{
-			cout << "There was an error" << endl;
+		else {
+			cout << "Please enter the mass of the smaller binary object in solar masses: ";
+			cin >> lowM;
+			cout << "Please enter the mass of the larger binary object in solar masses: ";
+			cin >> highM;
+			cout << endl << "Please specify the desired sampling frequency: ";
+			cin >> samplingFreq;
+			cout << endl;
+			massStep = 1.0;		
+		}
+		
+		if (lowM > highM 
+			|| lowM == 0.0 
+			|| samplingFreq == 0.0 
+			|| massStep == 0.0 
+			|| (templateDatabase && (lowM+massStep) >= highM)){
+			cout << "Incorrect input parameters" << endl;
 			return 2;
 		}
+		else{
+			double M1, M2;	
+			// Set luminosity distance in MPc
+			double lumDist = 500.0;	
+			// Set lower sensitivity of LIGO band
+			double lowBound = 20.0;
+			
+			// Initialise vector of templates to save all generated data
+			std::vector<Template> templ;
+			std::vector<Template> * t = &templ;
+			
+			// Create the template database...
+			if (templateDatabase){
+				// Loop over all mass pairs
+				for (double Mp = lowM; Mp <= highM; Mp=Mp+massStep){
+					// Primary mass
+					M1 = Mp;
+					for (double Ms = lowM; Ms <= highM-Mp; Ms=Ms+massStep){
+						// Secondary mass
+						M2 = Ms;
+						binaryInspiral(M1, M2, samplingFreq, lumDist, lowBound, t);
+						cout << "Mass 1: " << M1 << ", Mass 2: " << M2 << endl;
+					}
+				}
+			}
+			// ...or investigate a specific system
+			else{
+				binaryInspiral(lowM, highM, samplingFreq, lumDist, lowBound, t);
+			}
+			
+			// Set up name for output file
+			ostringstream s1, s2, s3;
+			s1 << lowM;
+			s2 << highM;
+			string del = "csv";
+			s3 << del;
+			std::string fileIdentity = s1.str() + "_" + s2.str() + "." + s3.str();
+			
+			// Save the templates, check the success of the program and exit
+			if(saveTemplates(fileIdentity.c_str(), t, tab)){
+				cout << "Templates stored successfully in file " << fileIdentity.c_str() << "." << endl;
+				return 0;
+			}
+			else{
+				cout << "There was an error" << endl;
+				return 3;
+			}
+		}
 	}
-	
 }
