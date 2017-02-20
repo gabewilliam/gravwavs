@@ -89,14 +89,14 @@ bool save_templates(std::string filename, std::vector<Template>* temps, delim de
 		return false;
 	}
 
-	int I, J;
+	int J,K;
 	Template temp;
 
 	std::vector<Template> templates = *temps;
 
-	I = templates.size();
+	K = templates.size();
 
-	for(int i=0; i<I; i++)
+	for(int i=0; i<K; i++)
 	{
 		temp = templates[i];
 
