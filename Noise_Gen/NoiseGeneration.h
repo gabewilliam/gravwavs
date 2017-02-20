@@ -8,6 +8,10 @@
 #include <math.h>
 #include <string>
 
+struct Complex{
+	double real, imag;
+};
+
 class NoiseGenerator{
 	
 	public:
@@ -18,7 +22,10 @@ class NoiseGenerator{
 		//void setNoiseCurve(double (*func)(double)); //Set noise curve function
 		
 		double getASD(double); //Return amplitude spectral density for given frequency
-		double getSample(double); //Generate noise sample for given frequency
+		double getMag(double); //Generate spectral magnitude for given frequency
+		double getPhase();
+		
+		Complex getSample(double); //Get both phase and magnitude of frequency bin
 		
 		double noiseCurveALIGO(double);		
 		
@@ -30,6 +37,6 @@ class NoiseGenerator{
 };
 
 //Returns normally distributed value using basic Box-Muller routine
-double gaussianSample(double, double );
+double gaussianSample(double, double);
 
 #endif //NOISEGENERATION_H

@@ -6,7 +6,7 @@
 #include <sstream>
 #include <fstream>
 
-#include "gwReadWrite.h"
+//#include "gwReadWrite.h"
 #include "NoiseGeneration.h"
 
 using namespace std;
@@ -15,24 +15,24 @@ int main(){
 	
 	srand(time(NULL));
 
-	double sample;
+	Complex sample;
 	
 	ofstream outFile;
 	
 	NoiseGenerator ngen;
 	
 	outFile.open("noise.csv");
-	double s;
-	for(int i=0; i<100; i++){
+	
+	for(int i=0; i<200; i++){
 		
-		outFile << 0 << ",";
+		outFile << 0 << "," << 0 << "\r\n";
 		
 	}
-	for(int j=100; j<300000; j++){
+	for(int j=200; j<300000; j++){
 		
-		s=ngen.getSample(0.01*j);
+		sample=ngen.getSample(0.01*j);
 		
-		outFile << s << ",";
+		outFile << sample.real << "," << sample.imag << "\r\n";
 		
 	}
 	outFile << 0;

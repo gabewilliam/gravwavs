@@ -12,12 +12,29 @@ double NoiseGenerator::getASD(double freq){
 	
 }
 
-double NoiseGenerator::getSample(double freq){
+double NoiseGenerator::getMag(double freq){
 	
 	double sigma = this->getASD(freq);
 	double noise = gaussianSample(freq, sigma);
 	
 	return noise * fRelativeAmplitude;
+	
+}
+
+double NoiseGenerator::getPhase(){ //Generate phase information
+	
+	double phase = 2.0 * C_PI * ( rand() / RAND_MAX );
+	return phase;
+	
+}
+
+Complex NoiseGenerator::getSample(double freq){
+	
+	Complex sample;
+	sample.real = this->getMag(freq);
+	sample.imag = this->getPhase();
+	
+	return sample;
 	
 }
 
