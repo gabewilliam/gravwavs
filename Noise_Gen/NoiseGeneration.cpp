@@ -23,7 +23,7 @@ double NoiseGenerator::getMag(double freq){
 
 double NoiseGenerator::getPhase(){ //Generate phase information
 	
-	double phase = 2.0 * C_PI * ( rand() / RAND_MAX );
+	double phase = 2.0 * (double)C_PI * ( rand() / (double)RAND_MAX );
 	return phase;
 	
 }
