@@ -22,7 +22,7 @@ double PdhFunction( double m1, double m2, std::string signalFile ){
 	Signal *hf;//Model signal (freq domain)
 
 	loadSignals(signalFile, idt, csv); //Loads signal into dt
-	idt[0] = dt;//converts from vector of signals to signal
+	dt = idt[0];//converts from vector of signals to signal
 
 	vec_d ht2 = ParameterFunction( m1, m2, dt->waveform[0] );//Creates model function for given masses.
 
