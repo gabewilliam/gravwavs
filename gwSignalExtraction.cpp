@@ -122,8 +122,9 @@ void Extractor::fftComplex(std::vector<Template>* tempsFFT){
 		freq.push_back(N-j);
 	} 
 	////////////////////////////////
-	
+
 	for(int k=0; k<I; k++){
+		std::cout<<"FFt1  "<<k<<std::endl;
 		Template* temp = &tempsFFT[0][k];
 		Template* tempFFT=new Template;
 		//cycle through the templates
@@ -185,6 +186,8 @@ void Extractor::fftComplex(Signal* sigFFT){
 	//declare somthing to hold the signal
 	
 	size_t N = amp.size();
+	size_t P = time.size();
+	std::cout<<N<<std::endl<<P<<std::endl;
 	//calculate length of signal
 	
 	vec_d signalData;
@@ -223,11 +226,12 @@ void Extractor::fftComplex(Signal* sigFFT){
 		freq.push_back(N-j);
 		
 	} 
+	
 	//////////////////////////////
-	sigFFT2->waveform[0] = freq;
-	sigFFT2->waveform[1]=signalData;
+	sigFFT->waveform[0] = freq;
+	sigFFT->waveform[1]=signalData;
 	//load tranform into data member
-	mSignalF = sigFFT2;
+	mSignalF = sigFFT;
 
 
 	return;
@@ -285,7 +289,7 @@ void Extractor::fftInverseComplex(std::vector<Signal>* convsFFTI){
 		// run transform for each signal
 		//set the current signal
 		Signal* conv = &convsFFTI[0][k];
-		
+		std::cout<<"FFtInv  "<<k<<std::endl;
 		
 		//set the vector to be current convolution
 		vec_d convData= conv->waveform[1];
@@ -395,11 +399,11 @@ void Extractor::fConvolutionComplex(std::vector<Signal>* output){
 	int I, K;//declare size holders
 	double result;//declare something to hold tempory results
 	vec_d op;//decalre a vector to hold convolution for each run
-
+	
 	I = mTemplatesF->size();//calculate number of templates 
 	
 	K =mSignalF->waveform[0].size();//declare number of data points
-	
+	std::cout<<"Conv  "<<I<<std::endl;
 
 	//Looping over all templates
 	for(int i=0; i<I; i++){
