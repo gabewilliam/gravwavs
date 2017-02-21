@@ -1,17 +1,17 @@
 %Loads the data from the text file into the workspace
 fid=fopen('2DMonte.txt');
 
-test = fscanf(fid,'%g,%g,%g',3);
+constants = fscanf(fid,'%g,%g,%g',3);
 XY = fscanf(fid,'%g,%g\n',[2 Inf]);
 XY = XY';
 X = XY(:,1);
 Y = XY(:,2);
 
-s = test(1);
-a = test(2);
-b = test(3);
+s = constants(1);
+a = constants(2);
+b = constants(3);
 
-%Creates circles of radius 1sigma and 2sigma, for ilustrative purposes
+%Creates circles of radius 1sigma and 2sigma, for illustrative purposes
 x12 = linspace(-s+a,s+a,10000);
 y1 = b + sqrt(s^2 - (x12-a).^2);
 y2 = b - sqrt(s^2 - (x12-a).^2);
@@ -26,6 +26,7 @@ subplot(2,2,1)
 samp = scatter(X,Y,'.')
 xlabel('x')
 ylabel('y')
+title('Data Point Plot')
 hold on
 c1 = plot(x12,y1,'r')
 plot(x12,y2,'r')
@@ -40,10 +41,18 @@ hist3(XY,[20 20])
 xlabel('x')
 ylabel('y')
 zlabel('Sample Density')
+title('Posterior Histogram')
 set(get(gca,'child'),'FaceColor','interp','CDataMode','auto')
 
 subplot(2,2,3)
-n = hist3(XY,[20 20]);
+[n,C] = hist3(XY,[20 20]);
+[M,I] = max(n)
+[N,Iy] = max(M)
+Ix = I(Iy)
+
+xMax = C{1}(Ix)
+yMax = C{2}(Iy)
+
 n1 = n';
 n1(size(n,1) + 1, size(n,2) + 1) = 0;
 xb = linspace(min(X),max(X),size(n,1)+1);
@@ -58,6 +67,7 @@ plot(x34,y3,'k')
 plot(x34,y4,'k')
 xlabel('x')
 ylabel('y')
+title('Histogram Density Plot')
 
 fclose(fid)
 %Some of the code is lifted from the MATLAB documentation on hist3
