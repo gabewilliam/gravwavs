@@ -8,6 +8,7 @@
 
 //AIM: reads in d(t) from signal, generates h(t) from known formula -> fourier transforms both to get d(f) and h(f), s(f) is hopefully already known and in frequency domain.
 //Uses d(f), h(f) and s(f) using equation A20 in "Veich, Vecchio (2010)" to calculate likelihood using two parameters m1 and m2.
+//Returns a NON-NORMALISED likelihood.
 
 vec_d ParameterFunction( double, double, vec_d );//This function is used to create model function ht to compare with the data
 vec_d NoiseFunction( vec_d ); //This is used to create the noise probability as a function of frequency
