@@ -44,8 +44,8 @@ Complex NoiseGenerator::getSample(double freq){
 
 double NoiseGenerator::noiseCurveALIGO(double f){
 	
-	double fs = 20;
-	double f0 = 215;
+	double fs = 20.0;
+	double f0 = 215.0;
 	double x = f/f0;
 	
 	double psd0 = 1E-49;
@@ -60,7 +60,7 @@ double NoiseGenerator::noiseCurveALIGO(double f){
 	x3_2 = 0.5 * pow(x,4);
 	x3_3 = 0.5 * x * x;
 	
-	x3 = 111*(1+x3_1 +x3_2) / (1+x3_3);
+	x3 = 111.0*(1.0+x3_1 +x3_2) / (1+x3_3);
 	
 	psd = x1 + x2 + x3;
 	asd = sqrt(psd);
