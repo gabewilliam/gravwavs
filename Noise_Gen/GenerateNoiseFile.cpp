@@ -3,6 +3,7 @@
 #include <math.h>
 #include <vector>
 #include <string>
+#include <iostream>
 #include <sstream>
 #include <fstream>
 
@@ -12,30 +13,57 @@
 using namespace std;
 
 int main(){
-	
+
 	srand(time(NULL));
 
 	Complex sample;
 	
-	ofstream outFile;
-	
 	NoiseGenerator ngen;
 	
-	outFile.open("noise.csv");
+	ofstream oFile;
+	oFile.open("noise.csv");
 	
-	for(int i=0; i<200; i++){
+	double fs, df;
+	
+	fs = 10000;
+	df = 0.01;
+	
+	vector<double> freq;
+	vector<double> im;
+	vector<double> re;
+	
+	
+	
+	int ind;
+	for(int i=0; i<(20*df); i++){
 		
-		outFile << 0 << "," << 0 << "\r\n";
+		re[i] = 0.0;
+		im[i] = 0.0;
+		
+		ind = (fs/df)-(20*df)+i;
+		
+		re[ind]=0.0;
+		im[ind]=0.0;
 		
 	}
-	for(int j=200; j<300000; j++){
+	for(int j=(20*df); j < (fs/df); j++){
 		
 		sample=ngen.getSample(0.01*j);
 		
-		outFile << sample.real << "," << sample.imag << "\r\n";
+		re[j]=sample.real;
+		re[fs/df-j]=sample.real;
+		
+		im[j]=sample.imag;
+		im[fs/df-j]=-sample.imag;
 		
 	}
-	outFile << 0;
-	outFile.close();
+	
+	for(int k=0; k < (fs/df); k++){
+		
+		oFile << freq[k] << "," << re[k] << im[k] << "\r\n";
+		
+	}
+	
+	oFile.close();
 	
 }

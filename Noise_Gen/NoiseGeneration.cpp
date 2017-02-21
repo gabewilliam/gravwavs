@@ -31,8 +31,12 @@ double NoiseGenerator::getPhase(){ //Generate phase information
 Complex NoiseGenerator::getSample(double freq){
 	
 	Complex sample;
-	sample.real = this->getMag(freq);
-	sample.imag = this->getPhase();
+	
+	double mod = this->getMag(freq);
+	double arg = this->getPhase();
+	
+	sample.real = mod * cos( arg );
+	sample.imag = mod * sin( arg );
 	
 	return sample;
 	
