@@ -34,14 +34,12 @@ int main() {
 	gsl_rng * startGen = gsl_rng_alloc(gsl_rng_taus);
 	gsl_rng_set(startGen, gsl_rng_get(seedGen));
 
-	/*Takes an input for the standard deviation, sigma of the likelihood
-	/ distribution, and then calculates a value to use in the distribution
-	/ which is sampled to find the next x and y value [N(0,nSigma)]. The
-	/ distribution from which the random number is drawn is 1/10 the width of
-	/ the likelihood distribution. This is somewhat arbitrary, but means it
-	/ won't be too wide. A slightly wider distribution would maybe give faster
-	/ convergence.*/
-	std::cout << "Enter the standard deviation, sigma, of the likelihood:" 
+	/*Takes an input for the standard deviation, sigma of distribution
+	/ which is sampled to find the next ma and mb value [N(0,nSigma)]. The
+	/ distribution from which the random number is drawn.*/
+	std::cout << "Enter the standard deviation, sigma, of the distribtuion "
+			  << "used to advance the Markov Chain routine. This should be
+			  << "given in solar masses."
 			  << std::endl;
 	double sigma;
 	std::cin >> sigma;
@@ -85,26 +83,24 @@ int main() {
 	//Opens the output text file
 	FILE * outFile;
 	outFile = fopen("2DMonte.txt","w");
-	fprintf(outFile,"%.15g\n",sigma);
+	
 
-
-	//Sets the starting ma and mb values for the routine as random integers in the range [-50,50]
+	//Sets the starting ma and mb values for the routine as random integers.
 	ma = gsl_rng_uniform(startGen)*(mUpper-mLower)+mLower;
 	mb = gsl_rng_uniform(startGen)*(mUpper-mLower)+mLower;
 
 
 	/*Loops over the number of iterations specified by the input. In each run,
-	/ the likelihood function is evaluated at (x,y). Then, one of the RNGs is
+	/ the likelihood function is evaluated at (ma,mb). Then, one of the RNGs is
 	/ used to draw values from a normal distribution of width nSigma. The
-	/ values obtained in this way are then used to find a new trial (x,y) pair
-	/ [(x',y') in Veitch's notation]. The likelihood at this new point is
+	/ values obtained in this way are then used to find a new trial (ma,mb) pair
+	/ [(ma',mb') in Veitch's notation]. The likelihood at this new point is
 	/ then found. This is used to evaluate the acceptance value, alpha, which
 	/ is compared to a random number drawn from a uniform distribution, to
-	/ decide if (x',y') is accepted as the new (x,y). Either way, the (x,y)
+	/ decide if (ma',mb') is accepted as the new (ma,mb). Either way, the (ma,mb)
 	/ is output to the file.*/
 	for(int i = 1; i <= N; i++) {
 
-		//std::cout<<x<<std::endl;
 		p = likelihood (ma,mb,fileName,PdhFunction)*prior(ma,mb,mUpper,mLower);
 
 		if(i==1) {
