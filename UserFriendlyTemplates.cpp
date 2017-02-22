@@ -141,15 +141,16 @@ int main(){
 			templateDatabase = false;
 		}
 		
-		double lowM, highM, samplingFreq, massStep;	
+		double lowM, highM, power, samplingFreq, massStep;	
 		
 		if (templateDatabase){
 			cout << "Please enter the lower mass limit of the binary in solar masses: ";
 			cin >> lowM;
 			cout << endl << "Please enter the higher mass limit of the binary in solar masses: ";
 			cin >> highM;
-			cout << endl << "Please specify the desired sampling frequency: ";
-			cin >> samplingFreq;
+			cout << endl << "Please specify the desired sampling frequency as a power of 2: ";
+			cin >> power;
+			samplingFreq = pow(2.0, power);
 			cout << endl << "Please enter the required mass increment: ";
 			cin >> massStep;
 			cout << endl;
@@ -159,8 +160,9 @@ int main(){
 			cin >> lowM;
 			cout << "Please enter the mass of the larger binary object in solar masses: ";
 			cin >> highM;
-			cout << endl << "Please specify the desired sampling frequency: ";
-			cin >> samplingFreq;
+			cout << endl << "Please specify the desired sampling frequency as a power of 2: ";
+			cin >> power;
+			samplingFreq = pow(2.0, power);
 			cout << endl;
 			massStep = 1.0;		
 		}
@@ -212,7 +214,7 @@ int main(){
 			std::string fileIdentity = s1.str() + "_" + s2.str() + "." + s3.str();
 			
 			// Save the templates, check the success of the program and exit
-			if(saveTemplates(fileIdentity.c_str(), t, tab)){
+			if(saveTemplates(fileIdentity.c_str(), t, csv)){
 				cout << "Templates stored successfully in file " << fileIdentity.c_str() << "." << endl;
 				return 0;
 			}
