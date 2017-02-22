@@ -2,6 +2,7 @@
 fid=fopen('2DMonte.txt');
 
 %Extracts the data from the file.
+constants = fscanf(fid,'%g',1);
 MaMb = fscanf(fid,'%g,%g\n',[2 Inf]);
 MaMb = MaMb';
 Ma = MaMb(:,1);
