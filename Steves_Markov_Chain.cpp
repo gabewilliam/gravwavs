@@ -25,8 +25,8 @@ int main() {
 	/*Sets up a random number generator to seed the other two generators, and
 	/ seeds this based on the system time.*/
 	gsl_rng * seedGen = gsl_rng_alloc(gsl_rng_taus);
-	gsl_rng_set(seedGen,(long unsigned int) time);
-	
+	gsl_rng_set(seedGen,(long unsigned int) time(NULL));
+			
 
 	/*Initialises random number generators to be used in the Markov-Chain
 	/ routine, and seeds them using values from the previous RNG.*/
@@ -37,6 +37,7 @@ int main() {
 	gsl_rng * startGen = gsl_rng_alloc(gsl_rng_taus);
 	gsl_rng_set(startGen, gsl_rng_get(seedGen));
 
+	
 	/*Takes an input for the standard deviation, sigma of distribution
 	/ which is sampled to find the next ma and mb value [N(0,nSigma)]. The
 	/ distribution from which the random number is drawn.*/
