@@ -13,6 +13,8 @@ Mb = MaMb(:,2);
 %This first block makes the scatter.
 subplot(2,2,1)
 samp = scatter(Ma,Mb,'.');
+xlim([min(Ma) max(Ma)]);
+ylim([min(Mb) max(Mb)]);
 xlabel('m_a/kg')
 ylabel('m_b/kg')
 title('Data Point Plot')
