@@ -6,13 +6,14 @@
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_randist.h>
 
-#include "gwReadWrite.h"  //Commented out two functions in header file that we don't use but cause errors
+#include "pe_gwLikelihood.h"
+//#include "gwReadWrite.h"
 
 
 //Prototype for the likelihood calculation function
-double likelihood(double, double, double, double, double, double (*function)(double,double,double,double,double));
+double likelihood(double, double, std::string, double (*function)(double,double,std::string));
 double gaussian(double, double, double, double, double);
-double prior(double, double, double, double, double, double);
+double prior(double, double, double, double);
 
 
 int main() {
@@ -44,10 +45,10 @@ int main() {
 			  << std::endl;
 	double sigma;
 	std::cin >> sigma;
+	
+	double nSigma = sigma*1.989e30;
 
-	double nSigma = sigma/10;
-
-
+	/*
 	//Takes inputs for the centre coordinates of the likelihood
 	std::cout << "Enter the values (a,b) the likelihood is centred on:" 
 			  << std::endl;
@@ -56,22 +57,18 @@ int main() {
 	std::cin >> a;
 	std::cout << "b:"<< std::endl;
 	std::cin >> b;
+	*/
 
-
-	//Takes x limits for the prior function
-	double xLower,xUpper;
-	std::cout<< "Enter the x upper limit:" << std::endl;
-	std::cin >> xUpper;
-	std::cout<< "Enter the x lower limit:" << std::endl;
-	std::cin >> xLower;
-
-	//Takes y limits for the prior function
-	double yLower,yUpper;
-	std::cout<< "Enter the y upper limit:" << std::endl;
-	std::cin >> yUpper;
-	std::cout<< "Enter the y lower limit:" << std::endl;
-	std::cin >> yLower;
-
+	//Takes mass limits for the prior function
+	double mLower,mUpper;
+	
+	std::cout<< "Enter the mass upper limit in solar masses:" << std::endl;
+	std::cin >> mUpper;
+	std::cout<< "Enter the mass lower limit in solar masses:" << std::endl;
+	std::cin >> mLower;	
+	
+	mLower*=1.989e30;
+	mUpper*=1.989e30;
 	
 	//Takes an input for the number of samples used in the Monte Carlo routine
 	std::cout<< "Enter the number of Monte-Carlo samples:" << std::endl;
@@ -80,24 +77,20 @@ int main() {
 
 
 	//Declares the variables used throughout the routine
-	double x, xPrime, y, yPrime, p, pPrime, alpha;
-	double nZeroX, nZeroY, rZero;
+	std::string fileName = "signal.txt";
+	double ma, maPrime, mb, mbPrime, p, pPrime, alpha;
+	double nZeroMA, nZeroMB, rZero;
 
 
 	//Opens the output text file
 	FILE * outFile;
 	outFile = fopen("2DMonte.txt","w");
-	fprintf(outFile,"%.15g,%.15g,%.15g\n",sigma,a,b);
+	fprintf(outFile,"%.15g\n",sigma);
 
 
-	//std::vector<Signal>* data;
-
-	//loadSignals(" ", data, tab);
-
-
-	//Sets the starting x and y values for the routine as random integers in the range [-50,50]
-	x = gsl_rng_uniform(startGen)*(xUpper-xLower)+xLower;
-	y = gsl_rng_uniform(startGen)*(yUpper-yLower)+yLower;
+	//Sets the starting ma and mb values for the routine as random integers in the range [-50,50]
+	ma = gsl_rng_uniform(startGen)*(mUpper-mLower)+mLower;
+	mb = gsl_rng_uniform(startGen)*(mUpper-mLower)+mLower;
 
 
 	/*Loops over the number of iterations specified by the input. In each run,
@@ -110,30 +103,38 @@ int main() {
 	/ decide if (x',y') is accepted as the new (x,y). Either way, the (x,y)
 	/ is output to the file.*/
 	for(int i = 1; i <= N; i++) {
-		
 
-		p = likelihood (x,y,a,b,sigma,gaussian)*prior(x,y,xUpper,xLower,yUpper,yLower);
+		//std::cout<<x<<std::endl;
+		p = likelihood (ma,mb,fileName,PdhFunction)*prior(ma,mb,mUpper,mLower);
 
-		nZeroX = gsl_ran_gaussian(normGen, nSigma);
-		nZeroY = gsl_ran_gaussian(normGen, nSigma);
+		if(i==1) {
+			std::cout<<ma<<std::endl;
+			std::cout<<likelihood(ma,mb,fileName,PdhFunction)<<std::endl;
+		}
 
-		xPrime = x + nZeroX;
-		yPrime = y + nZeroY;
-		pPrime = likelihood(xPrime,yPrime,a,b,sigma,gaussian)*prior(xPrime,yPrime,xUpper,xLower,yUpper,yLower);
+		nZeroMA = gsl_ran_gaussian(normGen, nSigma);
+		nZeroMB = gsl_ran_gaussian(normGen, nSigma);
+
+		maPrime = ma + nZeroMA;
+		mbPrime = mb + nZeroMB;
+		pPrime = likelihood(maPrime,mbPrime,fileName,PdhFunction)*prior(maPrime,mbPrime,mUpper,mLower);
 
 		alpha = pPrime/p;
 
-		rZero = gsl_rng_uniform_pos(rGen);
+		//std::cout<<alpha<<std::endl;
+		//std::cout<<pPrime<<std::endl;
 
+		rZero = gsl_rng_uniform_pos(rGen);
+		//if(i==1) std::cout<<alpha<<"\t"<<rZero<<std::endl;
 		if(alpha > rZero) {
 		
-			x = xPrime;
-			y = yPrime;
+			ma = maPrime;
+			mb = mbPrime;
 
 		}
 		
 		if (i%100==0){
-			fprintf(outFile,"%.15g,%.15g\n",x,y);
+			fprintf(outFile,"%.15g,%.15g\n",ma,mb);
 		}
 
 	}
@@ -152,29 +153,21 @@ int main() {
 
 /*Defines a general likelihood function, which can take any function containing the appropriate arguments as 
 / input.*/
-double likelihood(double x, double y, double a, double b, double s, double (*function)(double,double,double,double,double)) {
+double likelihood(double ma, double mb, std::string file, double (*function)(double,double,std::string)) {
 
 	double g;
-    g = (*function)(x,y,a,b,s);
+    g = (*function)(ma,mb,file);
     return (g);
-
-}
-
-/*Defines an example of a normalised likelihood function, which is a Gaussian of (x,y) centred on (a,b)
-/ and with a standard deviation of s.*/
-double gaussian(double x, double y, double a, double b, double s) {
-
-	return 1/(2*M_PI*s*s)*exp(-(pow((x-a),2) + pow((y-b),2))/(2*s*s));
 
 }
 
 
 /*Defines a prior function which is a step of height 1, centred on the origin,
 / with a width of w.*/
-double prior(double x, double y, double xUpper, double xLower, double yUpper, double yLower) {
+double prior(double ma, double mb, double mUpper, double mLower) {
 
-	if((x < xUpper && x > xLower) 
-	&& (y < yUpper && y > yLower)) { return 1/((xUpper-xLower)*(yUpper-yLower)); }
+	if((ma < mUpper && ma > mLower) 
+	&& (mb < mUpper && mb > mLower)) { return 1/((mUpper-mLower)*(mUpper-mLower)); }
 
 	else { return 0; }
 
