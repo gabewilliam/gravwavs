@@ -24,7 +24,7 @@ legend([samp],{'(m_a,m_b) Samples'})
 hold off;
 
 %This makes the histogram.
-subplot(2,2,[2,4])
+subplot(2,2,2)
 hist3(MaMb,[20 20])
 xlabel('m_a/kg')
 ylabel('m_b/kg')
@@ -59,11 +59,19 @@ xb = linspace(min(Ma),max(Ma),size(n,1)+1);
 yb = linspace(min(Mb),max(Mb),size(n,1)+1);
 h = pcolor(xb,yb,n1);
 h.ZData = ones(size(n1)) * -max(max(n));
-colormap(hsv)
+colormap(jet)
 hold on
 xlabel('m_a/kg')
 ylabel('m_b/kg')
 title('Histogram Density Plot')
+hold off
+
+%Makes a kernel density plot of the data
+subplot(2,2,4)
+ksdensity(MaMb)
+xlabel('m_a/kg')
+ylabel('m_b/kg')
+zlabel('p')
 
 fclose(fid);
 
