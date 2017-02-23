@@ -1,3 +1,11 @@
+/*
+		GRAVITATIONAL WAVES GROUP STUDIES
+			DATA GENERATION GROUP
+				NOISE GENERATOR
+				
+		Generates noise samples in the frequency domain with a given
+		amplitude spectral density curve.
+*/
 #ifndef NOISEGENERATION_H
 #define NOISEGENERATION_H
 
@@ -7,7 +15,9 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string>
+#include <vector>
 
+//Sruct for complex number storage
 struct Complex{
 	double real, imag;
 };
@@ -22,10 +32,12 @@ class NoiseGenerator{
 		//void setNoiseCurve(double (*func)(double)); //Set noise curve function
 		
 		double getASD(double); //Return amplitude spectral density for given frequency
-		double getMag(double); //Generate spectral magnitude for given frequency
-		double getPhase();
+		double genMag(double); //Generate spectral magnitude for given frequency
+		double genPhase();
 		
-		Complex getSample(double); //Get both phase and magnitude of frequency bin
+		Complex genSample(double); //Get both phase and magnitude of frequency bin
+		
+		bool genSpectrum(std::vector<double>*, std::vector<Complex>* ,double, double); //Generate entire frequency spectrum
 		
 		double noiseCurveALIGO(double);		
 		

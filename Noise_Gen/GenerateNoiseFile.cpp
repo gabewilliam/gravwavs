@@ -7,7 +7,6 @@
 #include <sstream>
 #include <fstream>
 
-//#include "gwReadWrite.h"
 #include "NoiseGeneration.h"
 
 using namespace std;
@@ -15,52 +14,22 @@ using namespace std;
 int main(){
 
 	srand(time(NULL));
-
-	Complex sample;
 	
-	NoiseGenerator ngen;
+	NoiseGenerator nGen;
 
 	ofstream oFile;
 	oFile.open("noise.csv");
 
-	double fsamp, df;
+	double fsamp, fInc;
+
+	vector<double> *freq = new vector<double>;
+	vector<Complex> *noise = new vector<Complex>;
 	
-	fsamp = 10000;
-	df = 0.01;
-	
-	int cutoff = 20 / df;
-	int N = (int) (fsamp / df);
+	nGen.genSpectrum(freq, noise, 10000, 0.01);
 
-	vector<double> freq;
-	vector<double> im;
-	vector<double> re;
-
-	int ind;
-	for(int i=0; i < cutoff; i++){
-		cout << i << " Nsoasdf \r\n";
-		re[i] = 0.0;
-		im[i] = 0.0;			
-
-		ind = ( N-cutoff+i );
+	for(int k=0; k < freq->size(); k++){
 		
-		re[ind]=0.0;
-		im[ind]=0.0;
-		
-	}
-	for(int j=cutoff; j < N; j++){
-		
-		sample=ngen.getSample(0.01*j);
-		
-		re[j]=sample.real;
-		re[N-j]=sample.real;
-		
-		im[j]=sample.imag;
-		im[N-j]=-sample.imag;
-		
-	}
-	for(int k=0; k < N; k++){
-		
-		oFile << freq[k] << "," << re[k] << im[k] << "\r\n";
+		oFile << freq->at(k) << "," << (noise->at(k)).real << "," << (noise->at(k)).imag << "\r\n";
 		
 	}
 	
