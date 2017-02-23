@@ -31,7 +31,7 @@ class Extractor
 		Signal* mSignalT;
 		Signal* mSignalF;
 		
-		
+		vec_d mOriginalTime;
 		std::vector<Template>* mTemplatesT;
 		std::vector<Template>* mTemplatesF;
 };

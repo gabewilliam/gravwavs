@@ -11,7 +11,7 @@ Extractor::Extractor(){}
 
 void Extractor::setSignal(Signal* sig){
 	mSignalT = sig;
-
+	mOriginalTime=sig->waveform[0];
 	return;
 }
 void Extractor::setTemplates(std::vector<Template>* temps){
@@ -103,19 +103,27 @@ void Extractor::fft(Signal* sigFFT){
 	return;
 }
 void Extractor::fftComplex(std::vector<Template>* tempsFFT){
+	//Help I am been forced to comment against my will
 	
-	int I = tempsFFT->size();
 	//Calculate number of Templates
-
+	int I = tempsFFT->size();
+	
+	//Used for converting to frequency domain 
 	Template* tempa = &tempsFFT[0][0];
 	vec_d time = tempa->waveform[0];
-	//Used for converting to frequency domain 
 	
-	size_t N = (mSignalT->waveform[1]).size();
 	//calculate the length of the signal
+	size_t L = (mSignalT->waveform[1]).size();
+	//std::cout<<L<<std::endl;
+	
+	//calculate the next highest power of two and zero pad to double 
+	//increasing to the next power of two increases run speed of fft algorithm
+	//increasing to the one beyond that prevents reflections from interfering with each other	
+	int M =(int)(log2(L)+2);
+	size_t N= pow(2,M);
+	
 	
 	//this isn't working or essential at the moment; can come back and fix if necessary
-	double sw = N/(2*(mSignalT->waveform[0])[N-1]);	
 	vec_d freq;
 	for(size_t j=0; j<N/2; j++){
 		freq.push_back(j);
@@ -123,19 +131,31 @@ void Extractor::fftComplex(std::vector<Template>* tempsFFT){
 	} 
 	////////////////////////////////
 
+	//Allocateing a work space and look up tables for the gsl fft function
+	gsl_fft_complex_workspace* complexWS = gsl_fft_complex_workspace_alloc(N);
+	gsl_fft_complex_wavetable* complexWT = gsl_fft_complex_wavetable_alloc(N);
+	
 	for(int k=0; k<I; k++){
-		std::cout<<"FFt1  "<<k<<std::endl;
+		
+		//cycle through the templates	
+		//std::cout<<"FFt1  "<<k<<std::endl;
 		Template* temp = &tempsFFT[0][k];
 		Template* tempFFT=new Template;
-		//cycle through the templates
+
 		
+		std::cout<<"FFt  "<<k<<std::endl;
+		
+		
+		//load in the template		
 		vec_d amp = temp->waveform[1];
-		//load in the template
+
 		size_t K = amp.size();
 		
+		//Create vector for transform on the heap.	
 		vec_d *filterData=new vec_d;
-		//Create vector for transform on the heap.
+
 		
+
 		//input data
 		for (size_t i = 0; i < N; i++){
 			//fill "real part" of the vector with template. if template shorter than signal, fills with zeroes so they are the same length
@@ -148,60 +168,65 @@ void Extractor::fftComplex(std::vector<Template>* tempsFFT){
 			filterData->push_back(0);
 		}
 		
-		//Allocateing a work space and look up tables for the gsl fft function
-		gsl_fft_complex_workspace* complexWS = gsl_fft_complex_workspace_alloc(N);
-		gsl_fft_complex_wavetable* complexWT = gsl_fft_complex_wavetable_alloc(N);
+
 
 		gsl_fft_complex_forward(&(*filterData)[0], 1, N, complexWT, complexWS);
 		
-		//free work space
-		gsl_fft_complex_workspace_free(complexWS);
-		gsl_fft_complex_wavetable_free(complexWT);
 
-		tempFFT->param[0] = temp->param[0];
+
+		//fill up template with data	tempFFT->param[0] = temp->param[0];
 		tempFFT->param[1] = temp->param[1];
 		tempFFT->waveform[0] = freq;
 		tempFFT->waveform[1]=*filterData;
-		//fill up template with data
-		
+
+		//add template to the vector		
 		tempsFFT[0][k]=*tempFFT;
-		//add template to the vector
+
 		
 		
 	}
-
+	//free work space
+	gsl_fft_complex_workspace_free(complexWS);
+	gsl_fft_complex_wavetable_free(complexWT);
+	
+	//save as the data member for use in other functions	
 	mTemplatesF = tempsFFT;
-	//save as the data member for use in other functions
-		return;
+
+	/**/	return;
 	
 	
 }
 void Extractor::fftComplex(Signal* sigFFT){
 	
+	
+	//get the signal from the data member
 	vec_d time = mSignalT->waveform[0];
 	vec_d amp = mSignalT->waveform[1];
-	//get the signal from the data member
-	
-	Signal* sigFFT2;
-	//declare somthing to hold the signal
-	
-	size_t N = amp.size();
+
+	//
+	size_t L=amp.size();
+	int M =(int)(log2(L)+2);
+	size_t N= pow(2,M);
 	size_t P = time.size();
-	std::cout<<N<<std::endl<<P<<std::endl;
-	//calculate length of signal
+		//calculate length of signal
 	
 	vec_d signalData;
 	//decalre another holder
 	
 	//initialise to 0
-		for (size_t i = 0; i < N; i++){//fill up vector
+		for (size_t i = 0; i < L; i++){//fill up vector
 		
 			signalData.push_back(amp[i]);
 			//for real parts put in the signal
 			signalData.push_back(0);
 			//for imaginary parts put in 0
 		}
-	
+		
+		for (size_t j=L;j<N;j++){
+			signalData.push_back(0);
+			signalData.push_back(0);
+		}
+		
 	//Allocateing a work space and look up tables for the gsl fft function
 	gsl_fft_complex_workspace* complexWS = gsl_fft_complex_workspace_alloc(N);
 	gsl_fft_complex_wavetable* complexWT = gsl_fft_complex_wavetable_alloc(N);
@@ -221,11 +246,9 @@ void Extractor::fftComplex(Signal* sigFFT){
 
 
 	for(size_t j=0; j<N/2; j++){
-
 		freq.push_back(j);
-		freq.push_back(N-j);
-		
-	} 
+		freq.push_back(N-j);	
+	}
 	
 	//////////////////////////////
 	sigFFT->waveform[0] = freq;
@@ -281,43 +304,47 @@ void Extractor::fftInverseComplex(std::vector<Signal>* convsFFTI){
 	int I = convsFFTI->size();
 	//calculate number of filters	
 
-	vec_d time;
+	vec_d time,timedouubled;
 	//set the time to that of the original signal
 	time = mSignalT->waveform[0];	
+	size_t P=mOriginalTime.size();
+	
+	
+	size_t N=convsFFTI[0][0].waveform[1].size();
+	
+	
+	gsl_fft_complex_workspace* complexWS = gsl_fft_complex_workspace_alloc(N/2);
+	gsl_fft_complex_wavetable* compWT = gsl_fft_complex_wavetable_alloc(N/2);
+	//Allocateing a work space and look up tables for the gsl fft function
 	
 	for(int k=0; k<I; k++){
 		// run transform for each signal
 		//set the current signal
 		Signal* conv = &convsFFTI[0][k];
-		std::cout<<"FFtInv  "<<k<<std::endl;
+		//std::cout<<"FFtInv  "<<k<<std::endl;
 		
 		//set the vector to be current convolution
 		vec_d convData= conv->waveform[1];
-		
+		std::cout<<"FFtInv  "<<k<<std::endl;
 		size_t N=convData.size();
 
-		//Allocateing a work space and look up tables for the gsl fft function
-		gsl_fft_complex_workspace* complexWS = gsl_fft_complex_workspace_alloc(N/2);
-		gsl_fft_complex_wavetable* compWT = gsl_fft_complex_wavetable_alloc(N/2);
-
-		gsl_fft_complex_inverse(&convData[0], 1, N/2, compWT, complexWS);
-
-		gsl_fft_complex_workspace_free(complexWS);
-		gsl_fft_complex_wavetable_free(compWT);	
-		//free the work space
+		gsl_fft_complex_inverse(&convData[0], 1, N/2, compWT, complexWS);		
 		
 		vec_d convTime;
 		//declare a vector to hold the magntiude of the convolution in time domain 
-		for(int l=0;l<N/2;l++){
-			convTime.push_back((convData[2*l]*convData[2*l])+(convData[2*l+1]*convData[2*l+1]));
+		for(int l=0;l<P;l++){
+			convTime.push_back(convData[2*l]);//+convData[l+1]);
+			//l++;
 		}//i think this is right it might need correcting
 		
 		
-		(*convsFFTI)[k].waveform[0] = time;
+		(*convsFFTI)[k].waveform[0] = mOriginalTime;
 		(*convsFFTI)[k].waveform[1]=convTime;//set data to be back into time domain
-
+		std::cout<<P<<std::endl;
 	}
-
+	gsl_fft_complex_workspace_free(complexWS);
+	gsl_fft_complex_wavetable_free(compWT);	
+	//free the work space
 	return;
 }
 
@@ -403,24 +430,24 @@ void Extractor::fConvolutionComplex(std::vector<Signal>* output){
 	I = mTemplatesF->size();//calculate number of templates 
 	
 	K =mSignalF->waveform[0].size();//declare number of data points
-	std::cout<<"Conv  "<<I<<std::endl;
+	//std::cout<<"Conv  "<<I<<std::endl;
 
 	//Looping over all templates
 	for(int i=0; i<I; i++){
 		
 		Template* temp = &mTemplatesF[0][i];
 		//decalre a template to hold the current filters data
-		
+		std::cout<<"conv  "<<i<<std::endl;
 		Signal op;
 		//redeclare the signal vector
 		for(int k=0; k<K; k++){
 			//calculate and push back the data with a waveform  
 			result = mSignalF->waveform[1][2*k] * temp->waveform[1][2*k];	
-			op.waveform[0].push_back(k);
+			op.waveform[0].push_back(2*k);
 			op.waveform[1].push_back(result);
 			//and its conjugate if it is imaginary
 			result = -(mSignalF->waveform[1][2*k+1] * temp->waveform[1][2*k+1]);
-			op.waveform[0].push_back(k);
+			op.waveform[0].push_back(2*k);
 			op.waveform[1].push_back(result);
 		
 		}
