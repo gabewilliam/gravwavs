@@ -73,9 +73,9 @@ void InverseComplex(){
 	double df = freq[1];
 	double dt = 1/(N*df);
 	
-	double time[N]
+	double time[N];
 	
-	for(i=0; i<N; i++){
+	for (i=0; i<N; i++){
 		time[i] = i*dt;
 	}
 	
@@ -84,8 +84,10 @@ void InverseComplex(){
 	std::ofstream newfile;
 	newfile.open("TimeDomainComplexInversion.csv");
 
-	for(i=0; i<N; i++){
+	for (i=0; i<N; i++){
 		newfile<<time[i]<<","<<amp[i]<<std::endl;
 	}
+	
+	return;
 
 }
