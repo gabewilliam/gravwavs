@@ -117,6 +117,10 @@ int main() {
 			mb = mbProposal;
 
 		}
+
+		if (i%(N/20)==0) {
+			std::cout << (i*100)/N << "% complete." << std::endl;
+		}
 		
 		if (i%100==0){
 			fprintf(outFile,"%.15g,%.15g\n",ma,mb);
