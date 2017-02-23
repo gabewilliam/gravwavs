@@ -3,39 +3,36 @@
 #include <math.h>
 #include <vector>
 #include <string>
+#include <iostream>
 #include <sstream>
 #include <fstream>
 
-//#include "gwReadWrite.h"
 #include "NoiseGeneration.h"
 
 using namespace std;
 
 int main(){
-	
-	srand(time(NULL));
 
-	Complex sample;
+	srand(time(NULL));
 	
-	ofstream outFile;
+	NoiseGenerator nGen;
+
+	ofstream oFile;
+	oFile.open("noise.csv");
+
+	double fsamp, fInc;
+
+	vector<double> *freq = new vector<double>;
+	vector<Complex> *noise = new vector<Complex>;
 	
-	NoiseGenerator ngen;
-	
-	outFile.open("noise.csv");
-	
-	for(int i=0; i<200; i++){
+	nGen.genSpectrum(freq, noise, 10000, 0.01);
+
+	for(int k=0; k < freq->size(); k++){
 		
-		outFile << 0 << "," << 0 << "\r\n";
+		oFile << freq->at(k) << "," << (noise->at(k)).real << "," << (noise->at(k)).imag << "\r\n";
 		
 	}
-	for(int j=200; j<300000; j++){
-		
-		sample=ngen.getSample(0.01*j);
-		
-		outFile << sample.real << "," << sample.imag << "\r\n";
-		
-	}
-	outFile << 0;
-	outFile.close();
+	
+	oFile.close();
 	
 }
