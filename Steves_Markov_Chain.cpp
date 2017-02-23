@@ -3,6 +3,7 @@
 #include <cstdio>
 #include <ctime>
 #include <string>
+#include <iomanip>
 
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_randist.h>
@@ -11,7 +12,7 @@
 
 
 //Prototype for the likelihood calculation function
-double likelihood(double, double, std::string, double (*function)(double,double,std::string));
+long double likelihood(double, double, std::string, long double (*function)(double,double,std::string));
 double gaussian(double, double, double, double, double);
 double prior(double, double, double, double);
 
@@ -69,7 +70,8 @@ int main() {
 
 	//Declares the variables used throughout the routine
 	std::string fileName = "signal.txt";
-	double ma, maPrime, mb, mbPrime, p, pPrime, alpha;
+	double ma, maProposal, mb, mbProposal;
+	long double p, pProposal, alpha;
 	double nZeroMA, nZeroMB, rZero;
 
 
@@ -101,18 +103,18 @@ int main() {
 		nZeroMA = gsl_ran_gaussian(normGen, nSigma);
 		nZeroMB = gsl_ran_gaussian(normGen, nSigma);
 
-		maPrime = ma + nZeroMA;
-		mbPrime = mb + nZeroMB;
-		pPrime = likelihood(maPrime,mbPrime,fileName,PdhFunction)*prior(maPrime,mbPrime,mUpper,mLower);
+		maProposal = ma + nZeroMA;
+		mbProposal = mb + nZeroMB;
+		pProposal = likelihood(maProposal,mbProposal,fileName,PdhFunction)*prior(maProposal,mbProposal,mUpper,mLower);
 
-		alpha = pPrime/p;
+		alpha = pProposal/p;
 		
 		rZero = gsl_rng_uniform_pos(rGen);
 		
 		if(alpha > rZero) {
 		
-			ma = maPrime;
-			mb = mbPrime;
+			ma = maProposal;
+			mb = mbProposal;
 
 		}
 		
@@ -136,7 +138,7 @@ int main() {
 
 /*Defines a general likelihood function, which can take any function containing the appropriate arguments as 
 / input.*/
-double likelihood(double ma, double mb, std::string file, double (*function)(double,double,std::string)) {
+long double likelihood(double ma, double mb, std::string file, long double (*function)(double,double,std::string)) {
 
 	double g;
     g = (*function)(ma,mb,file);

@@ -21,7 +21,7 @@ double Ans = PdhFunction(50e30,60e30,"signal.txt");
 return 0;
 } */
 
-double PdhFunction( double m1, double m2, std::string signalFile ){
+long double PdhFunction( double m1, double m2, std::string signalFile ){
 	
 	Signal dt;//Data signal (time domain)
 	std::vector< Signal > idt; //loadSignals requires std::vector
@@ -48,21 +48,20 @@ double PdhFunction( double m1, double m2, std::string signalFile ){
 	vec_d sf = NoiseFunction( df.waveform[0] ); //creates noise probability function
 	int n = df.waveform[0].size();//finds number of elements in freq domain signal
 
-	double sum = 0.0;
+	long double sum = 0.0;
 	vec_d vdf = df.waveform[1]; //splits signal into std::vectors for use in loop
 	vec_d vhf = hf.waveform[1];
 	
 	for( int i = 0; i < n; i++ ){ //evaluates the sum part in equation A20	
-		double x = pow( std::abs( vdf[i] - vhf[i] ), 2 )/sf[i];	
+		long double x = pow( std::abs( vdf[i] - vhf[i] ), 2 )/sf[i];	
 		sum = sum + x;	
 	}
-	//std::cout<<sum<<std::endl;
 
 	vec_d t = dt.waveform[0];//takes the time vector
 	int n2 = t.size();//finds the number of elements	
 	double T = t[n2-1];//takes the last element for T (total time elapsed)
 
-	double pdh = exp( (-2/T) * sum );//calculates p(d|h)
+	long double pdh = exp( (-2/T) * sum );//calculates p(d|h)
 	
 	return pdh;
 
