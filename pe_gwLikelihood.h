@@ -2,6 +2,7 @@
 #define PE_GWLIKELIHOOD_H
 
 #include "gwDataTypes.h"
+#include <string>
 
 double PdhFunction( double, double, std::string );//This calculates the likelihood function for 2 parameters m1 and m2
 vec_d ParameterFunction( double, double, vec_d );//This function is used to create model function ht to compare with the data
