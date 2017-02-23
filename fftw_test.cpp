@@ -6,6 +6,7 @@
 #include "gwReadWrite.h"//print function
 #include "gwDataTypes.h" //for Template struct
 
+//I don't use these but you could adapt it so it does if you so desire
 #define REAL(z, i) (z[i][0])
 #define IMAG(z, i) (z[i][1])
 
@@ -20,10 +21,10 @@ int main(){
 	}
 
 	std::cout<<"Successfully imported signal."<<std::endl;
-	//should loop through all templates and set up to use this
+	
 	std::vector< Signal > printer;
 	
-	//put within loop
+	//could extend to multiple signals later
 	int N=signals[0].waveform[1].size();
 
 	//import filters
@@ -37,7 +38,7 @@ int main(){
 
 	std::cout<<"Successfully imported filters."<<std::endl;
 
-	//create output - currently messy
+	//create output - need to figure out how to reduce length of output to N
 	vec_d output(N);	
 	vec_d outputB(2*N-1);
 
@@ -48,7 +49,7 @@ int main(){
 	fftw_complex * signal, * filter, * signalOutput, * filterOutput, * product, * convolution;
 
 	//allocate space for arrays
-	//do not initialise until after creation of plan
+	//do not initialise them until after creation of plan
 	signal=(fftw_complex*)fftw_malloc(sizeof(fftw_complex)*(2*N-1));
 	filter=(fftw_complex*)fftw_malloc(sizeof(fftw_complex)*(2*N-1));
 	signalOutput=(fftw_complex*)fftw_malloc(sizeof(fftw_complex)*(2*N-1));
@@ -57,8 +58,6 @@ int main(){
 	convolution=(fftw_complex*)fftw_malloc(sizeof(fftw_complex)*(2*N-1));
 
 	//create plans for each transform
-	//plans can be re-used but I need to figure out how
-
 	fftw_plan planSig=fftw_plan_dft_1d(2*N-1,signal,signalOutput,FFTW_FORWARD,FFTW_ESTIMATE);
 	fftw_plan planFil=fftw_plan_dft_1d(2*N-1,filter,filterOutput,FFTW_FORWARD,FFTW_ESTIMATE);
 	fftw_plan planCon=fftw_plan_dft_1d(2*N-1,product,convolution,FFTW_BACKWARD,FFTW_ESTIMATE);
@@ -77,17 +76,16 @@ int main(){
 	//forward transform of signal
 	fftw_execute(planSig);
 
-	for(size_t j=9;j<10;++j){
+	//loop over all templates
+	for(int j=0; j<filters.size(); ++j){
+		//pad filter to be same length as signal
 		while (filters[j].waveform[1].size()<N){
 			filters[j].waveform[1].push_back(0.0);
 		}
-		for (int i=0; i<N; i++) {
-			inputFilter[i]=filters[0].waveform[1][i];
-		}
-		//set real and imaginary parts of all elements of signal and filter
+		//set real and imaginary parts of complex filter
 		for (int i=0; i<2*N-1; i++){
 			if (i<N) {
-				filter[i][0] = inputFilter[i];
+				filter[i][0] = filters[0].waveform[1][i];
 			}
 			else {
 				filter[i][0]=0.0;
@@ -107,21 +105,25 @@ int main(){
 		fftw_execute(planCon);
 	
 		//set up output - needs fixing so length is back to N if possible - will look into
+		//can play around with real parts/absolute values of convolution elements here
+		//convolution[i][0]   or  sqrt(pow(convolution[i][0],2)+pow(convolution[i][1],2))
 		for (int i=0; i<2*N-1; i++) {
 			outputB[i]=convolution[i][0];
 		}
-		//   convolution[i][0]   sqrt(pow(convolution[i][0],2)+pow(convolution[i][1],2))
-		//    sqrt(pow(convolution[(i+N)%(2*N-1)][0],2)+pow(convolution[(i+N)%(2*N-1)][1],2))
-
+		
+		//output
 		Signal output;
 		for (int i=0; i<2*N-1;i++){
 			output.waveform[0].push_back(signals[0].waveform[0][i]);
 			output.waveform[1].push_back(outputB[i]);
 		}
 		printer.push_back(output);	
+		
+		//progress output
 		std::cout<<j<<std::endl;
 	}
 	
+	//save to file
 	if(!saveSignals("testout5.csv",&printer,csv)){
 		std::cout<<"Save failed."<<std::endl;
 		return 0;
