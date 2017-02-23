@@ -83,9 +83,7 @@ int main() {
 	//Sets the starting ma and mb values for the routine as random integers.
 	ma = gsl_rng_uniform(startGen)*(mUpper-mLower)+mLower;
 	mb = gsl_rng_uniform(startGen)*(mUpper-mLower)+mLower;
-	std::cout << ma << std::endl;
-	std::cout << mb << std::endl;
-
+	
 
 	/*Loops over the number of iterations specified by the input. In each run,
 	/ the likelihood function is evaluated at (ma,mb). Then, one of the RNGs is
