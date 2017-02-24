@@ -3,7 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <fftw3.h>
-#include "gwReadWrite.h"//print function
+#include "gwReadWrite_edit.h"//print function
 #include "gwDataTypes.h" //for Template struct
 
 //I don't use these but you could adapt it so it does if you so desire
@@ -15,7 +15,7 @@ int main(){
 	//import signals
 	std::vector<Signal> signals;
 
-	if (!loadSignals("signal.csv",&signals,csv)){
+	if (!loadSignals("NonAdaptiveSignal.dat",&signals,csv)){
 		std::cout<<"Signal file not found"<<std::endl;
 		return 0;
 	}
@@ -31,7 +31,7 @@ int main(){
 	std::vector< Template > filters;
 
 	//load templates
-	if (!loadTemplates("templates.csv",&filters,csv)){
+	if (!loadTemplates("NonAdaptiveTemplates.dat",&filters,csv)){
 		std::cout<<"Template file not found"<<std::endl;
 		return 0;
 	}
@@ -110,8 +110,12 @@ int main(){
 		//can play around with real parts/absolute values of convolution elements here
 		//convolution[i][0]   or  sqrt(pow(convolution[i][0],2)+pow(convolution[i][1],2))
 
+		for (int i=0; i<2*N-1; i++){
+			outputB[i]=sqrt(pow(convolution[i][0],2)+pow(convolution[i][1],2));
+		}
+
 		for (int i=0; i<N; i++) {
-			output[i]=convolution[i][0]+convolution[2*N-1-i][0];
+			output[i]=outputB[i]+outputB[2*N-1-i];
 		}
 		
 		//output
@@ -139,7 +143,7 @@ int main(){
 	}
 	
 	//save to file
-	if(!saveSignals("testout.csv",&printer,csv)){
+	if(!saveSignalsCompressed("compresstest.gz",&printer,csv)){
 		std::cout<<"Save failed."<<std::endl;
 		return 0;
 	}
