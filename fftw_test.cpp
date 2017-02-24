@@ -38,7 +38,7 @@ int main(){
 
 	std::cout<<"Successfully imported filters."<<std::endl;
 
-	//create output - need to figure out how to reduce length of output to N
+	//create output
 	vec_d output(N);	
 	vec_d outputB(2*N-1);
 
@@ -85,13 +85,15 @@ int main(){
 		//set real and imaginary parts of complex filter
 		for (int i=0; i<2*N-1; i++){
 			if (i<N) {
-				filter[i][0] = filters[0].waveform[1][i];
+				filter[i][0] = filters[j].waveform[1][i];
 			}
 			else {
 				filter[i][0]=0.0;
 			}
 			filter[i][1]=0.0;
+
 		}
+
 		//forward transform of filter
 		fftw_execute(planFil);
 	
@@ -107,24 +109,41 @@ int main(){
 		//set up output - needs fixing so length is back to N if possible - will look into
 		//can play around with real parts/absolute values of convolution elements here
 		//convolution[i][0]   or  sqrt(pow(convolution[i][0],2)+pow(convolution[i][1],2))
-		for (int i=0; i<2*N-1; i++) {
-			outputB[i]=convolution[i][0];
+
+		for (int i=0; i<2*N-1; i++){
+			outputB[i]=sqrt(pow(convolution[i][0],2)+pow(convolution[i][1],2));
+		}
+
+		for (int i=0; i<N; i++) {
+			output[i]=outputB[i]+outputB[2*N-1-i];
 		}
 		
 		//output
-		Signal output;
-		for (int i=0; i<2*N-1;i++){
-			output.waveform[0].push_back(signals[0].waveform[0][i]);
-			output.waveform[1].push_back(outputB[i]);
+		Signal convolOutput;
+		for (int i=0; i<N; i++){
+			convolOutput.waveform[0].push_back(signals[0].waveform[0][i]);
+			convolOutput.waveform[1].push_back(output[i]);
 		}
-		printer.push_back(output);	
-		
+		printer.push_back(convolOutput);			
+	
+		//reset filter, product etc to zero
+		for (int i=0; i<2*N-1; i++) {
+			filter[i][0]=0.0;
+			filter[i][1]=0.0;
+			filterOutput[i][0]=0.0;
+			filterOutput[i][1]=0.0;
+			product[i][0]=0.0;
+			product[i][1]=0.0;
+			convolution[i][0]=0.0;
+			convolution[i][1]=0.0;
+		}
+
 		//progress output
 		std::cout<<j<<std::endl;
 	}
 	
 	//save to file
-	if(!saveSignals("testout5.csv",&printer,csv)){
+	if(!saveSignalsCompressed("compresstest.gz",&printer,csv)){
 		std::cout<<"Save failed."<<std::endl;
 		return 0;
 	}
