@@ -21,6 +21,10 @@ class Extractor
 		
 		void fftInverse(std::vector<Signal>* signalsFFTI);
 		void fftInverseComplex(std::vector<Signal>* signalsFFTI);
+	
+		void fftw(std::vector<Template>* templatesFFT);
+		void fftw(Signal* signalFFT);
+		void fftwInverse(Signal* signalFFT);
 		
 		//Performs time/frequency domain convolutions of the respective signal 
 		//against all templates in the respective template bank
