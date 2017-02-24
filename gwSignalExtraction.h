@@ -24,7 +24,7 @@ class Extractor
 
 		void gateFilter(Signal*, double);
 	
-		void fftw(std::vector<Template>* templatesFFT);
+		void fftw(std::vector<Template>* templatesFFT);//redundant
 		void fftw(Signal* signalFFT);
 		void fftwInverse(std::vector<Signal>* signalFFT);
 		
