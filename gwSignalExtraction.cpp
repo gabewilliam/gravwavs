@@ -300,6 +300,7 @@ void Extractor::fftInverse(std::vector<Signal>* sigsFFTI){
 
 	return;
 }
+
 void Extractor::fftInverseComplex(std::vector<Signal>* convsFFTI){
 	int I = convsFFTI->size();
 	//calculate number of filters	
@@ -348,10 +349,10 @@ void Extractor::fftInverseComplex(std::vector<Signal>* convsFFTI){
 	return;
 }
 
-void Extractor::tConvolution(std::vector<Signal>* output){
+void Extractor::tConvolution(std::vector<Signal>* output)
+{
 	int I, J, K;
 	double result;
-	vec_d op;
 
 	I = mTemplatesT->size();
 
@@ -361,18 +362,20 @@ void Extractor::tConvolution(std::vector<Signal>* output){
 		Template* temp = &mTemplatesT[0][i];
 
 		J = mSignalT->waveform[0].size();
-		K = J;
+		K = temp->waveform[0].size();
 		
 		Signal op;
 
 		for(int j=0; j<J; j++)
 		{
-			for(int k=0; k<K; k++)
+			result = 0;
+			
+			for(int k=0; k < K && j+k < J; k++)
 			{
-				result += mSignalT->waveform[1][j-k] * temp->waveform[1][k];
+				result += mSignalT->waveform[1][j+k] * temp->waveform[1][k];
 			}
 
-			op.waveform[0].push_back(temp->waveform[0][j]);
+			op.waveform[0].push_back(mSignalT->waveform[0][j]);
 			op.waveform[1].push_back(result);
 		}
 
@@ -383,6 +386,7 @@ void Extractor::tConvolution(std::vector<Signal>* output){
 	
 	return;
 }
+
 void Extractor::fConvolution(std::vector<Signal>* output){
 	int I, J, K;
 	double result;
