@@ -197,69 +197,56 @@ void Extractor::fftComplex(std::vector<Template>* tempsFFT){
 	
 	
 }
-void Extractor::fftComplex(Signal* sigFFT){
-	
-	
+void Extractor::fftComplex(Signal* sigFFT)
+{
 	//get the signal from the data member
 	vec_d time = mSignalT->waveform[0];
 	vec_d amp = mSignalT->waveform[1];
 
-	//
 	size_t L=amp.size();
 	int M =(int)(log2(L)+2);
 	size_t N= pow(2,M);
 	size_t P = time.size();
-		//calculate length of signal
 	
 	vec_d signalData;
-	//decalre another holder
-	
-	//initialise to 0
-		for (size_t i = 0; i < L; i++){//fill up vector
+
+	for (size_t i=0; i<L; i++)
+	{
+		signalData.push_back(amp[i]);
+		signalData.push_back(0);
+	}
 		
-			signalData.push_back(amp[i]);
-			//for real parts put in the signal
-			signalData.push_back(0);
-			//for imaginary parts put in 0
-		}
-		
-		for (size_t j=L;j<N;j++){
-			signalData.push_back(0);
-			signalData.push_back(0);
-		}
-		
-	//Allocateing a work space and look up tables for the gsl fft function
+	for (size_t j=L; j<N; j++)
+	{
+		signalData.push_back(0);
+		signalData.push_back(0);
+	}
+
+	//Fourier Transform
 	gsl_fft_complex_workspace* complexWS = gsl_fft_complex_workspace_alloc(N);
 	gsl_fft_complex_wavetable* complexWT = gsl_fft_complex_wavetable_alloc(N);
 
 	gsl_fft_complex_forward (&signalData[0], 1, N, complexWT, complexWS);
-	//perform transform
-	
 	
 	gsl_fft_complex_workspace_free(complexWS);
 	gsl_fft_complex_wavetable_free(complexWT);
-	//free workspace
-	
-	//this isn't working or essential at the moment; can come back and fix if necessary
-	double sw = N/(2*time[N-1]);	
 
+	
+	//Frequency Scaling
+	double sw = N/(2*time[N-1]);	
 	vec_d freq;
 
-
-	for(size_t j=0; j<N/2; j++){
-		freq.push_back(j);
-		freq.push_back(N-j);	
+	for(size_t j=0; j<N/2; j++)
+	{
+		freq.push_back(j*sw);
+		freq.push_back(-j*sw));	
 	}
-	
-	//////////////////////////////
+
 	sigFFT->waveform[0] = freq;
 	sigFFT->waveform[1]=signalData;
-	//load tranform into data member
 	mSignalF = sigFFT;
-
-
+	
 	return;
-
 }
 
 void Extractor::fftInverse(std::vector<Signal>* sigsFFTI){
@@ -350,6 +337,14 @@ void Extractor::fftInverseComplex(std::vector<Signal>* convsFFTI){
 	return;
 }
 
+void Extractor::gateFilter(Signal* data, double freq)
+{
+	for(int i=0; data->waveform[0][2*i] < freq; i++)
+		data->waveform[1][2*i] = 0;
+	
+	return;
+}
+
 void Extractor::tConvolution(std::vector<Signal>* output)
 {
 	int I, J, K;
@@ -395,8 +390,6 @@ void Extractor::fConvolution(std::vector<Signal>* output){
 
 	I = mTemplatesF->size();
 
-	
-
 	//Looping over all templates
 	for(int i=0; i<I; i++)
 	{
@@ -427,35 +420,39 @@ void Extractor::fConvolution(std::vector<Signal>* output){
 	
 	return;
 }
-void Extractor::fConvolutionComplex(std::vector<Signal>* output){
+
+void Extractor::fConvolutionComplex(std::vector<Signal>* output)
+{
 	int I, K;//declare size holders
-	double result;//declare something to hold tempory results
+	double result, freq;//declare something to hold tempory results
 	vec_d op;//decalre a vector to hold convolution for each run
 	
 	I = mTemplatesF->size();//calculate number of templates 
 	
 	K =mSignalF->waveform[0].size();//declare number of data points
-	//std::cout<<"Conv  "<<I<<std::endl;
-
+	
 	//Looping over all templates
-	for(int i=0; i<I; i++){
-		
+	for(int i=0; i<I; i++)
+	{	
 		Template* temp = &mTemplatesF[0][i];
-		//decalre a template to hold the current filters data
-		std::cout<<"conv  "<<i<<std::endl;
+		
 		Signal op;
-		//redeclare the signal vector
-		for(int k=0; k<K; k++){
+		
+		for(int k=0; k<K; k++)
+		{
 			//calculate and push back the data with a waveform  
 			result = mSignalF->waveform[1][2*k] * temp->waveform[1][2*k];	
 			op.waveform[0].push_back(2*k);
 			op.waveform[1].push_back(result);
-			//and its conjugate if it is imaginary
+			
+			//and its conjugate
 			result = -(mSignalF->waveform[1][2*k+1] * temp->waveform[1][2*k+1]);
 			op.waveform[0].push_back(2*k);
 			op.waveform[1].push_back(result);
-		
 		}
+		
+		gateFilter(op, 20);
+		
 		//put this into the output vector
 		output->push_back(op);
 	}
