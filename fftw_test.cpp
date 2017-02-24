@@ -3,7 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <fftw3.h>
-#include "gwReadWrite_edit.h"//print function
+#include "gwReadWrite.h"//print function
 #include "gwDataTypes.h" //for Template struct
 
 //I don't use these but you could adapt it so it does if you so desire
