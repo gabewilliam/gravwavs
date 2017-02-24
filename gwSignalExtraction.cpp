@@ -2,6 +2,7 @@
 #include <gsl/gsl_fft_complex.h>
 #include <gsl/gsl_fft_halfcomplex.h>
 #include <iostream>
+#include <fftw3.h>
 
 #include "gwSignalExtraction.h"
 
@@ -239,7 +240,7 @@ void Extractor::fftComplex(Signal* sigFFT)
 	for(size_t j=0; j<N/2; j++)
 	{
 		freq.push_back(j*sw);
-		freq.push_back(-j*sw));	
+		freq.push_back(-j*sw);	
 	}
 
 	sigFFT->waveform[0] = freq;
@@ -451,7 +452,7 @@ void Extractor::fConvolutionComplex(std::vector<Signal>* output)
 			op.waveform[1].push_back(result);
 		}
 		
-		gateFilter(op, 20);
+		gateFilter(&op, 20);
 		
 		//put this into the output vector
 		output->push_back(op);
