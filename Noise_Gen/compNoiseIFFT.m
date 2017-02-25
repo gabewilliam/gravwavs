@@ -6,10 +6,4 @@ z = noise(:,2) + sqrt(-1) * noise(:,3);
 
 t = ifft(z);
 
-figure;
-plot(real(z));
-hold on;
-plot(imag(z));
-
-figure;
 plot(t);

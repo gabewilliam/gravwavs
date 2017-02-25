@@ -13,13 +13,22 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <iostream>
+#include <fstream>
 #include <math.h>
 #include <string>
 #include <vector>
+#include <sstream>
+#include <istream>
 
 //Sruct for complex number storage
 struct Complex{
 	double real, imag;
+};
+struct NoiseCurve{
+	double fMin, fMax;
+	std::vector<double> freq;
+	std::vector<double> asd;
 };
 
 class NoiseGenerator{
@@ -27,11 +36,8 @@ class NoiseGenerator{
 	public:
 		
 		NoiseGenerator();
-		//NoiseGenerator(double (*func)(double), double);
 		
-		//void setNoiseCurve(double (*func)(double)); //Set noise curve function
-		
-		double getASD(double); //Return amplitude spectral density for given frequency
+		virtual double getASD(double); //Return amplitude spectral density for given frequency
 		double genMag(double); //Generate spectral magnitude for given frequency
 		double genPhase();
 		
@@ -39,15 +45,32 @@ class NoiseGenerator{
 		
 		bool genSpectrum(std::vector<double>*, std::vector<Complex>* ,double, double); //Generate entire frequency spectrum
 		
-		double noiseCurveALIGO(double);		
+		bool loadCurve(std::string);
 		
-	private:
+	protected:
 	
-		//double (*fNoiseCurve)(double); //Function to use as the noise curve
 		double fRelativeAmplitude; //Relative amplitude to scale the noise
+		NoiseCurve fNoiseCurve;
+		
+};
+
+class ALIGOSchutz: public NoiseGenerator{
+	
+	public:
+		
+		double getASD(double);
 	
 };
 
+class ALIGOZeroDetHighP: public NoiseGenerator{
+	
+	public:
+	
+		ALIGOZeroDetHighP();
+	
+		double getASD(double);
+	
+};
 //Returns normally distributed value using basic Box-Muller routine
 double gaussianSample(double, double);
 

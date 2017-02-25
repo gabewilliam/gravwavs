@@ -6,10 +6,7 @@ NoiseGenerator::NoiseGenerator(){
 
 double NoiseGenerator::getASD(double freq){
 	
-	//Get amplitude spectral density (standard deviation) from noise curve
-	double sigma = this->noiseCurveALIGO(freq); //Standard deviation
-	return sigma;
-	
+	return 0;
 }
 
 double NoiseGenerator::genMag(double freq){ //Get a sample magnitude
@@ -47,33 +44,39 @@ Complex NoiseGenerator::genSample(double freq){ //Get real and imaginary parts o
 
 bool NoiseGenerator::genSpectrum(std::vector<double>* freqs, std::vector<Complex>* noise, double fMax, double fInc){
 	
-	//Calculate element corresponding to lowest frequency (20Hz)
-	int cutoff = floor( 20 / fInc );
 	//Calculate maximum number of elements for given sampling frequency fMax
-	int N = floor( fMax / fInc );
-
+	int N = floor( (fMax / fInc) );
+	std::cout<<N<<"\r\n";
 	Complex sample;
 
 	//Populate all elements with zeroes and fill frequency;
 	sample.real = 0.0;
 	sample.imag = 0.0;
-	for(int i=0; i < N; i++){
+	
+	double freq = - fMax;
+	
+	for(int i=0; i < 2*N; i++){
 		
 		noise->push_back(sample);
 		
-		freqs->push_back(i * fInc);
+		freqs->push_back(freq);
 		
+		freq += fInc;
+
 	}
-	for(int j=cutoff; j < N/2; j++){
+	std::cout<<freqs->at(N)<<"\r\n";
+	for(int j=N; j < 2*N; j++){
 		
+		
+
 		//Get a random complex sample
-		sample=this->genSample(0.01*j);
+		sample=this->genSample(freqs->at(j));
 		//Assign it to the spectrum
 		noise->at(j)=sample;
 		//Calculate complex conjugate of sample
 		sample.imag *= -1;
 		//Assign complex conjugate to 'positive' frequency axis
-		noise->at(N-j)=sample;
+		noise->at(2*N-j)=sample;
 		
 	}
 	
@@ -81,31 +84,130 @@ bool NoiseGenerator::genSpectrum(std::vector<double>* freqs, std::vector<Complex
 	
 }
 
-//Analytic fit for ALIGO noise curve from *paper*
-double NoiseGenerator::noiseCurveALIGO(double f){
+bool NoiseGenerator::loadCurve(std::string filename){
+	
+	std::ifstream inFile;
+	
+	inFile.open(filename.c_str());
+	
+	double d;
+	
+	std::string line, element;
+
+	NoiseCurve curve;
+
+	while(getline(inFile,line)){
+		
+		std::istringstream iss1(line);
+		
+		while(getline(iss1, element, ',')){
+			
+			std::istringstream is(element);
+			is >> d;
+			curve.freq.push_back(d);
+			
+		}
+		
+		getline(inFile, line);
+		
+		std::istringstream iss2(line);
+		
+		while(getline(iss2, element, ',')){
+			
+			std::istringstream is(element);
+			is >> d;
+			curve.asd.push_back(d);	
+			
+		}
+	}
+	
+	curve.fMin = curve.freq.front();
+	curve.fMax = curve.freq.back();
+	
+	fNoiseCurve = curve;
+	
+	return true;
+	
+}
+
+//Analytic fit for ALIGO noise curve
+//	from Sathyaprakash & Schutz ~  https://arxiv.org/abs/0903.0338v1
+double ALIGOSchutz::getASD(double f){
 	
 	double fs = 20.0; //Lowest frequency before fit blows up
-	double f0 = 215.0;
-	double x = f/f0;
 	
-	double psd0 = 1E-49;
-	double asd0 = sqrt(psd0);
+	if(f > fs){
 	
-	double x1,x2,x3,x3_1,x3_2,x3_3,asd,psd;
+		double f0 = 215.0;
+		double x = f/f0;
+		
+		double psd0 = 1E-49;
+		double asd0 = sqrt(psd0);
+		
+		double x1,x2,x3,x3_1,x3_2,x3_3,asd,psd;
+		
+		x1 = pow(x,-4.14);
+		x2 = -5.0 * pow(x, -2);
+		
+		x3_1 = -(x * x);
+		x3_2 = 0.5 * pow(x,4);
+		x3_3 = 0.5 * x * x;
+		
+		x3 = 111.0*(1.0+x3_1 +x3_2) / (1+x3_3);
+		
+		psd = x1 + x2 + x3;
+		asd = sqrt(psd);
+		
+		return asd*asd0;
+		
+	}
+	else{ return 0.0; }
 	
-	x1 = pow(x,-4.14);
-	x2 = -5.0 * pow(x, -2);
+}
+
+ALIGOZeroDetHighP::ALIGOZeroDetHighP(){
 	
-	x3_1 = -(x * x);
-	x3_2 = 0.5 * pow(x,4);
-	x3_3 = 0.5 * x * x;
+	this->loadCurve("ZERO_DET_high_P.csv");
 	
-	x3 = 111.0*(1.0+x3_1 +x3_2) / (1+x3_3);
+}
+
+double ALIGOZeroDetHighP::getASD(double f){
 	
-	psd = x1 + x2 + x3;
-	asd = sqrt(psd);
+	if((f < fNoiseCurve.fMin) || (f > fNoiseCurve.fMax)){
+		return 0;
+	}
 	
-	return asd*asd0;
+	double fTest=0.0, fPrev=0.0, asdTest=0.0, asdPrev=0.0, grad=0.0, asd=0.0;
+	
+	//Find best asd to use for given frequency
+	for(int i = 0; i <= fNoiseCurve.freq.size(); i++){
+		
+		fPrev = fTest;
+		fTest = fNoiseCurve.freq[i];
+		
+		asdPrev = asdTest;
+		asdTest = fNoiseCurve.asd[i];
+		
+		if(f=fTest){
+			
+			asd = fNoiseCurve.asd[i];
+			
+			i = fNoiseCurve.freq.size() + 1;
+			
+		}
+		if(f<fTest){
+			
+			grad = (asdTest - asdPrev) / (fTest - fPrev);
+			
+			asd = asdPrev + ( (f-fPrev) * grad );
+			
+			i = fNoiseCurve.freq.size() + 1;
+			
+		}
+		
+	}
+	
+	return asd;
 	
 }
 
