@@ -16,9 +16,8 @@ int main(){
 	srand(time(NULL));
 
 	
-	AligoZeroDetHighP nGen;
-	//ALIGOSchutz nGen;
-	
+	AligoNoSrm nGen;
+
 	ofstream oFile;
 
 	double fMax, fInc;
@@ -38,7 +37,7 @@ int main(){
 	for(int k=0; k < freq->size(); k++){
 		
 		oFile << freq->at(k) << "," << (noise->at(k)).real << "," << (noise->at(k)).imag << "\r\n";
-		//oFile << freq->at(k) << "," << nGen.getASD(freq->at(k)) << "\r\n";
+
 	}
 	
 	cout << "Output finished and written to 'noise.csv' \r\n";

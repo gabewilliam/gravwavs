@@ -1,5 +1,7 @@
-zdet = csvread('ZERO_DET_high_P.csv');
+filename = 'Curves/ZERO_DET_low_P.csv';
 
-f = zdet(:,1);
+zdet = csvread(filename);
 
-max = f(end);
+f = transpose(zdet);
+
+csvwrite(filename, f);

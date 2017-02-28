@@ -66,8 +66,6 @@ bool NoiseGenerator::genSpectrum(std::vector<double>* freqs, std::vector<Complex
 	}
 	
 	for(int j=N; j < 2*N; j++){
-		
-		
 
 		//Get a random complex sample
 		sample=this->genSample(freqs->at(j));

@@ -2,7 +2,8 @@ noise = csvread('noise.csv');
 
 z = noise(:,2) + sqrt(-1) * noise(:,3);
 
-f = transpose(linspace(-5000,5000,200000));
+t = size(z);
+f = transpose(linspace(-5000,5000,t(1)));
 
 figure;
 
