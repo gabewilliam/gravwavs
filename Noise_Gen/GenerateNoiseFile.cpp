@@ -17,6 +17,7 @@ int main(){
 	cout<<"Here \r\n";
 	
 	ALIGOZeroDetHighP nGen;
+	//ALIGOSchutz nGen;
 	
 	ofstream oFile;
 
@@ -37,7 +38,7 @@ int main(){
 	for(int k=0; k < freq->size(); k++){
 		
 		oFile << freq->at(k) << "," << (noise->at(k)).real << "," << (noise->at(k)).imag << "\r\n";
-		
+		//oFile << freq->at(k) << "," << nGen.getASD(freq->at(k)) << "\r\n";
 	}
 	
 	cout << "Output finished and written to 'noise.csv' \r\n";

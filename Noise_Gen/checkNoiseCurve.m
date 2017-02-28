@@ -1,3 +1,3 @@
-zdhp = csvread('ZERO_DET_high_P.csv');
+zdhp = csvread('Curves\ZERO_DET_High_P.csv');
 
-loglog(zdhp(1,:),zdhp(2,:));
+loglog(zdhp(1,:),zdhp(1,:));
