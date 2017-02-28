@@ -4,9 +4,11 @@
 #include <ctime>
 #include <string>
 #include <iomanip>
+#include <algorithm>
 
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_randist.h>
+#include <gsl/gsl_statistics_double.h>
 
 #include "pe_gwLikelihood.h"
 
@@ -15,6 +17,7 @@
 long double likelihood(double, double, std::string, long double (*function)(double,double,std::string));
 double gaussian(double, double, double, double, double);
 double prior(double, double, double, double);
+int autoCorrelation(double [], int);
 
 
 int main() {
@@ -69,10 +72,11 @@ int main() {
 
 
 	//Declares the variables used throughout the routine
-	std::string fileName = "signal.txt";
+	std::string fileName = "signal.csv";
 	double ma, maProposal, mb, mbProposal;
 	long double p, pProposal, alpha;
 	double nZeroMA, nZeroMB, rZero;
+	double maArray[N], mbArray[N];
 
 
 	//Opens the output text file
@@ -103,7 +107,7 @@ int main() {
 
 		maProposal = ma + nZeroMA;
 		mbProposal = mb + nZeroMB;
-		pProposal = likelihood(maProposal,mbProposal,fileName,PdhFunction)*prior(maProposal,mbProposal,mUpper,mLower);
+		pProposal = likelihood(maProposal,mbProposal,fileName,PdhFunction)*prior			  (maProposal,mbProposal,mUpper,mLower);
 
 		alpha = pProposal/p;
 		
@@ -120,17 +124,23 @@ int main() {
 			std::cout << (i*100)/N << "% complete." << std::endl;
 		}
 		
+		/*
 		if (i%100==0){
 			fprintf(outFile,"%.15g,%.15g\n",ma,mb);
-		}
+		}*/
+		
+		maArray[i] = ma;
+		mbArray[i] = mb;
 		
 	}
 
+	int lagMa = autoCorrelation(maArray,N);
+	//int lagMb = autoCorrelation(mbArray,N);
+	std::cout<<lagMa<<std::endl;
 
 	/*Closes the output file, then frees the memory associated with the random
 	/ number generators.*/
 	fclose(outFile);
-
 	gsl_rng_free(seedGen);
 	gsl_rng_free(normGen);
 	gsl_rng_free(rGen);
@@ -159,3 +169,27 @@ double prior(double ma, double mb, double mUpper, double mLower) {
 	else { return 0; }
 
 }
+
+/*Iterates through different lag values, calculating the autocorrelation until it falls below the threshold
+/ value of 0.05.*/
+int autoCorrelation(double parameterArray[], int size) {
+	
+	int lag=1;
+	double autoCorr=1;
+
+	while(autoCorr>0.05) {
+		double * lagArray = new double[size-lag];
+		double * leadArray = new double[size-lag];
+		std::copy(parameterArray+lag,parameterArray+size,leadArray);
+		std::copy(parameterArray,parameterArray+(size-lag),lagArray);
+		autoCorr=gsl_stats_correlation(lagArray, 1, leadArray, 1, (size-lag));
+		std::cout<<autoCorr<<std::endl;
+		lag+=1;
+	}
+	return lag;
+}
+
+
+
+
+

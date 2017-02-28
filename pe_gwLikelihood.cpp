@@ -30,7 +30,7 @@ long double PdhFunction( double m1, double m2, std::string signalFile ){
 	Signal ht;//Model signal (time domain)
 	Signal hf;//Model signal (freq domain)
 
-	loadSignals("signal.txt", &idt, csv); //Loads signal into dt
+	loadSignals("signal.csv", &idt, csv); //Loads signal into dt
 
 	dt = idt[0];//converts from vector of signals to signal
 
