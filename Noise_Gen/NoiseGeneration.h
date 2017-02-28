@@ -45,30 +45,89 @@ class NoiseGenerator{
 		
 		bool genSpectrum(std::vector<double>*, std::vector<Complex>* ,double, double); //Generate entire frequency spectrum
 		
-		bool loadCurve(std::string);
+		//bool loadCurve(std::string);
 		
 	protected:
 	
 		double fRelativeAmplitude; //Relative amplitude to scale the noise
+		//NoiseCurve fNoiseCurve;
+		
+};
+
+class AligoSchutz: public NoiseGenerator{
+	
+	public:
+		
+		double getASD(double);
+	
+};
+
+class NumNoise: public NoiseGenerator{
+	
+	public:
+	
+		bool loadCurve(std::string);
+		double getASD(double);
+		
+	protected:
+	
+		std::string fCurveFile;
 		NoiseCurve fNoiseCurve;
-		
-};
-
-class ALIGOSchutz: public NoiseGenerator{
-	
-	public:
-		
-		double getASD(double);
 	
 };
 
-class ALIGOZeroDetHighP: public NoiseGenerator{
+class AligoZeroDetHighP: public NumNoise{
 	
 	public:
 	
-		ALIGOZeroDetHighP();
+		AligoZeroDetHighP();
 	
-		double getASD(double);
+		//double getASD(double);
+	
+};
+class AligoZeroDetLowP: public NumNoise{
+	
+	public:
+	
+		AligoZeroDetLowP();
+	
+		//double getASD(double);
+	
+};
+class AligoNsnsOpt: public NumNoise{
+	
+	public:
+	
+		AligoNsnsOpt();
+	
+		//double getASD(double);
+	
+};
+class AligoNoSrm: public NumNoise{
+	
+	public:
+	
+		AligoNoSrm();
+	
+		//double getASD(double);
+	
+};
+class AligoHighFreq: public NumNoise{
+	
+	public:
+	
+		AligoHighFreq();
+	
+		//double getASD(double);
+	
+};
+class AligoBhbh20Deg: public NumNoise{
+	
+	public:
+	
+		AligoBhbh20Deg();
+	
+		//double getASD(double);
 	
 };
 //Returns normally distributed value using basic Box-Muller routine

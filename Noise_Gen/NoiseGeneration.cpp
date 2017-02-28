@@ -46,7 +46,7 @@ bool NoiseGenerator::genSpectrum(std::vector<double>* freqs, std::vector<Complex
 	
 	//Calculate maximum number of elements for given sampling frequency fMax
 	int N = floor( (fMax / fInc) );
-	std::cout<<N<<"\r\n";
+
 	Complex sample;
 
 	//Populate all elements with zeroes and fill frequency;
@@ -84,7 +84,7 @@ bool NoiseGenerator::genSpectrum(std::vector<double>* freqs, std::vector<Complex
 	
 }
 
-bool NoiseGenerator::loadCurve(std::string filename){
+bool NumNoise::loadCurve(std::string filename){
 	
 	std::ifstream inFile;
 	
@@ -167,11 +167,11 @@ double ALIGOSchutz::getASD(double f){
 
 ALIGOZeroDetHighP::ALIGOZeroDetHighP(){
 	
-	this->loadCurve("ZERO_DET_high_P.csv");
+	this->loadCurve("Curves\ZERO_DET_high_P.csv");
 	
 }
 
-double ALIGOZeroDetHighP::getASD(double f){
+double NumNoise::getASD(double f){
 	
 	if((f < fNoiseCurve.fMin) || (f > fNoiseCurve.fMax)){
 		return 0;
@@ -188,7 +188,7 @@ double ALIGOZeroDetHighP::getASD(double f){
 		asdPrev = asdTest;
 		asdTest = fNoiseCurve.asd[i];
 		
-		if(f=fTest){
+		if(f==fTest){
 			
 			asd = fNoiseCurve.asd[i];
 			
