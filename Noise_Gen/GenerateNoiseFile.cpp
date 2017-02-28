@@ -14,18 +14,18 @@ using namespace std;
 int main(){
 
 	srand(time(NULL));
-	cout<<"Here \r\n";
+
 	
-	ALIGOZeroDetHighP nGen;
+	AligoZeroDetHighP nGen;
 	//ALIGOSchutz nGen;
 	
 	ofstream oFile;
 
 	double fMax, fInc;
-
+	
 	vector<double> *freq = new vector<double>;
 	vector<Complex> *noise = new vector<Complex>;
-	
+
 	cout << "Enter maximum frequency: \r\n";
 	cin >> fMax;
 	cout << "Enter frequency increment: \r\n";
