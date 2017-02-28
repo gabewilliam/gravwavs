@@ -441,20 +441,25 @@ void Extractor::fConvolutionComplex(std::vector<Signal>* output)
 		
 		Signal op;
 		
+		double noise;
+		
 		for(int k=0; k<K; k++)
 		{
+			
+			noise = getASD( mSignalF->waveform[1][2*k]);
 			//calculate and push back the data with a waveform  
-			result = mSignalF->waveform[1][2*k] * temp->waveform[1][2*k];	
-			op.waveform[0].push_back(2*k);
+			result = (mSignalF->waveform[1][2*k] * temp->waveform[1][2*k])/noise;	
+			op.waveform[0].push_back(temp->waveform[0][2*k]);
 			op.waveform[1].push_back(result);
 			
 			//and its conjugate
-			result = -(mSignalF->waveform[1][2*k+1] * temp->waveform[1][2*k+1]);
-			op.waveform[0].push_back(2*k);
+			result = -(mSignalF->waveform[1][2*k+1] * temp->waveform[1][2*k+1])/noise;
+			op.waveform[0].push_back(temp->waveform[0][2*k+1]);
 			op.waveform[1].push_back(result);
 		}
 		
-		gateFilter(&op, 20);
+		
+		//gateFilter(&op, 20);
 		
 		//put this into the output vector
 		output->push_back(op);
