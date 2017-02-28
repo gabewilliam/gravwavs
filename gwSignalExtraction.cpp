@@ -9,6 +9,8 @@
 #define REAL(z, i)  (z[i][0])
 #define IMAG(z, i) (z[i][1])//not redundant
 
+
+
 Extractor::Extractor(){}
 
 void Extractor::setSignal(Signal* sig){
@@ -639,3 +641,87 @@ void Extractor::fftwInverse(std::vector<Signal>* signalsFFTI){
 
 }
 
+bool Extractor::loadCurve(std::string filename){//for loading external noise curve.csv's
+
+	std::ifstream inFile;
+	
+	inFile.open(filename.c_str());
+
+	double d;
+	
+	std::string line, element;
+
+	NoiseCurve curve;
+
+	while(getline(inFile,line)){
+		std::istringstream iss1(line);
+		
+		while(getline(iss1, element, ',')){
+			
+			std::istringstream is(element);
+			is >> d;
+			curve.freq.push_back(d);
+			
+		}
+		
+		getline(inFile, line);
+		
+		std::istringstream iss2(line);
+		
+		while(getline(iss2, element, ',')){
+			
+			std::istringstream is(element);
+			is >> d;
+			curve.asd.push_back(d);	
+			
+		}
+	}
+
+	curve.fMin = curve.freq.front();
+	curve.fMax = curve.freq.back();
+
+	fNoiseCurve = curve;
+	
+	return true;
+	
+}
+
+double Extractor::getASD(double f){//retrieves power density of noise at given frequency from fNoiseCurve
+	
+	if((f < fNoiseCurve.fMin) || (f > fNoiseCurve.fMax)){
+		return 0;
+	}
+	
+	double fTest=0.0, fPrev=0.0, asdTest=0.0, asdPrev=0.0, grad=0.0, asd=0.0;
+	
+	//Find best asd to use for given frequency
+	for(int i = 0; i <= fNoiseCurve.freq.size(); i++){
+		
+		fPrev = fTest;
+		fTest = fNoiseCurve.freq[i];
+		
+		asdPrev = asdTest;
+		asdTest = fNoiseCurve.asd[i];
+		
+		if(f==fTest){
+			
+			asd = fNoiseCurve.asd[i];
+			
+			i = fNoiseCurve.freq.size() + 1;
+			
+		}
+		if(f<fTest){
+			
+			grad = (asdTest - asdPrev) / (fTest - fPrev);
+			
+			asd = asdPrev + ( (f-fPrev) * grad );
+			
+			i = fNoiseCurve.freq.size() + 1;
+			
+		}
+		
+	}
+	
+	return asd;
+	
+}
