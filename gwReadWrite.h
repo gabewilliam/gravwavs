@@ -1,13 +1,16 @@
 #ifndef GWREADWRITE_H
 #define GWREADWRITE_H
 
+#include <fstream>
 #include <iostream>
 #include <istream>
-#include <fstream>
 #include <sstream>
 #include <string>
+//#include <zlib.h>
 
 #include "gwDataTypes.h"
+
+//namespace bo=boost::iostreams;
 
 enum delimiter {tab, csv};
 
@@ -226,5 +229,58 @@ bool saveSignals(std::string filename, std::vector<Signal>* sigs, delimiter deli
 
 	return true;
 }
+
+/* bool saveSignalsCompressed(std::string filename, std::vector<Signal>* sigs, delimiter delim)
+{
+	//filename must end in .gz for this to work
+    gzFile outFile=gzopen(filename.c_str(),"wb");    
+
+	if(outFile.fail())
+	{
+		std::cerr << "Output file could not be opened" << std::endl;
+		return false;
+	}
+
+	char de;
+
+	switch(delim)
+	{
+		case tab : de = '\t';
+				   break;
+	
+		case csv : de = ',';
+				   break;
+	}
+
+	std::vector<Signal> signals = *sigs;
+
+	int I, K;
+	Signal sig;
+
+	I = signals.size();
+
+	for(int i=0; i<I; i++)
+	{
+		sig = signals[i];
+
+		K = sig.waveform[0].size();
+
+		for(int j=0; j<2; j++)
+		{
+			for(int k=0; k<(K-1); k++)
+			{
+				gzprintf(outFile,"%g%c",sig.waveform[j][k],de);				
+				//outFile << sig.waveform[j][k] << de;		
+			}
+			gzprintf(outFile,"%g\r\n",sig.waveform[j][K-1]);
+			//outFile << sig.waveform[j][K-1];
+			//outFile << "\r\n";
+		}
+	}
+
+	gzclose(outFile);
+
+	return true;
+} */
 
 #endif //GWREADWRITE_H
