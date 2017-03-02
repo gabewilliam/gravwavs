@@ -208,14 +208,14 @@ bool binary::checkMergeTime (){
 
 	//DOUBLES
 
-	double Binary::keplerFrequency(){
+double Binary::keplerFrequency(){
 	double b=pow(fa,3);
 	double freqsquared=(G(fm1+fm2))/b;
 	double freq=pow(freqsquared,1/2);
 	return freq;
 }
 
-	double Binary::mixingFrequency(int n){
+double Binary::mixingFrequency(int n){
 	double m;	
 	if 	(n==1){
 		m=fm1; 
@@ -237,7 +237,7 @@ bool binary::checkMergeTime (){
 	return omegaC;
 }
 
-	double Binary::mergeTime(){
+double Binary::mergeTime(){
 	cfive=pow(c,5);
 	Gthree=pow(G,3);
 	b=pow(fa,4)
