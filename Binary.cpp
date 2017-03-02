@@ -1,5 +1,5 @@
 //Write functions for Binary.h in here
-#include "binary.h";
+#include "Binary.h";
 #include <math.h>;
 
 //constructors
