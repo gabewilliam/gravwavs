@@ -14,7 +14,7 @@ class Binary {
 
 		void updateRadii();
 
-		double rocheLobe();
+		double rocheLobe(int n);
 		double keplerFrequency();
 		double mixingFrequency(int n);
 		double mergeTime();
