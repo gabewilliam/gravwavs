@@ -77,7 +77,8 @@ int main() {
 	double ma, maProposal, mb, mbProposal;
 	long double p, pProposal, alpha;
 	double nZeroMA, nZeroMB, rZero;
-	double maArray[N], mbArray[N];
+	double* maArray = new double[N];
+	double* mbArray = new double[N];
 	
 
 	//Sets the starting ma and mb values for the routine as random integers.
@@ -137,7 +138,9 @@ int main() {
 	saveToFile(maArray,mbArray,lag,N);
 
 	/*Frees the memory associated with the random
-	/ number generators.*/
+	/ number generators and deallocates memory.*/
+	delete [] maArray;
+	delete [] mbArray;
 	gsl_rng_free(seedGen);
 	gsl_rng_free(normGen);
 	gsl_rng_free(rGen);
