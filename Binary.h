@@ -8,7 +8,7 @@ class Binary {
 		
 		Binary(double mass1, double mass2, double separation);
 
-		virtual ~Pendulum();
+		virtual ~Binary();
 
 		double getMass(int n);
 		double getRadius(int n);
