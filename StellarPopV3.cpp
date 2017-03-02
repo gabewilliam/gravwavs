@@ -15,6 +15,8 @@ int main() {
 	double mSolar = 1.989e30; //kg
 	double rSolar = 6.975e8; //m
 	double AU = 1.496e11; //m
+	double c = 3.0e8; //ms^-2
+	double G = 6.67408e-11;//m^3 kg^-1 s^-2
 
 
 	/*Sets up a random number generator to seed the other two generators, and

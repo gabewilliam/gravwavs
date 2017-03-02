@@ -35,10 +35,10 @@ double Binary::getMass (int n){
     
 }
 
-double Binary::getRadius (int n){
-
-    this->updateRadii();     
-    if (n==1){
+double Binary::getRadius (int n){    
+   
+  this->updateRadii();
+  if (n==1){
         return fr1;
     }
     
@@ -47,7 +47,7 @@ double Binary::getRadius (int n){
     }
     
     else {
-        std::cout<<"you fucked it"<<std::endl;
+        std::cout<<"you fucked it (getRadius)"<<std::endl;
         return 0;
     }
     
@@ -72,7 +72,7 @@ double Binary::getRatio (int n){
     }
     
     else {
-        std::cout<<"you fucked it"<<std::endl;
+        std::cout<<"you fucked it (getRatio)"<<std::endl;
         return 0;
     }
     
@@ -92,7 +92,7 @@ void Binary::setMass (int n, double m){
     }
     
     else {
-        std::cout<<"you fucked it"<<std::endl;
+        std::cout<<"you fucked it (setMass)"<<std::endl;
     }
     
     return;    
@@ -102,8 +102,8 @@ void Binary::setMass (int n, double m){
 void Binary::setSeparation (double a){
     
     fa=a;
-    return;   
- 
+    return;    
+
 }
 
 
@@ -205,7 +205,41 @@ bool binary::checkMergeTime (){
 	else {
 		return false;
 	}
+
+	//DOUBLES
+
+double Binary::keplerFrequency(){
+	double b=pow(fa,3);
+	double freqsquared=(G(fm1+fm2))/b;
+	double freq=pow(freqsquared,1/2);
+	return freq;
 }
 
-	
- 
+double Binary::mixingFrequency(int n){
+	double m;	
+	if 	(n==1){
+		m=fm1; 
+	}
+	else if (n==2){
+		m=fm2;
+	}
+	else {
+		std::cout<<"You fucked it (mixingFrequency)"<<std::endl;
+		return 0;
+	}
+
+	if (m<50*mSolar){
+		omegaC=0.2+(2.7e-4*((m/mSolar)-50)*((m/mSolar)-50))
+	}
+	else if (m>=50*mSolar){
+		omegaC=0.2;
+	}
+	return omegaC;
+}
+
+double Binary::mergeTime(){
+	cfive=pow(c,5);
+	Gthree=pow(G,3);
+	b=pow(fa,4)
+	return Tmerge=(5/256)*(cfive/(Gthree*fm1*fm2*(fm1+fm2)))*b;
+}
