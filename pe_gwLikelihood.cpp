@@ -13,15 +13,6 @@
 //Uses d(f), h(f) and s(f) using equation A20 in "Veich, Vecchio (2010)" to calculate likelihood using two parameters m1 and m2.
 //Returns a NON-NORMALISED likelihood.
 
-/*
-int main() {
-
-double Ans = PdhFunction(50e30,60e30,"signal.txt");
-//std::cout<<Ans<<std::endl;
-
-return 0;
-} */
-
 long double PdhFunction( double m1, double m2, std::string signalFile ){
 	
 	Signal dt;//Data signal (time domain)
@@ -50,13 +41,16 @@ long double PdhFunction( double m1, double m2, std::string signalFile ){
 	int n = df.waveform[0].size();//finds number of elements in freq domain signal
 
 	long double sum = 0.0;
+	long double SNR = 0.0;
 	vec_d vdf = df.waveform[1]; //splits signal into std::vectors for use in loop
 	vec_d vhf = hf.waveform[1];
 	
 	for( int i = 0; i < n; i++ ){ //evaluates the sum part in equation A20	
-		long double x = pow( std::abs( vdf[i] - vhf[i] ), 2 )/sf[i];	
-		sum = sum + x;	
+		sum += pow( std::abs( vdf[i] - vhf[i] ), 2 )/sf[i];
+		SNR += pow( std::abs( vdf[i] ), 2 )/sf[i];
 	}
+
+	SNR = sqrt(SNR);
 
 	vec_d t = dt.waveform[0];//takes the time vector
 	int n2 = t.size();//finds the number of elements	

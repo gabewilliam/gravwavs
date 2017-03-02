@@ -120,19 +120,21 @@ int main() {
 			std::cout << (i*100)/N << "% complete." << std::endl;
 		}
 
-		std::cout<<ma<<std::endl;
 		maArray[i-1] = ma;
 		mbArray[i-1] = mb;
 		
 	}
 
 	int lagMa = autoCorrelation(maArray,N);
-	//int lagMb = autoCorrelation(mbArray,N);
-	//std::cout<<lagMa<<"\t"<<lagMb<<std::endl;
+	int lagMb = autoCorrelation(mbArray,N);
+	std::cout<<lagMa<<"\t"<<lagMb<<std::endl;
 
-	//int lags [] = {lagMa, lagMb};
-	//int lag = *(std::max_element(lags,lags+2));
-	//std::cout<<lag<<std::endl;
+	int lags [] = {lagMa, lagMb};
+	int lag = *(std::max_element(lags,lags+2));
+	std::cout<<lag<<std::endl;
+	lag = 100;
+	
+	saveToFile(maArray,mbArray,lag,N);
 
 	/*Frees the memory associated with the random
 	/ number generators.*/
