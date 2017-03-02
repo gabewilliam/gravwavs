@@ -1,8 +1,14 @@
+
+
 class Binary {
 
 	public:
+
+		Binary();
 		
-		Binary(double m1, double m2, double a);
+		Binary(double mass1, double mass2, double separation);
+
+		virtual ~Pendulum();
 
 		double getMass(int n);
 		double getRadius(int n);

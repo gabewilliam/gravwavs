@@ -2,6 +2,19 @@
 #include "binary.h";
 #include <math.h>;
 
+//constructors
+
+Binary::Binary() [
+
+}
+
+Binary::Binary(double mass1, double mass2,  double separation)
+	:fm1(mass1), fm2(mass2), fa(separation){
+	this->updateRadii();
+}
+
+Binary::Binary(){}
+
 
 //GET METHODS
 
