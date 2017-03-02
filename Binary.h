@@ -10,7 +10,7 @@ class Binary {
 		double getRatio();
 		
 		void setMass(int n, double m);
-		void setSeparation(int n, double a);
+		void setSeparation(double a);
 
 		void updateRadii();
 
