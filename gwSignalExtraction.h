@@ -1,5 +1,11 @@
 #include "gwDataTypes.h"
 
+struct NoiseCurve{//from gabe's noise curves
+	double fMin, fMax;
+	std::vector<double> freq;
+	std::vector<double> asd;
+};
+
 class Extractor
 {
 	public:
@@ -33,6 +39,11 @@ class Extractor
 		void tConvolution(std::vector<Signal>* output);
 		void fConvolution(std::vector<Signal>* output);
 		void fConvolutionComplex(std::vector<Signal>* output);
+	
+		//from gabe's noise curves
+		bool loadCurve(std::string);
+		double getASD(double);
+	
 	private:
 		Signal* mSignalT;
 		Signal* mSignalF;
@@ -40,4 +51,8 @@ class Extractor
 		vec_d mOriginalTime;
 		std::vector<Template>* mTemplatesT;
 		std::vector<Template>* mTemplatesF;
+	
+		NoiseCurve fNoiseCurve;//you can probably guess where this is from
+	
+		
 };
