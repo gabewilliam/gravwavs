@@ -6,7 +6,7 @@ class Binary {
 
 		double getMass(int n);
 		double getRadius(int n);
-		double getSeparation(int n);
+		double getSeparation();
 		double getRatio();
 		
 		void setMass(int n, double m);
