@@ -50,12 +50,6 @@ typedef double psi_vec [8];
 // Vector for storage of transition parameters
 typedef double mu_vec [4];
 
-enum mode{
-	
-	Naked,
-	PreNoise
-};
-
 struct parameters{
 	
 	// Vector of initial values:
@@ -195,14 +189,12 @@ double PhenomBPhase(parameters *params, double f){
 }
 
 // Whole wave - signal
-int gravitationalWave(parameters *params, vector<Signal> *sigs, int nData, mode outMode){
+int gravitationalWave(parameters *params, vector<Signal> *sigs, int nData){
 		
 	// Set up storage of both real and imaginary components of the wave
-	Signal totSig, reSig, imSig;
-		
-	vec_d addNoise[3];
+	Signal totSig;
 	
-	int nPoints = 2*nData;
+	int nPoints = 4*nData;
 	
 	// Populate waveforms of arrays with all zeros to allow future direct index reference
 	for (int k = 0; k < nPoints; k++){
@@ -210,28 +202,7 @@ int gravitationalWave(parameters *params, vector<Signal> *sigs, int nData, mode 
 		totSig.waveform[0].push_back(0.0);
 		totSig.waveform[1].push_back(0.0);
 		
-		reSig.waveform[0].push_back(0.0);
-		reSig.waveform[1].push_back(0.0);
-		
-		imSig.waveform[0].push_back(0.0);
-		imSig.waveform[1].push_back(0.0);
-		
-		addNoise[0].push_back(0.0);
-		addNoise[1].push_back(0.0);
-		addNoise[2].push_back(0.0);
-		
 	}
-	
-	ofstream forNoise;
-		
-	// Set up the names of the file
-	ostringstream s1, s2, s3;
-	s1 << params->theta[0]/MPc_CONST;
-	s2 << params->theta[1]*pow(C_CONST, 2.0)/(SM_CONST*G_CONST);
-	string del = "csv";
-	s3 << del;
-	std::string sigFileIdentity = "dist_" + s1.str() + "_mass_" + s2.str() + "." + s3.str();		
-	forNoise.open(sigFileIdentity.c_str(), std::ios_base::app);
 	
 	double df = 2.0*(params->mu[3] - params->init[2])/double(nData);
 	
@@ -248,7 +219,7 @@ int gravitationalWave(parameters *params, vector<Signal> *sigs, int nData, mode 
 	// Storage for frequency in Hz
 	double freq_Hz;
 			
-	for (int i = 0; i < nData; i++){
+	for (int i = 0; i < nData; i+=2){
 		
 		freq = i*df + params->init[2];
 				
@@ -270,63 +241,25 @@ int gravitationalWave(parameters *params, vector<Signal> *sigs, int nData, mode 
 		gravWav = amp0*finalAmp*(cos(wavePhase)-J*sin(wavePhase));
 		
 		// Convert frequency back to Hz
-		freq_Hz = freq*C_CONST;
+		freq_Hz = freq*C_CONST;		
+			
+		totSig.waveform[0][i] = freq_Hz;
+		totSig.waveform[0][i+1] = freq_Hz;
 		
-		if (outMode == Naked){
-			
-			totSig.waveform[0][i] = freq_Hz;
-			totSig.waveform[0][i] = freq_Hz;
-			
-			totSig.waveform[1][i] = gravWav.real();
-			totSig.waveform[1][i] = gravWav.imag();
-			
-			int k = nData + i;
-			
-			totSig.waveform[0][k] = -freq_Hz;
-			totSig.waveform[0][k] = -freq_Hz;
-			
-			totSig.waveform[1][k] = gravWav.real();
-			totSig.waveform[1][k] = -gravWav.imag();			
-			
-		}else{
-			
-			reSig.waveform[0][i] = freq_Hz;		
-			imSig.waveform[0][i] = freq_Hz;		
-			
-			reSig.waveform[1][i] = gravWav.real();		
-			imSig.waveform[1][i] = gravWav.imag();
-			
-			addNoise[0][i] = freq_Hz;
-			addNoise[1][i] = gravWav.real();
-			addNoise[2][i] = gravWav.imag();
-			
-			int k = nData + i;
-			
-			reSig.waveform[0][k] = -freq_Hz;		
-			imSig.waveform[0][k] = -freq_Hz;		
-			
-			reSig.waveform[1][k] = gravWav.real();		
-			imSig.waveform[1][k] = -gravWav.imag();
-			
-			addNoise[0][k] = -freq_Hz;
-			addNoise[1][k] = gravWav.real();
-			addNoise[2][k] = -gravWav.imag();
+		totSig.waveform[1][i] = gravWav.real();
+		totSig.waveform[1][i+1] = gravWav.imag();
 		
-		}
+		int k = nData + i;
+		
+		totSig.waveform[0][k] = -freq_Hz;
+		totSig.waveform[0][k+1] = -freq_Hz;
+		
+		totSig.waveform[1][k] = gravWav.real();
+		totSig.waveform[1][k+1] = -gravWav.imag();			
+			
 	}
 		
-	if (outMode == Naked){
-		sigs->push_back(totSig);
-	}else{
-		sigs->push_back(reSig);
-		sigs->push_back(imSig);
-	}
-	
-	for (int l = 0; l < nPoints; l++){
-		
-		forNoise << addNoise[0][l] << ", " << addNoise[1][l] << ", " << addNoise[2][l] << endl;
-		
-	}
+	sigs->push_back(totSig);
 	
 	return SUCCESS;
 }
@@ -341,7 +274,17 @@ int gravitationalWaveTemps(parameters *params, vector<Template> *temps, int nDat
 	totSig.param[0] = m_1;
 	totSig.param[1] = m_2;
 	
-	double df = (params->mu[3] - params->init[2])/double(nData);
+	int nPoints = 4*nData;
+	
+	// Populate waveforms of arrays with all zeros to allow future direct index reference
+	for (int k = 0; k < nPoints; k++){
+		
+		totSig.waveform[0].push_back(0.0);
+		totSig.waveform[1].push_back(0.0);
+		
+	}
+	
+	double df = 2.0*(params->mu[3] - params->init[2])/double(nData);
 	
 	double amp0 = effAmp(params);
 	double freq = 0.0;
@@ -355,11 +298,11 @@ int gravitationalWaveTemps(parameters *params, vector<Template> *temps, int nDat
 	
 	// Storage for frequency in Hz
 	double freq_Hz;
-	
-	for (int i = 0; i < nData; i++){
+			
+	for (int i = 0; i < nData; i+=2){
 		
 		freq = i*df + params->init[2];
-		
+				
 		if (freq < params->mu[0]){
 			finalAmp = inspiralPhenomBAmp(params, freq);
 		}
@@ -378,16 +321,24 @@ int gravitationalWaveTemps(parameters *params, vector<Template> *temps, int nDat
 		gravWav = amp0*finalAmp*(cos(wavePhase)-J*sin(wavePhase));
 		
 		// Convert frequency back to Hz
-		freq_Hz = freq*C_CONST;
+		freq_Hz = freq*C_CONST;		
+			
+		totSig.waveform[0][i] = freq_Hz;
+		totSig.waveform[0][i+1] = freq_Hz;
 		
-		totSig.waveform[0].push_back(freq_Hz);	
-		totSig.waveform[0].push_back(-freq_Hz);
+		totSig.waveform[1][i] = gravWav.real();
+		totSig.waveform[1][i+1] = gravWav.imag();
 		
-		totSig.waveform[1].push_back(gravWav.real());		
-		totSig.waveform[1].push_back(gravWav.imag());
+		int k = nData + i;
 		
+		totSig.waveform[0][k] = -freq_Hz;
+		totSig.waveform[0][k+1] = -freq_Hz;
+		
+		totSig.waveform[1][k] = gravWav.real();
+		totSig.waveform[1][k+1] = -gravWav.imag();			
+			
 	}
-	
+		
 	temps->push_back(totSig);
 	
 	return SUCCESS;
