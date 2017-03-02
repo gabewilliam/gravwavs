@@ -1,6 +1,6 @@
 //Write functions for Binary.h in here
-#include "Binary.h";
-#include <math.h>;
+#include "Binary.h"
+#include <math.h>
 
 //constructors
 
