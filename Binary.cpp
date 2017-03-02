@@ -112,3 +112,28 @@ double Binary::rocheLobe(int n){
   
 }
   
+//EVOLUTION OF STARS
+
+void Binary::evolveMainSequence (){
+	double dm=fm1*0.1+fm2*0.1;
+	a=a*(fm1+fm2)/(fm1+fm2-dm);
+	fm1=0.9*fm1;
+	fm2=0.9*fm2;
+	return;
+}
+
+void Binary::evolveWolfRayet{
+	double dm=fm1*0.25+fm2*0.25;
+	a=a*(fm1+fm2)/(fm1+fm2-dm);
+	fm1=0.75*fm1;
+	fm2=0.75*fm2;
+	return;	
+}
+
+void Binary::evolveSupernova{
+	double dm=fm1*0.1+fm2*0.1;
+	a=(a*(fm1+fm2-dm))/(2*(fm1+fm2-dm)-(fm1+fm2))
+	fm1=0.9*fm1;
+	fm2=0.9*fm2;
+	return;	
+}
