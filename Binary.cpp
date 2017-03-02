@@ -22,9 +22,10 @@ double Binary::getMass (int n){
     
 }
 
-double Binary::getRadius (int n){
-    
-    if (n==1){
+double Binary::getRadius (int n){    
+   
+  this->updateRadii();
+  if (n==1){
         return fr1;
     }
     
@@ -107,10 +108,92 @@ double Binary::rocheLobe(int n){
     double q = this->getRatio(n);
     double qonethird = pow(q,1/3);
     double qtwothird = pow(q,2/3);
-    double rl = 0.49*qtwothird/((0.6*qtwothird)+log(1+qonethird));
+    double a = this->getSeparation();
+    double rl = 0.49*qtwothird*a/((0.6*qtwothird)+log(1+qonethird));
     return rl;
     
 }
+
+//EVOLUTION OF STARS
+
+void Binary::evolveMainSequence (){
+	double dm=fm1*0.1+fm2*0.1;
+	a=a*(fm1+fm2)/(fm1+fm2-dm);
+	fm1=0.9*fm1;
+	fm2=0.9*fm2;
+	return;
+}
+
+void Binary::evolveWolfRayet (){
+	double dm=fm1*0.25+fm2*0.25;
+	a=a*(fm1+fm2)/(fm1+fm2-dm);
+	fm1=0.75*fm1;
+	fm2=0.75*fm2;
+	return;	
+}
+
+void Binary::evolveSupernova (){
+	double dm=fm1*0.1+fm2*0.1;
+	a=(a*(fm1+fm2-dm))/(2*(fm1+fm2-dm)-(fm1+fm2))
+	fm1=0.9*fm1;
+	fm2=0.9*fm2;
+	return;	
+}
+
+//CHECK FUNCTIONS
+
+bool Binary:: checkRocheLobe (int n){
+	
+	this->updateRadii();
+	double r = this->getRadius(n);
+	double rl = this->rocheLobe(n);
+	if (r<=rl){
+		return true;
+	}
+	else if (r>rl){
+		return false;
+	}
+	
+}
+
+bool Binary:: checkHomogeneousMixing (int n){
+
+	double omegaK = this-> keplerFrequency();
+	double omegaM = this->mixingFrequency(int n);
+	if (omegaK >= omegaM) {
+		return true;
+	}
+	else {
+		return false
+	}
+
+}
+
+bool Binary:: checkPairInstability (){
+
+	double m1 = this->getMass(1);
+	double m2 = this->getMass(2);
+	if (m1<63 && m2<63){
+		return true;
+	}
+	else {
+		return false;
+	}
+
+}
+
+bool binary::checkMergeTime (){
+
+	double tm = this->checkMergeTime();
+	tH =  4.55e17;// s, check using worksheet
+	if (tm<tH){
+		return true
+	}
+	else {
+		return false;
+	}
+
+	//DOUBLES
 
 double Binary::keplerFrequency(){
 	double b=pow(fa,3);
@@ -146,5 +229,4 @@ double Binary::mergeTime(){
 	Gthree=pow(G,3);
 	b=pow(fa,4)
 	return Tmerge=(5/256)*(cfive/(Gthree*fm1*fm2*(fm1+fm2)))*b;
-
 }
