@@ -7,7 +7,7 @@ class Binary {
 		double getMass(int n);
 		double getRadius(int n);
 		double getSeparation();
-		double getRatio();
+		double getRatio(int n);//input decides which mass is on top of fraction
 		
 		void setMass(int n, double m);
 		void setSeparation(double a);
