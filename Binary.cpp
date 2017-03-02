@@ -89,8 +89,8 @@ void Binary::setMass (int n, double m){
 void Binary::setSeparation (double a){
     
     fa=a;
-    return;    
-
+    return;   
+ 
 }
 
 
@@ -108,11 +108,39 @@ double Binary::rocheLobe(int n){
     double q = this->getRatio(n);
     double qonethird = pow(q,1/3);
     double qtwothird = pow(q,2/3);
-	double a = this->getSeparation();
+    double a = this->getSeparation();
     double rl = 0.49*qtwothird*a/((0.6*qtwothird)+log(1+qonethird));
     return rl;
     
 }
+
+//EVOLUTION OF STARS
+
+void Binary::evolveMainSequence (){
+	double dm=fm1*0.1+fm2*0.1;
+	a=a*(fm1+fm2)/(fm1+fm2-dm);
+	fm1=0.9*fm1;
+	fm2=0.9*fm2;
+	return;
+}
+
+void Binary::evolveWolfRayet (){
+	double dm=fm1*0.25+fm2*0.25;
+	a=a*(fm1+fm2)/(fm1+fm2-dm);
+	fm1=0.75*fm1;
+	fm2=0.75*fm2;
+	return;	
+}
+
+void Binary::evolveSupernova (){
+	double dm=fm1*0.1+fm2*0.1;
+	a=(a*(fm1+fm2-dm))/(2*(fm1+fm2-dm)-(fm1+fm2))
+	fm1=0.9*fm1;
+	fm2=0.9*fm2;
+	return;	
+}
+
+//CHECK FUNCTIONS
 
 bool Binary:: checkRocheLobe (int n){
 	
@@ -167,4 +195,4 @@ bool binary::checkMergeTime (){
 }
 
 	
-    
+ 
