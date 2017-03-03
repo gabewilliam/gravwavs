@@ -117,9 +117,13 @@ int main() {
 		
 	}	
 
-	for (int i=0; i<N; i++){
-		binaries[i].printGets();
-}
+	for(int i = N-1; i >= 0; i++) {
+
+		if(binaries[i].checkCandidate == false) {
+			binaries.erase(binaries.begin() + i);
+		}
+
+	}
 
 	
 			
