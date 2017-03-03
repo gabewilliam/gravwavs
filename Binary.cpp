@@ -15,6 +15,10 @@ Binary::Binary(double mass1, double mass2,  double separation)
 	:fm1(mass1), fm2(mass2), fa(separation){
 
 	this->updateRadii();
+		
+	if (fm2>fm1){
+		std::cout<<"are you sure about those masses?"
+	}
 
 }
 
@@ -34,7 +38,7 @@ double Binary::getMass (int n){
     }
     
     else {
-        std::cout<<"you fucked it"<<std::endl;
+        std::cout<<"you fucked it (getMass)"<<std::endl;
         return 0;
     }
     
@@ -129,7 +133,7 @@ void Binary::setSeparation (double a){
 }
 
 
-//COMPUTING BINARY VARIABLES
+//COMPUTING BINARY PROPERTIES
 
 void Binary::updateRadii (){
     
@@ -148,13 +152,10 @@ double Binary::rocheLobe(int n){
     
 }
 
-
-//DOUBLES
-
 double Binary::keplerFrequency(){
 
 	double b=pow(fa,3);
-	double freqsquared=(G*(fm1+fm2))/b;
+	double freqsquared=(G*(fm1+fm2))/b;//units of mass/G?
 	double freq=pow(freqsquared,1/2);
 	return freq;
 
@@ -230,11 +231,11 @@ void Binary::evolveSupernova (){
 }
 
 
-//CHECK FUNCTIONS
+//CHECK FUNCTIONS (true - still a candidate for CHE, false - will not undergo CHE, can be deleted)
 
 bool Binary:: checkRocheLobe (){
 	
-	this->updateRadii();
+	this->updateRadii();//think this line can go as getRadius already updates
 	double r1 = this->getRadius(1);
 	double r2 = this->getRadius(2);
 	double rl1 = this->rocheLobe(1);
@@ -275,8 +276,8 @@ bool Binary:: checkPairInstability (){
 
 bool Binary::checkMergeTime (){
 
-	double tm = this->checkMergeTime();
-	double tH =  4.55e17;// s, check using worksheet
+	double tm = this->checkMergeTime();//should this be ...this->MergeTime()?
+	double tH =  4.55e17;// s, check using worksheet (this is the correct value for hubble time)
 	if (tm<tH){
 		return true;
 	}
