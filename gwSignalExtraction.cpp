@@ -21,9 +21,98 @@ void Extractor::setTemplates(std::vector<Template>* temps)
 	return;
 }
 
-void Extractor::fft(std::vector<Template>* output)
-{
-	//Left as exercise for the reader
+void Extractor::fft(std::vector<Template>* output){
+	size_t I=output->size();
+	int J = (mSignalT->waveform[0]).size();
+	int M =(int)(log2(J)+2);
+	size_t N= pow(2,M);
+	
+	double sampleFreq=J/((mSignalT->waveform[0])[J-1]-(mSignalT->waveform[0])[0]);
+	
+	vec_d freq;
+	for(int j=0; j<N/4; j++){
+		freq.push_back(j*sampleFreq/N);
+		freq.push_back(j*sampleFreq/N);
+	} 
+	for(int j=N/4; j<N/2; j++){
+		freq.push_back((N/4-j)*sampleFreq/N);
+		freq.push_back((N/4-j)*sampleFreq/N);
+	} 
+	
+	gsl_fft_complex_workspace* complexWS = gsl_fft_complex_workspace_alloc(N);
+	gsl_fft_complex_wavetable* complexWT = gsl_fft_complex_wavetable_alloc(N);
+	;
+	for(size_t i=0;i<I;i++){
+		
+		vec_d* Amp=new vec_d;
+	
+		for(size_t j=0;j<J;j++){
+			Amp->push_back((output[0][i].waveform[1])[j]);
+			Amp->push_back(0);
+			
+			//(output[0][i].waveform[1]).push_back(0);
+		}	
+		(output[0][i].waveform[1])=*Amp;
+		for(size_t j=J;j<N;j++){
+			(output[0][i].waveform[1]).push_back(0);
+			(output[0][i].waveform[1]).push_back(0);
+		}
+		
+		gsl_fft_complex_forward(&(output[0][i].waveform[1])[0], 1, N, complexWT, complexWS);
+		output[0][i].waveform[0]=freq;/**/
+	}
+	gsl_fft_complex_workspace_free(complexWS);
+	gsl_fft_complex_wavetable_free(complexWT);
+	
+	mTemplates=output;
+	
+	return;
+	
+}
+void Extractor::fft(Signal* output){
+
+	size_t J = (output->waveform[0]).size();
+	int M =(int)(log2(J)+2);
+	size_t N= pow(2,M);
+	
+	double sampleFreq=J/((output->waveform[0])[J-1]-(output->waveform[0])[0]);
+	
+	vec_d freq;
+	for(int j=0; j<N/4; j++){
+		freq.push_back(j*sampleFreq/N);
+		freq.push_back(j*sampleFreq/N);
+	} 
+	for(int j=N/4; j<N/2; j++){
+		freq.push_back((N/4-j)*sampleFreq/N);
+		freq.push_back((N/4-j)*sampleFreq/N);
+	} 
+	
+		vec_d* Amp=new vec_d;
+	
+		for(size_t j=0;j<J;j++){
+			Amp->push_back((output->waveform[1])[j]);
+			Amp->push_back(0);
+			
+			//(output[0][i].waveform[1]).push_back(0);
+		}	
+		(output->waveform[1])=*Amp;
+		for(size_t j=J;j<N;j++){
+			(output->waveform[1]).push_back(0);
+			(output->waveform[1]).push_back(0);
+		}
+	
+
+	gsl_fft_complex_workspace* complexWS = gsl_fft_complex_workspace_alloc(N);
+	gsl_fft_complex_wavetable* complexWT = gsl_fft_complex_wavetable_alloc(N);
+
+	gsl_fft_complex_forward (&(output->waveform[1])[0], 1, N, complexWT, complexWS);
+	
+	output->waveform[0]=freq;
+	
+	gsl_fft_complex_workspace_free(complexWS);
+	gsl_fft_complex_wavetable_free(complexWT);
+	
+	mSignalF=output;
 	return;
 }
 
