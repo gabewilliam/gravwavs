@@ -1,19 +1,24 @@
 //Write functions for Binary.h in here
 #include "Binary.h"
-#include <math.h>
+#include <cmath>
+#include <iostream>
+
+//const double, can be taken out if declared in main
+const double c = 3.0e8; //ms^-2 
+const double G = 6.67408e-11; //m^3 kg^-1 s^-2
 
 //constructors
 
-Binary::Binary() [
-
-}
+Binary::Binary() {}
 
 Binary::Binary(double mass1, double mass2,  double separation)
 	:fm1(mass1), fm2(mass2), fa(separation){
+
 	this->updateRadii();
+
 }
 
-Binary::Binary(){}
+Binary::~Binary(){}
 
 
 //GET METHODS
@@ -121,101 +126,27 @@ double Binary::rocheLobe(int n){
     double q = this->getRatio(n);
     double qonethird = pow(q,1/3);
     double qtwothird = pow(q,2/3);
-    double a = this->getSeparation();
-    double rl = 0.49*qtwothird*a/((0.6*qtwothird)+log(1+qonethird));
+    double rl = 0.49*qtwothird*fa/((0.6*qtwothird)+log(1+qonethird));
     return rl;
     
 }
 
-//EVOLUTION OF STARS
 
-void Binary::evolveMainSequence (){
-	double dm=fm1*0.1+fm2*0.1;
-	a=a*(fm1+fm2)/(fm1+fm2-dm);
-	fm1=0.9*fm1;
-	fm2=0.9*fm2;
-	return;
-}
-
-void Binary::evolveWolfRayet (){
-	double dm=fm1*0.25+fm2*0.25;
-	a=a*(fm1+fm2)/(fm1+fm2-dm);
-	fm1=0.75*fm1;
-	fm2=0.75*fm2;
-	return;	
-}
-
-void Binary::evolveSupernova (){
-	double dm=fm1*0.1+fm2*0.1;
-	a=(a*(fm1+fm2-dm))/(2*(fm1+fm2-dm)-(fm1+fm2))
-	fm1=0.9*fm1;
-	fm2=0.9*fm2;
-	return;	
-}
-
-//CHECK FUNCTIONS
-
-bool Binary:: checkRocheLobe (int n){
-	
-	this->updateRadii();
-	double r = this->getRadius(n);
-	double rl = this->rocheLobe(n);
-	if (r<=rl){
-		return true;
-	}
-	else if (r>rl){
-		return false;
-	}
-	
-}
-
-bool Binary:: checkHomogeneousMixing (int n){
-
-	double omegaK = this-> keplerFrequency();
-	double omegaM = this->mixingFrequency(int n);
-	if (omegaK >= omegaM) {
-		return true;
-	}
-	else {
-		return false
-	}
-
-}
-
-bool Binary:: checkPairInstability (){
-
-	double m1 = this->getMass(1);
-	double m2 = this->getMass(2);
-	if (m1<63 && m2<63){
-		return true;
-	}
-	else {
-		return false;
-	}
-
-}
-
-bool binary::checkMergeTime (){
-
-	double tm = this->checkMergeTime();
-	tH =  4.55e17;// s, check using worksheet
-	if (tm<tH){
-		return true
-	}
-	else {
-		return false;
-	}
-
-	//DOUBLES
+//DOUBLES
 
 double Binary::keplerFrequency(){
+
 	double b=pow(fa,3);
-	double freqsquared=(G(fm1+fm2))/b;
+	double freqsquared=(G*(fm1+fm2))/b;
 	double freq=pow(freqsquared,1/2);
 	return freq;
+
 }
 
 double Binary::mixingFrequency(int n){
+
+	double mSolar = 1.989e30;
+	double omegaC = 0.0; 
 	double m;	
 	if 	(n==1){
 		m=fm1; 
@@ -229,17 +160,112 @@ double Binary::mixingFrequency(int n){
 	}
 
 	if (m<50*mSolar){
-		omegaC=0.2+(2.7e-4*((m/mSolar)-50)*((m/mSolar)-50))
+		omegaC=0.2+(2.7e-4*((m/mSolar)-50)*((m/mSolar)-50));
 	}
 	else if (m>=50*mSolar){
 		omegaC=0.2;
 	}
 	return omegaC;
+
 }
 
 double Binary::mergeTime(){
-	cfive=pow(c,5);
-	Gthree=pow(G,3);
-	b=pow(fa,4)
-	return Tmerge=(5/256)*(cfive/(Gthree*fm1*fm2*(fm1+fm2)))*b;
+
+	double cfive=pow(c,5);
+	double Gthree=pow(G,3);
+	double b=pow(fa,4);
+	double Tmerge=(5/256)*(cfive/(Gthree*fm1*fm2*(fm1+fm2)))*b;
+	return Tmerge;
+
 }
+
+
+//EVOLUTION OF STARS
+
+void Binary::evolveMainSequence (){
+
+	double dm=fm1*0.1+fm2*0.1;
+	fa=fa*(fm1+fm2)/(fm1+fm2-dm);
+	fm1=0.9*fm1;
+	fm2=0.9*fm2;
+	return;
+
+}
+
+void Binary::evolveWolfRayet (){
+
+	double dm=fm1*0.25+fm2*0.25;
+	fa=fa*(fm1+fm2)/(fm1+fm2-dm);
+	fm1=0.75*fm1;
+	fm2=0.75*fm2;
+	return;	
+
+}
+
+void Binary::evolveSupernova (){
+
+	double dm=fm1*0.1+fm2*0.1;
+	fa=(fa*(fm1+fm2-dm))/(2*(fm1+fm2-dm)-(fm1+fm2));
+	fm1=0.9*fm1;
+	fm2=0.9*fm2;
+	return;	
+
+}
+
+
+//CHECK FUNCTIONS
+
+bool Binary:: checkRocheLobe (){
+	
+	this->updateRadii();
+	double r1 = this->getRadius(1);
+	double r2 = this->getRadius(2);
+	double rl1 = this->rocheLobe(1);
+	double rl2 = this->rocheLobe(2);
+	if (r1<=rl1 && r2<=rl2){
+		return true;
+	}
+	else {
+		return false;
+	}
+	
+}
+
+bool Binary:: checkHomogeneousMixing (){
+
+	double omegaK = this-> keplerFrequency();
+	double omegaM1 = this->mixingFrequency(1);
+	double omegaM2 = this->mixingFrequency(2);
+	if (omegaK >= omegaM1 && omegaK >= omegaM2) {
+		return true;
+	}
+	else {
+		return false;
+	}
+
+}
+
+bool Binary:: checkPairInstability (){
+
+	if (fm1 < 63 && fm2 < 63){
+		return true;
+	}
+	else {
+		return false;
+	}
+
+}
+
+bool Binary::checkMergeTime (){
+
+	double tm = this->checkMergeTime();
+	double tH =  4.55e17;// s, check using worksheet
+	if (tm<tH){
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
+

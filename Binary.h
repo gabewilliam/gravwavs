@@ -29,8 +29,8 @@ class Binary {
 		void evolveWolfRayet();
 		void evolveSupernova();
 
-		bool checkRocheLobe(int n);
-		bool checkHomogeneousMixing(int n);
+		bool checkRocheLobe();
+		bool checkHomogeneousMixing();
 		bool checkPairInstability();
 		bool checkMergeTime();
 			
@@ -43,4 +43,4 @@ class Binary {
 		double fr2;
 		double fa;		
 
-}
+};
