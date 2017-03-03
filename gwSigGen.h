@@ -20,7 +20,7 @@
 #define G_CONST 6.6740831E-11
 #define SM_CONST 1.989E30
 #define MPc_CONST 3.086E22
-#define MHz_CONST 1E6;
+#define MHz_CONST 1E6
 
 #define SUCCESS 0
 #define FAILURE 1
@@ -107,9 +107,11 @@ void setFundamentalParameters(
 		
 	// Conversion factor for masses
 	double convFact = G_CONST/pow(C_CONST, 2.0);
+	
 	// Convert masses into units of distance
 	double m1 = m_1*convFact*SM_CONST;
 	double m2 = m_2*convFact*SM_CONST;
+	
 	double M = comboMass(m1, m2);
 	double n = nu(m1, m2);
 	
@@ -146,7 +148,6 @@ void setFundamentalParameters(
 	params->mu[2] = computeTransitionComps(5.0801E-1, 7.7515E-2, 2.2369E-2, n, M);
 	// fCut
 	params->mu[3] = computeTransitionComps(8.4845E-1, 1.2848E-1, 2.7299E-1, n, M);
-	
 }
 //-------------------------------------------------------------------------------------//
 
@@ -156,7 +157,7 @@ double Lorentzian(parameters *params, double f){
 }
 // Merger -> Ringdown scaling factor for consistency
 double omega_r(parameters *params){
-	return pow(params->mu[1]/params->mu[0], -2.0/3.0)/Lorentzian(params, params->mu[1]);
+	return (M_PI/2.0)*params->mu[2]*pow(params->mu[1]/params->mu[0], -2.0/3.0);
 }
 
 //-------------------------------------------------------------------------------------//
@@ -184,14 +185,14 @@ double ringdownPhenomBAmp(parameters *params, double f){
 }
 
 // Phase of wave
-double PhenomBPhase(parameters *params, double f){
+double phenomBPhase(parameters *params, double f){
 	
 	// 2*pi*t0*f + phase0
 	double sumPhase = 2.0*M_PI*params->init[0]*f + params->init[1];
 	
 	for(int i = 0; i<8; i++){
 		
-		// + psi[i]*v^((i-5)/3)
+		// + psi[i]*f^((i-5)/3)
 		sumPhase += params->psi[i]*pow(f, (double(i)-5.0)/3.0);
 	}
 	
@@ -199,25 +200,30 @@ double PhenomBPhase(parameters *params, double f){
 }
 
 // Generate whole wave signal
-int gravitationalWave(parameters *params, vector<Signal> *sigs, int nPosFreq){
+int gravitationalWave(parameters *params, vector<Signal> *sigs){
+	
+	// Maximum frequency
+	double maxFreq = 4096.0/C_CONST;
+	
+	// Frequency increment 
+	double df = 0.05/C_CONST;
+	
+	// Number of positive frequency bins
+	double nPosFreq = maxFreq/df;
 		
 	// Set up storage of both real and imaginary components of the wave
 	Signal totSig;
 	
 	// Total number of data points is 4 times the number of positive frequencies investigated
-	int nPoints = 4*nPosFreq;
+	double nPoints = 4.0*nPosFreq;
 	
 	// Populate waveforms of arrays with all zeros to allow future direct index reference
-	for (int k = 0; k < nPoints; k++){
+	for (int k = 0; k < int(nPoints); k++){
 		
 		totSig.waveform[0].push_back(0.0);
 		totSig.waveform[1].push_back(0.0);
 		
 	}
-	
-	// Ensure total number of frequencies covered is twice the number of positive 
-	// frequencies, as second half are corresponding negative values
-	double df = 2.0*params->mu[3]/double(nPosFreq);
 	
 	// Set up scaling amplitude
 	double amp0 = effAmp(params);
@@ -234,13 +240,17 @@ int gravitationalWave(parameters *params, vector<Signal> *sigs, int nPosFreq){
 	
 	// Storage for frequency in Hz
 	double freq_Hz;
+	
+	// TEMPORARY addition for testing the phase
+	ofstream phaseFile;
+	phaseFile.open("phasefile.txt", std::ios_base::app);
 			
 	for (int i = 0; i < nPosFreq; i++){
 		
 		freq = i*df;
 		
 		if (freq >= params->init[2]){
-				
+			
 			if (freq < params->mu[0]){
 				finalAmp = inspiralPhenomBAmp(params, freq);
 			}
@@ -253,16 +263,21 @@ int gravitationalWave(parameters *params, vector<Signal> *sigs, int nPosFreq){
 			else{
 				finalAmp = 0.0;
 			}
-		}else{
+			
+		}
+		else{
 			finalAmp = 0.0;
 		}
 		
-		wavePhase = PhenomBPhase(params, freq);
+		wavePhase = phenomBPhase(params, freq);
 		
-		gravWav = amp0*finalAmp*(cos(wavePhase)-J*sin(wavePhase));
+		gravWav = amp0*finalAmp*(cos(wavePhase)+J*sin(wavePhase));
 		
 		// Convert frequency back to Hz
 		freq_Hz = freq*C_CONST;		
+		
+				
+		phaseFile << freq_Hz << "\t" << wavePhase << endl;
 			
 		totSig.waveform[0][2*i] = freq_Hz;
 		totSig.waveform[0][2*i+1] = freq_Hz;
@@ -270,7 +285,7 @@ int gravitationalWave(parameters *params, vector<Signal> *sigs, int nPosFreq){
 		totSig.waveform[1][2*i] = gravWav.real();
 		totSig.waveform[1][2*i+1] = gravWav.imag();
 		
-		int k = 2.0*(nPosFreq + i);
+		int k = nPoints - 2*(i + 1);
 		
 		totSig.waveform[0][k] = -freq_Hz;
 		totSig.waveform[0][k+1] = -freq_Hz;
