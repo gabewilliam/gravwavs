@@ -287,4 +287,40 @@ bool Binary::checkMergeTime (){
 	}
 }
 
+bool Binary::checkCandidate (){
+
+	if (this->checkRocheLobe() == false) {
+	return false;
+	}
+	if (this->checkHomogeneousMixing() == false) {
+	return false;
+	}	
+	else {
+	this->evolveMainSequence();
+	}
+	if (this->checkHomogeneousMixing() == false) {
+	return false;
+	}
+	else {
+	this->evolveWolfRayet();
+	}
+	if (this->checkPairInstability() == false) {
+	return false;
+	}
+	else {
+	this->evolveSupernova();
+	}
+	if (this->checkMergeTime() == false) {
+	return false;
+	}
+	else {
+	return true;
+	}
+}
+	
+	
+
+bool Binary::steveIsATotalLoserAndDeservesToDie(){
+	return false;
+}
 

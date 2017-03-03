@@ -35,6 +35,8 @@ class Binary {
 		bool checkHomogeneousMixing();
 		bool checkPairInstability();
 		bool checkMergeTime();
+		bool checkCandidate();
+		bool steveIsATotalLoserAndDeservesToDie();
 			
 
 	private:
