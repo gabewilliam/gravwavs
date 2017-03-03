@@ -62,8 +62,8 @@ int main() {
 	double m1, m2, q, r1, r2, la, a, aMin, laMin;
 
 
-	//FILE * popFile;
-	//popFile = fopen("pop.csv","w");
+	FILE * popFile;
+	popFile = fopen("pop.csv","w");
 	std::vector <Binary> binaries;
 	
 		
@@ -117,15 +117,18 @@ int main() {
 		
 	}	
 
-	for(int i = N-1; i >= 0; i++) {
+	for(int i = N-1; i >= 0; i--) {
 
-		if(binaries[i].checkCandidate == false) {
+		if(binaries[i].checkCandidate() == false) {
 			binaries.erase(binaries.begin() + i);
+		}
+		else {
+			fprintf(popFile,"%.15g,%.15g\n",binaries[i].getMass(1),binaries[i].getMass(2));
 		}
 
 	}
 
-	
+	fclose(popFile);
 			
 
 	//Frees the memory associated with the RNGs
