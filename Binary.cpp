@@ -42,7 +42,7 @@ double Binary::getMass (int n){
 
 double Binary::getRadius (int n){    
    
-  this->updateRadii();
+  this->updateRadii();//this is my favourite line of code
   if (n==1){
         return fr1;
     }
@@ -83,6 +83,23 @@ double Binary::getRatio (int n){
     
 }
 
+
+void Binary::printGets(){//easy to check information on a binary
+	
+	std::cout<<"printing all gets"<<std::endl;
+
+	for (int n=1; n<3; n++){
+
+		std::cout<<"Star "<<n<<": ";
+		std::cout<<"mass = "<<this->getMass(n);
+		std::cout<<", radius = "<<this->getRadius(n)<<std::endl;
+
+	}
+	std::cout<<"Binary separation = "<<this->getSeparation()<<std::endl;
+	std::cout<<"Binary mass ratio (m2/m1) = "<<this->getRatio(2)<<std::endl;
+	return;
+
+}
 
 //SET METHODS
 

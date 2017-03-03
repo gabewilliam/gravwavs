@@ -15,6 +15,8 @@ class Binary {
 		double getSeparation();
 		double getRatio(int n);//input decides which mass is on top of fraction
 		
+		void printGets();//couts all the gets (above)
+
 		void setMass(int n, double m);
 		void setSeparation(double a);
 
