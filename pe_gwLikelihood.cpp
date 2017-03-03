@@ -13,8 +13,8 @@
 //Uses d(f), h(f) and s(f) using equation A20 in "Veich, Vecchio (2010)" to calculate likelihood using two parameters m1 and m2.
 //Returns a NON-NORMALISED likelihood.
 
-long double PdhFunction( double m1, double m2, std::string signalFile ){
-	
+long double likelihood( double m1, double m2, std::string signalFile ){
+	//std::cout<<"L1"<<std::endl;
 	Signal dt;//Data signal (time domain)
 	std::vector< Signal > idt; //loadSignals requires std::vector
 	Signal df;//Data signal (freq domain)
@@ -46,18 +46,15 @@ long double PdhFunction( double m1, double m2, std::string signalFile ){
 	vec_d vhf = hf.waveform[1];
 	
 	for( int i = 0; i < n; i++ ){ //evaluates the sum part in equation A20	
-		sum += pow( std::abs( vdf[i] - vhf[i] ), 2 )/sf[i];
-		SNR += pow( std::abs( vdf[i] ), 2 )/sf[i];
+		sum += pow( std::abs( vdf[i]/20 - vhf[i]/20 ), 2 )/sf[i];
+		SNR += pow( std::abs( vdf[i]/20 ), 2 )/sf[i];
 	}
-
-	SNR = sqrt(SNR);
-
 	vec_d t = dt.waveform[0];//takes the time vector
 	int n2 = t.size();//finds the number of elements	
 	double T = t[n2-1];//takes the last element for T (total time elapsed)
-
-	long double pdh = exp( (-2/T) * sum );//calculates p(d|h)
+	SNR = sqrt(SNR/T);	
 	
+	long double pdh = (-2/T) * sum;//calculates p(d|h)
 	return pdh;
 
 }
@@ -80,7 +77,7 @@ vec_d NoiseFunction( vec_d f ){
 	vec_d sf;
 
 	for( int i = 0; i < n; i++ ){
-		sf.push_back( 1e-37 ); //PLACEHOLDER: INSERT NOISE FUNCTION IN PARENTHESIS
+		sf.push_back( 1e-40 ); //PLACEHOLDER: INSERT NOISE FUNCTION IN PARENTHESIS
 	}
 
 	return sf;

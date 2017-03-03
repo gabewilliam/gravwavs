@@ -12,13 +12,10 @@
 
 #include "pe_gwLikelihood.h"
 
-
-//Prototype for the likelihood calculation function
-long double likelihood(double, double, std::string, long double (*function)(double,double,std::string));
 double gaussian(double, double, double, double, double);
 double prior(double, double, double, double);
-int autoCorrelation(double [], int);
-void saveToFile(double [],double [],int,int);
+double autoCorrelation(double [], int);
+void saveToFile(double [],double [],int,int,char*);
 
 
 int main() {
@@ -53,7 +50,7 @@ int main() {
 	double sigma;
 	std::cin >> sigma;
 	
-	double nSigma = sigma*mSolar;
+	sigma*=mSolar;
 
 	//Takes mass limits for the prior function
 	double mLower,mUpper;
@@ -82,9 +79,10 @@ int main() {
 	
 
 	//Sets the starting ma and mb values for the routine as random integers.
+	//do {
 	ma = gsl_rng_uniform(startGen)*(mUpper-mLower)+mLower;
 	mb = gsl_rng_uniform(startGen)*(mUpper-mLower)+mLower;
-	
+	//} while(PdhFunction(ma,mb,fileName)==0);
 
 	/*Loops over the number of iterations specified by the input. In each run,
 	/ the likelihood function is evaluated at (ma,mb). Then, one of the RNGs is
@@ -97,17 +95,18 @@ int main() {
 	/ is output to the file.*/
 	for(int i = 1; i <= N; i++) {
 
-		p = likelihood (ma,mb,fileName,PdhFunction)*prior(ma,mb,mUpper,mLower);
+		p = likelihood(ma,mb,fileName)+log(prior(ma,mb,mUpper,mLower));
 
-		nZeroMA = gsl_ran_gaussian(normGen, nSigma);
-		nZeroMB = gsl_ran_gaussian(normGen, nSigma);
+		nZeroMA = gsl_ran_gaussian(normGen, sigma);
+		nZeroMB = gsl_ran_gaussian(normGen, sigma);
 
 		maProposal = ma + nZeroMA;
 		mbProposal = mb + nZeroMB;
-		pProposal = likelihood(maProposal,mbProposal,fileName,PdhFunction)*prior			  (maProposal,mbProposal,mUpper,mLower);
+		pProposal = likelihood(maProposal,mbProposal,fileName)+log(prior(maProposal,mbProposal,mUpper,mLower));
 
-		alpha = pProposal/p;
-		
+		alpha = exp(pProposal-p);
+		//std::cout<<alpha<<std::endl;
+		//std::cout<<PdhFunction (ma,mb,fileName)<<"\t"<<prior(ma,mb,mUpper,mLower)<<std::endl;
 		rZero = gsl_rng_uniform_pos(rGen);
 		
 		if(alpha > rZero) {
@@ -126,16 +125,16 @@ int main() {
 		
 	}
 
-	int lagMa = autoCorrelation(maArray,N);
-	int lagMb = autoCorrelation(mbArray,N);
-	std::cout<<lagMa<<"\t"<<lagMb<<std::endl;
+	double ACLMa = autoCorrelation(maArray,N);
+	double ACLMb = autoCorrelation(mbArray,N);
+	std::cout<<ACLMa<<"\t"<<ACLMb<<std::endl;
 
-	int lags [] = {lagMa, lagMb};
-	int lag = *(std::max_element(lags,lags+2));
-	std::cout<<lag<<std::endl;
-	lag = 100;
+	double ACLs [] = {ACLMa, ACLMb};
+	int ACLMax = *(std::max_element(ACLs,ACLs+2));	
+	std::cout<<ACLMax<<std::endl;
 	
-	saveToFile(maArray,mbArray,lag,N);
+	saveToFile(maArray,mbArray,1,N,"MassFile.txt");
+	saveToFile(maArray,mbArray,10,N,"2DMonte.txt");
 
 	/*Frees the memory associated with the random
 	/ number generators and deallocates memory.*/
@@ -148,36 +147,27 @@ int main() {
 
 }
 
-/*Defines a general likelihood function, which can take any function containing the appropriate arguments as 
-/ input.*/
-long double likelihood(double ma, double mb, std::string file, long double (*function)(double,double,std::string)) {
-
-	double g;
-    g = (*function)(ma,mb,file);
-    return (g);
-
-}
-
-
 /*Defines a prior function which is a step of height 1, centred on the origin,
 / with a width of w.*/
 double prior(double ma, double mb, double mUpper, double mLower) {
 
 	if((ma < mUpper && ma > mLower) 
-	&& (mb < mUpper && mb > mLower)) { return 1/((mUpper-mLower)*(mUpper-mLower)); }
+	&& (mb < mUpper && mb > mLower)) return 1; //pow(mUpper-mLower,-2);
 
-	else { return 0; }
+	else return 0;
 
 }
 
 /*Iterates through different lag values, calculating the autocorrelation until it falls below the threshold
 / value of 0.05.*/
-int autoCorrelation(double parameterArray[], int size) {
+double autoCorrelation(double parameterArray[], int size) {
 	
 	int lag=1;
+	double ACL=0;
 	double autoCorr=1;
 
-	while(autoCorr>0.05) {
+	while(autoCorr==std::abs(autoCorr)) {
+
 		double * lagArray = new double[size-lag];
 		double * leadArray = new double[size-lag];
 		std::copy(parameterArray+lag,parameterArray+size,leadArray);
@@ -188,20 +178,22 @@ int autoCorrelation(double parameterArray[], int size) {
 				std::cout<<parameterArray[i]<<std::endl;
 			}
 		}
-		//std::cout<<lagArray[0]<<"\t"<<lagArray[size-lag-1]<<std::endl;
-		//std::cout<<leadArray[0]<<"\t"<<leadArray[size-lag-1]<<std::endl;
+
 		lag+=1;
+		ACL+=2*autoCorr;
+
 		delete [] lagArray;
 		delete [] leadArray;
 	}
-	return lag;
+
+	return ACL;
 }
 
-void saveToFile(double ma[], double mb[], int lag, int size) {
+void saveToFile(double ma[], double mb[], int lag, int size, char* fileName) {
 	
 	//Opens the output text file
 	FILE * outFile;
-	outFile = fopen("2DMonte.txt","w");
+	outFile = fopen(fileName,"w");
 
 	for(int i = 0; i < size; i++){
 		if (i%lag==0){
