@@ -17,7 +17,7 @@ Binary::Binary(double mass1, double mass2,  double separation)
 	this->updateRadii();
 		
 	if (fm2>fm1){
-		std::cout<<"are you sure about those masses?"
+		std::cout<<"are you sure about those masses?"<<std::endl;
 	}
 
 }
@@ -104,6 +104,8 @@ void Binary::printGets(){//easy to check information on a binary
 	return;
 
 }
+
+
 
 //SET METHODS
 
@@ -235,7 +237,6 @@ void Binary::evolveSupernova (){
 
 bool Binary:: checkRocheLobe (){
 	
-	this->updateRadii();//think this line can go as getRadius already updates
 	double r1 = this->getRadius(1);
 	double r2 = this->getRadius(2);
 	double rl1 = this->rocheLobe(1);
@@ -276,7 +277,7 @@ bool Binary:: checkPairInstability (){
 
 bool Binary::checkMergeTime (){
 
-	double tm = this->checkMergeTime();//should this be ...this->MergeTime()?
+	double tm = this->mergeTime();//should this be ...this->MergeTime()?
 	double tH =  4.55e17;// s, check using worksheet (this is the correct value for hubble time)
 	if (tm<tH){
 		return true;

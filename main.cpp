@@ -20,7 +20,7 @@ int main() {
 
 	TomAndJerry.setSeparation(a);
 
-	TomAndJerry.printGets();//chekcing that Binary::set...() methods actually worked
+	TomAndJerry.printGets();//checking that Binary::set...() methods actually worked
 	
 	//next time... test evolutions & CHE checks, maybe test building a std::vector of Binaries
 
