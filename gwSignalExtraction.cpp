@@ -49,8 +49,6 @@ void Extractor::fft(std::vector<Template>* output){
 		for(size_t j=0;j<J;j++){
 			Amp->push_back((output[0][i].waveform[1])[j]);
 			Amp->push_back(0);
-			
-			//(output[0][i].waveform[1]).push_back(0);
 		}	
 		(output[0][i].waveform[1])=*Amp;
 		for(size_t j=J;j<N;j++){
