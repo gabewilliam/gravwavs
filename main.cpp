@@ -1,6 +1,6 @@
 #include "Binary.cpp"
 #include <iostream>
-
+//so far this tests a new printGets function (itself a test of all the gets) and that the sets work
 
 int main() {
 
