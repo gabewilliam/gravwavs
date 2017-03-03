@@ -4,11 +4,11 @@
 
 int main() {
 
-	Binary TomAndJerry (75.0, 50.0, 17);
+	Binary TomAndJerry (75.0, 50.0, 17);//create a sample Binary
 
-	TomAndJerry.printGets();	
+	TomAndJerry.printGets();//use printGets() to cout all the Binary::get...() methods
 
-	std::cout<<std::endl<<"change m1, m2 and a:"<< std::endl;
+	std::cout<<std::endl<<"change m1, m2 and a:"<< std::endl;//can change any of the fundemental properties of binary
 	double m[2], a;
 	std::cin>>m[0]>>m[1]>>a;
 
@@ -20,7 +20,9 @@ int main() {
 
 	TomAndJerry.setSeparation(a);
 
-	TomAndJerry.printGets();
+	TomAndJerry.printGets();//chekcing that Binary::set...() methods actually worked
+	
+	//next time... test evolutions & CHE checks
 
 	return 0;
 
