@@ -1,0 +1,136 @@
+  _____          _         _____ _                   _                  
+ / ____|        | |       / ____| |                 | |                 
+| |     ___   __| | ___  | (___ | |_ _ __ _   _  ___| |_ _   _ _ __ ___ 
+| |    / _ \ / _` |/ _ \  \___ \| __| '__| | | |/ __| __| | | | '__/ _ \
+| |___| (_) | (_| |  __/  ____) | |_| |  | |_| | (__| |_| |_| | | |  __/
+ \_____\___/ \__,_|\___| |_____/ \__|_|   \__,_|\___|\__|\__,_|_|  \___|
+
+
+This should act as a guide of roughly how the code (or at least the stellar
+population evolution part of it) should work. I'll try to update it when we
+have a better idea of how the second integration part will work, if that is
+involved enough to require a structure guide.
+
+The code will have two key elements, the Binary class, and the main cpp
+program which will operate on this (these).
+
+
+ ___ _                    
+| _ |_)_ _  __ _ _ _ _  _ 
+| _ \ | ' \/ _` | '_| || |
+|___/_|_||_\__,_|_|  \_, |
+                     |__/ 
+
+This class is essentially a way of storing the properties of a binary, and
+allows the binary to be acted on using a number of functions which are built
+into it.
+
+
+DATA MEMBERS
+~~~~~~~~~~~~
+The data about a given binary which are stored in the class are the two
+component masses (m), the two component radii (r) and the separation.
+
+
+GET AND SET METHODS
+~~~~~~~~~~~~~~~~~~~
+There are get and set functions for each of these data members, as well as
+another function which returns the mass ratio. There is also a function
+which updates the radii, which can be applied when needed, as changing the
+masses will affect these.
+
+
+CALCULATIONS OF IMPORTANT VALUES
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+There is also a group of functions which calculate certain key values, to be
+used by the other functions (mainly the checking ones, which are discussed
+later).
+
+These find the Roche lobe radius, the Keplerian angular frequency, the
+mixing frequency and the merger time. The mixing frequency is our way of
+saying the minimum rotational frequency the binary would have to have for
+chemically homogeneous mixing to take place.
+
+
+EVOLUTION FUNCTIONS
+~~~~~~~~~~~~~~~~~~~
+These functions evolve the binaries' members through different stages of
+their stellar evolution. This encompasses the mass loss at each stage, and
+the corresponding change in orbital separation.
+
+There is a function for the main sequence, Wolf-Rayet and supernova phases 
+of the evolution.
+
+
+CHECK FUNCTIONS
+~~~~~~~~~~~~~~~
+These are designed to check whether the discard conditions are satisfied or
+not. Each of these functions is a boolean, which returns true if the binary
+"passes" the check and is to be kept.
+
+These are included for overflow of the Roche lobe, rotational speed required
+for homogeneous mixing, satisfying the member mass limit to avoid pair
+instability supernovae and merging within the Hubble time. The first two of
+these will make calls to some of the calculation functions.
+
+					 
+ __  __      _      
+|  \/  |__ _(_)_ _  
+| |\/| / _` | | ' \ 
+|_|  |_\__,_|_|_||_|	
+
+This essentially generates a population of random binaries, and evolves
+them, finding which ones are binary black hole candidates formed through
+chemically homogeneous mixing.
+
+The program works in a number of stages, which are detailed below.
+
+
+GENERATING A POPULATION OF BINARIES
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+First, a population of binaries is generated randomly, with each being given
+two masses and a separation, drawn from the distributions given in the various 
+papers or the cheat sheet CPLB gave us. Each time a binary is generated, it is
+appended to a vector storing all of the binaries of interest, provided both of
+its component masses are between 20 and 300 solar masses. Once the desired 
+number of binaries in this range have been generated, the program moves onto
+the next stage.
+
+
+EVOLVING AND FILTERING THE BINARIES
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Once the population of binaries has been created and added to the vector, the
+program will loop over the vector, evolving each binary and deciding at each
+stage whether it should be kept or not.
+
+First, before any evolution takes place, the Roche lobe check is carried out.
+
+Then, the homogeneous mixing check is made.
+
+Then, the main sequence stage of the evolution is carried out.
+
+The homogeneous mixing check is then made again.
+
+The Wolf-Rayet stage is then carried out.
+
+The pair instability mass check is then made.
+
+The supernova evolution stage is subsequently carried out.
+
+Finally, the merger time check is made.
+
+If any of the checks is failed, the binary is removed from the vector of
+binaries using the erase command (part of std::vector). The removed binaries
+may be kept in some form or other, so a plot showing how the thinning takes
+place could be made.
+
+The functions could be called individually at each loop stage. Alternatively,
+a larger function could be included in the binary class, so all of the
+methods are called in sequence automatically, by calling this master function.
+
+
+
+
+
+
+				
