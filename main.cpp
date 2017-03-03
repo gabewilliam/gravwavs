@@ -22,7 +22,7 @@ int main() {
 
 	TomAndJerry.printGets();//chekcing that Binary::set...() methods actually worked
 	
-	//next time... test evolutions & CHE checks
+	//next time... test evolutions & CHE checks, maybe test building a std::vector of Binaries
 
 	return 0;
 
