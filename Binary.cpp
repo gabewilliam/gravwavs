@@ -3,16 +3,23 @@
 #include <cmath>
 #include <iostream>
 
-//const double, can be taken out if declared in main
+
+
+//CONSTANTS
 const double c = 3.0e8; //ms^-2 
 const double G = 6.67408e-11; //m^3 kg^-1 s^-2
+const double mSolar = 1.989e30; //kg
+const double rSolar = 6.975e8; //m
+const double AU = 1.496e11; //m
 
-//constructors
+
+
+//CONSTRUCTORS
 
 Binary::Binary() {}
 
 Binary::Binary(double mass1, double mass2,  double separation)
-	:fm1(mass1), fm2(mass2), fa(separation){
+	:fm1(mass1), fm2(mass2), fa(separation) {
 
 	this->updateRadii();
 		
@@ -22,19 +29,23 @@ Binary::Binary(double mass1, double mass2,  double separation)
 
 }
 
-Binary::~Binary(){}
+
+
+//DESTRUCTOR
+Binary::~Binary() {}
+
 
 
 //GET METHODS
 
-double Binary::getMass (int n){
+double Binary::getMass(int n) {
     
     if (n==1){
-        return fm1;
+        return fm1;//In solar masses
     }
     
     else if (n==2){
-        return fm2;
+        return fm2;//In solar masses
     }
     
     else {
@@ -44,15 +55,15 @@ double Binary::getMass (int n){
     
 }
 
-double Binary::getRadius (int n){    
+double Binary::getRadius(int n) {    
    
   this->updateRadii();//this is my favourite line of code
   if (n==1){
-        return fr1;
+        return fr1;//In solar radii
     }
     
     else if (n==2){
-        return fr2;
+        return fr2;//In solar radii
     }
     
     else {
@@ -62,13 +73,13 @@ double Binary::getRadius (int n){
     
 }
 
-double Binary::getSeparation (){
+double Binary::getSeparation(){
     
-    return fa;//kinda reads like there's no output
+    return fa;//In AU//kinda reads like there's no output
     
 }
 
-double Binary::getRatio (int n){
+double Binary::getRatio(int n) {
     
     if (n==1){
         double q=fm1/fm2;
@@ -87,12 +98,11 @@ double Binary::getRatio (int n){
     
 }
 
-
 void Binary::printGets(){//easy to check information on a binary
 	
 	std::cout<<"printing all gets"<<std::endl;
 
-	for (int n=1; n<3; n++){
+	for(int n=1; n<3; n++) {
 
 		std::cout<<"Star "<<n<<": ";
 		std::cout<<"mass = "<<this->getMass(n);
@@ -109,13 +119,13 @@ void Binary::printGets(){//easy to check information on a binary
 
 //SET METHODS
 
-void Binary::setMass (int n, double m){
+void Binary::setMass(int n, double m){
     
-    if (n==1){
+    if(n==1) {
         fm1=m;
     }
     
-    else if (n==2){
+    else if(n==2) {
         fm2=m;
     }
     
@@ -123,11 +133,12 @@ void Binary::setMass (int n, double m){
         std::cout<<"you fucked it (setMass)"<<std::endl;
     }
     
+	this->updateRadii();
     return;    
 
 }
 
-void Binary::setSeparation (double a){
+void Binary::setSeparation(double a){
     
     fa=a;
     return;    
@@ -135,113 +146,124 @@ void Binary::setSeparation (double a){
 }
 
 
+
 //COMPUTING BINARY PROPERTIES
 
-void Binary::updateRadii (){
+void Binary::updateRadii() {
     
     fr1=pow(fm1,0.6);
     fr2=pow(fm2,0.6);
     
 }
 
-double Binary::rocheLobe(int n){
+double Binary::rocheLobe(int n) {
     
     double q = this->getRatio(n);
-    double qonethird = pow(q,1/3);
-    double qtwothird = pow(q,2/3);
-    double rl = 0.49*qtwothird*fa/((0.6*qtwothird)+log(1+qonethird));
-    return rl;
+    double qOneThird = pow(q,1/3);
+    double qTwoThird = pow(q,2/3);
+	double a = this->getSeparation()*(AU/rSolar); //Finds a in rSolar
+
+    double rl = 0.49*qTwoThird*a/((0.6*qTwoThird)+log(1+qOneThird));
+    return rl;//In units of solar radii
     
 }
 
-double Binary::keplerFrequency(){
+double Binary::keplerFrequency() {
 
-	double b=pow(fa,3);
-	double freqsquared=(G*(fm1+fm2))/b;//units of mass/G?
-	double freq=pow(freqsquared,1/2);
+	double a = this->getSeparation()*AU;//Gets a in m
+	double m1 = this->getMass(1)*mSolar;
+	double m2 = this->getMass(2)*mSolar;//Gets both masses in kg
+	double b = pow(a,3);
+	double freqSquared = (G*(m1+m2))/b;//units of mass/G?
+	double freq = pow(freqSquared,1/2);
 	return freq;
 
 }
 
-double Binary::mixingFrequency(int n){
+double Binary::mixingFrequency(int n) {
 
-	double mSolar = 1.989e30;
 	double omegaC = 0.0; 
 	double m;	
-	if 	(n==1){
-		m=fm1; 
+	if(n==1) {
+		m = fm1;//In solar masses
 	}
-	else if (n==2){
-		m=fm2;
+	else if(n==2) {
+		m = fm2;//In solar masses
 	}
 	else {
 		std::cout<<"You fucked it (mixingFrequency)"<<std::endl;
 		return 0;
 	}
 
-	if (m<50*mSolar){
-		omegaC=0.2+(2.7e-4*((m/mSolar)-50)*((m/mSolar)-50));
+	if(m<50) {
+		omegaC=0.2+((2.7e-4)*(m-50)*(m-50));
 	}
-	else if (m>=50*mSolar){
+	else if(m>=50) {
 		omegaC=0.2;
 	}
 	return omegaC;
 
 }
 
-double Binary::mergeTime(){
+double Binary::mergeTime() {
 
-	double cfive=pow(c,5);
-	double Gthree=pow(G,3);
-	double b=pow(fa,4);
-	double Tmerge=(5/256)*(cfive/(Gthree*fm1*fm2*(fm1+fm2)))*b;
-	return Tmerge;
+	double cFive = pow(c,5);
+	double GThree = pow(G,3);
+	double a = this->getSeparation()*AU;//Gets the separation in m
+	double m1 = this->getMass(1)*mSolar;
+	double m2 = this->getMass(2)*mSolar;
+	double b = pow(fa,4);
+	double Tmerge = (5/256)*(cFive/(GThree*m1*m2*(m1+m2)))*b;//In s
+	return Tmerge;//In seconds
 
 }
+
 
 
 //EVOLUTION OF STARS
 
-void Binary::evolveMainSequence (){
+void Binary::evolveMainSequence () {
 
-	double dm=fm1*0.1+fm2*0.1;
-	fa=fa*(fm1+fm2)/(fm1+fm2-dm);
-	fm1=0.9*fm1;
-	fm2=0.9*fm2;
+	double dm = fm1*0.1+fm2*0.1;
+	fa = fa*(fm1+fm2)/(fm1+fm2-dm);
+	fm1 = 0.9*fm1;
+	fm2 = 0.9*fm2;
 	return;
 
 }
 
-void Binary::evolveWolfRayet (){
+void Binary::evolveWolfRayet() {
 
-	double dm=fm1*0.25+fm2*0.25;
-	fa=fa*(fm1+fm2)/(fm1+fm2-dm);
-	fm1=0.75*fm1;
-	fm2=0.75*fm2;
+	double dm = fm1*0.25+fm2*0.25;
+	fa = fa*(fm1+fm2)/(fm1+fm2-dm);
+	fm1 = 0.75*fm1;
+	fm2 = 0.75*fm2;
 	return;	
 
 }
 
-void Binary::evolveSupernova (){
+void Binary::evolveSupernova() {
 
-	double dm=fm1*0.1+fm2*0.1;
-	fa=(fa*(fm1+fm2-dm))/(2*(fm1+fm2-dm)-(fm1+fm2));
-	fm1=0.9*fm1;
-	fm2=0.9*fm2;
+	double dm = fm1*0.1+fm2*0.1;
+	fa = (fa*(fm1+fm2-dm))/(2*(fm1+fm2-dm)-(fm1+fm2));
+	fm1 = 0.9*fm1;
+	fm2 = 0.9*fm2;
 	return;	
 
 }
 
 
-//CHECK FUNCTIONS (true - still a candidate for CHE, false - will not undergo CHE, can be deleted)
 
-bool Binary:: checkRocheLobe (){
+//CHECK FUNCTIONS (true - still a candidate for CHE,
+//				   false - will not undergo CHE, can be deleted)
+
+bool Binary::checkRocheLobe() {
 	
 	double r1 = this->getRadius(1);
 	double r2 = this->getRadius(2);
 	double rl1 = this->rocheLobe(1);
 	double rl2 = this->rocheLobe(2);
-	if (r1<=rl1 && r2<=rl2){
+	if(r1<=rl1 && r2<=rl2) {
 		return true;
 	}
 	else {
@@ -250,12 +272,12 @@ bool Binary:: checkRocheLobe (){
 	
 }
 
-bool Binary:: checkHomogeneousMixing (){
+bool Binary::checkHomogeneousMixing() {
 
 	double omegaK = this-> keplerFrequency();
 	double omegaM1 = this->mixingFrequency(1);
 	double omegaM2 = this->mixingFrequency(2);
-	if (omegaK >= omegaM1 && omegaK >= omegaM2) {
+	if(omegaK >= omegaM1 && omegaK >= omegaM2) {
 		return true;
 	}
 	else {
@@ -264,9 +286,9 @@ bool Binary:: checkHomogeneousMixing (){
 
 }
 
-bool Binary:: checkPairInstability (){
+bool Binary::checkPairInstability() {
 
-	if (fm1 < 63 && fm2 < 63){
+	if(fm1 < 63 && fm2 < 63) {
 		return true;
 	}
 	else {
@@ -275,11 +297,11 @@ bool Binary:: checkPairInstability (){
 
 }
 
-bool Binary::checkMergeTime (){
+bool Binary::checkMergeTime() {
 
-	double tm = this->mergeTime();//should this be ...this->MergeTime()?
+	double tm = this->mergeTime();
 	double tH =  4.55e17;// s, check using worksheet (this is the correct value for hubble time)
-	if (tm<tH){
+	if(tm < tH) {
 		return true;
 	}
 	else {
@@ -287,40 +309,40 @@ bool Binary::checkMergeTime (){
 	}
 }
 
-bool Binary::checkCandidate (){
+bool Binary::checkCandidate() {
 
-	if (this->checkRocheLobe() == false) {
-	return false;
+	if(this->checkRocheLobe() == false) {
+		return false;
 	}
-	if (this->checkHomogeneousMixing() == false) {
-	return false;
+	if(this->checkHomogeneousMixing() == false) {
+		return false;
 	}	
 	else {
-	this->evolveMainSequence();
+		this->evolveMainSequence();
 	}
-	if (this->checkHomogeneousMixing() == false) {
-	return false;
-	}
-	else {
-	this->evolveWolfRayet();
-	}
-	if (this->checkPairInstability() == false) {
-	return false;
+	if(this->checkHomogeneousMixing() == false) {
+		return false;
 	}
 	else {
-	this->evolveSupernova();
+		this->evolveWolfRayet();
 	}
-	if (this->checkMergeTime() == false) {
-	return false;
+	if(this->checkPairInstability() == false) {
+		return false;
 	}
 	else {
-	return true;
+		this->evolveSupernova();
+	}
+	if(this->checkMergeTime() == false) {
+		return false;
+	}
+	else {
+		return true;
 	}
 }
 	
 	
 
 bool Binary::steveIsATotalLoserAndDeservesToDie(){
-	return false;
+	return true;
 }
 
