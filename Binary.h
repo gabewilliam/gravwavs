@@ -31,6 +31,7 @@ class Binary {
 		void evolveWolfRayet();
 		void evolveSupernova();
 
+		bool checkMassRange();
 		bool checkRocheLobe();
 		bool checkHomogeneousMixing();
 		bool checkPairInstability();

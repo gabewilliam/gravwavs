@@ -46,12 +46,6 @@ int main() {
 	double qMax = 1;
 	double qMin = 0.1;
 
-
-	//Defines the upper and lower limits on stellar mass
-	double mMax = 300;
-	double mMin = 20;
-
-	
 	//Defines the upper limit on separation (and its logarithms)
 	double aMax = 100*AU; //m
 	double laMax = std::log10(aMax);
@@ -76,6 +70,8 @@ int main() {
 	int n = 0;
 	
 	std::cout << "Generating binaries..." << std::endl;
+
+	int test = 0;
 
 	/*Generates N binaries with component masses governed by the expressions
 	/ cited in the Mandel and deMink paper. First m1 is sampled. Then the
@@ -105,21 +101,16 @@ int main() {
 		la = gsl_ran_flat(aGen,laMin,laMax);
 		a = pow(10,la);	
 		a = a/AU;
-		
-		if((m1 >= mMin) && (m2 >= mMin)
-			&& (m1 <= mMax) && (m2 <= mMax)) {
+				
+		binaries.push_back(Binary(m1, m2, a));
+		n++;
 
-			binaries.push_back(Binary(m1, m2, a));
-			n++;
-
-			std::cout << "\r"<< std::setw(9) << std::right
+		std::cout << "\r"<< std::setw(9) << std::right
 					  << n << " binaries generated." << std::flush;
-
-		}
-		
+				
 		
 	}
-
+	
 	std::cout << std::endl;
 	std::cout << "Sorting binaries..." << std::endl;
 

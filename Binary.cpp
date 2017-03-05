@@ -257,6 +257,24 @@ void Binary::evolveSupernova() {
 //CHECK FUNCTIONS (true - still a candidate for CHE,
 //				   false - will not undergo CHE, can be deleted)
 
+bool Binary::checkMassRange() {
+	
+	//Defines the upper and lower limits on stellar mass
+	double mMax = 300;
+	double mMin = 20;
+
+	double m1 = this->getMass(1);
+	double m2 = this->getMass(2);
+
+	if((m1 >= mMin) && (m1 <= mMax) && (m2 >= mMin) && (m2 <=mMax)) {
+		return true;
+	}
+	else {
+		return false;
+	}
+
+}
+
 bool Binary::checkRocheLobe() {
 	
 	double r1 = this->getRadius(1);
@@ -311,6 +329,9 @@ bool Binary::checkMergeTime() {
 
 bool Binary::checkCandidate() {
 
+	if(this->checkMassRange() == false) {
+		return false;
+	}
 	if(this->checkRocheLobe() == false) {
 		return false;
 	}
