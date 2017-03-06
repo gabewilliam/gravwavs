@@ -132,7 +132,7 @@ int main() {
 	}
 
 	N = binaries.size();
-	double tm, tmMin=0;
+	double tm, tmMin;
 	int nextMerge;
 
 	for (int i=0; i<N; i++){
@@ -142,10 +142,10 @@ int main() {
 		if((tm<tmMin) || (i==0)){
 			nextMerge=i;
 			tmMin=tm;
+	std::cout << std::endl << "tm =" <<tm << std::endl;
 		}
 	}
 
-	std::cout << std::endl;
 	std::cout << "next binary merger will be: "<<std::endl;
 	binaries[nextMerge].printGets();
 			

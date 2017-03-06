@@ -215,7 +215,7 @@ double Binary::mergeTime() {
 	double m1 = fm1*mSolar;
 	double m2 = fm2*mSolar;
 	double b = pow(a,4);
-	double Tmerge = (5/256)*(cFive/(GThree*m1*m2*(m1+m2)))*b;//In s
+	double Tmerge = (5.0/256.0)*(cFive/(GThree*m1*m2*(m1+m2)))*b;//In s 
 	return Tmerge;//In seconds
 
 }
@@ -361,9 +361,9 @@ bool Binary::checkCandidate() {
 	else {
 		this->evolveSupernova();
 	}
-	if(this->checkMergeTime() == false) {
+	if(this->checkMergeTime() == false){
 		return false;
-	}
+	}	
 	else {
 		return true;
 	}
