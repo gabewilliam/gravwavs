@@ -31,11 +31,13 @@ int main(){
 	}
 	
 	// Set time of arrival of signal
-	double initTime = 0.5;
+	double initTime = 10.0;
 	// Set phase of wave at arrival
 	double initPhase = 0.0;
 	// Set minimum detector frequency (MHz)
 	double fMin = 20;	
+	// Angle of inclination
+	double incline = M_PI/3.0;
 	
 	double dM = (M_max - M_min)/nSteps;
 	
@@ -56,7 +58,7 @@ int main(){
 			parameters *P = &PARAMS;
 			
 			// Set the characteristic parameters
-			setFundamentalParameters(initTime, initPhase, fMin, M1, M2, Dist, P);
+			setFundamentalParameters(initTime, initPhase, fMin, M1, M2, Dist, incline, P);
 			
 			// Compute the gravitational wave
 			if (gravitationalWave(P, S) == SUCCESS){

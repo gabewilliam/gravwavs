@@ -57,8 +57,19 @@ typedef double psi_vec [8];
 // Vector for storage of transition parameters
 typedef double mu_vec [4];
 
+enum polarisation {
+	Cross,
+	Plus
+};
+
 // Struct for storage of all essential system parameters
 struct parameters{
+	
+	// Inclinatinon angle of orbit (radians)
+	double incline;
+	
+	// Total time of data set
+	double totTime;
 	
 	// Vector of initial values:
 	// init[0] = time of signal arrival
@@ -97,11 +108,13 @@ double computeTransitionComps(double a, double b, double c, double n, double M){
 // Set the fundamental parameters of the system
 void setFundamentalParameters(
 	double init_time, 
+	double total_time,
 	double init_phase, 
 	double min_freq,
 	double m_1, 
 	double m_2, 
 	double dist_MPc, 
+	double incl,
 	parameters *params
 	){
 		
@@ -117,6 +130,12 @@ void setFundamentalParameters(
 	
 	// Convert distance into meters
 	double dist = dist_MPc*MPc_CONST;
+	
+	// Set inclination angle parameter
+	params->incline = incl;
+	
+	// Set total time of signal
+	params->totTime = total_time;
 	
 	// Set initial time and phase parameters
 	// (time in meters, frequency in meters^-1)
@@ -199,6 +218,21 @@ double phenomBPhase(parameters *params, double f){
 	return sumPhase;
 }
 
+// Effects of orbital inclination
+double inclinationEffects(parameters *params, polarisation pol){
+	
+	if (pol == Plus){
+		return 1.0 + pow(cos(params->incline), 2.0);
+	}
+	else if (pol == Cross){
+		return -2.0*cos(params->incline);
+	}
+	else{
+		cout << "Error in inclination effects" << endl;
+		return 0.0;
+	}
+}
+
 // Generate whole wave signal
 int gravitationalWave(parameters *params, vector<Signal> *sigs){
 	
@@ -206,7 +240,7 @@ int gravitationalWave(parameters *params, vector<Signal> *sigs){
 	double maxFreq = 4096.0/C_CONST;
 	
 	// Frequency increment 
-	double df = 0.05/C_CONST;
+	double df = 1.0/(params->totTime*C_CONST);
 	
 	// Number of positive frequency bins
 	double nPosFreq = maxFreq/df + 1.0;
@@ -247,7 +281,7 @@ int gravitationalWave(parameters *params, vector<Signal> *sigs){
 			
 	for (int i = 0; i < nPosFreq; i++){
 		
-		freq = i*df;
+		freq = double(i)*df;
 		
 		if (freq >= params->init[2]){
 			
@@ -271,7 +305,11 @@ int gravitationalWave(parameters *params, vector<Signal> *sigs){
 		
 		wavePhase = phenomBPhase(params, freq);
 		
-		gravWav = amp0*finalAmp*(cos(wavePhase)+J*sin(wavePhase));
+		if (freq == 0.0){			
+			gravWav = 0.0;
+		}else{		
+			gravWav = amp0*finalAmp*(cos(wavePhase)+J*sin(wavePhase));
+		}
 		
 		// Convert frequency back to Hz
 		freq_Hz = freq*C_CONST;		

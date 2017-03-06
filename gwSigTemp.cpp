@@ -5,26 +5,50 @@
 
 int main(){
 	
+	
+	// Generate all data from user inputs:
+	double M1, M2, Dist, totalTime, initTime, initPhase, fMin, incline;
 	// Set masses of components
-	double M1 = 30.0;
-	double M2 = 26.0;
+	cout << "Please enter the first mass (in Solar Masses): ";
+	cin >> M1;
+	cout << endl << "Please enter the second mass (in Solar Masses): ";
+	cin >> M2;
 	// Set distance of system
-	double Dist = 500.0;
+	cout << endl << "Please enter the distance to the system (in Megaparsecs): ";
+	cin >> Dist;
 	// Set time of arrival of signal
-	double initTime = 0.5;
+	cout << endl << "Please enter the total time of the sample (in Seconds): ";
+	cin >> totalTime;
+	// Ensure signal is in the centre of the data set
+	initTime = totalTime/2.0;	
 	// Set phase of wave at arrival
-	double initPhase = 0.0;
+	cout << endl << "Please enter the phase of the wave upon arrival (in Radians): ";
+	cin >> initPhase;
 	// Set minimum detector frequency (MHz)
-	double fMin = 20;
+	cout << endl << "Please enter the minimum frequency of the detector sensitivity (in Hz): ";
+	cin >> fMin;
+	// Angle of inclination
+	cout << endl << "Please enter the angle of inclination of the binary system (in Radians): ";
+	cin >> incline;
+	cout << endl;
+	
+	// ADD SAFETY CHECKS
 	
 	// Set up struct to store characteristic information of signal
 	parameters PARAMS;
 	parameters *P = &PARAMS;
 	
 	// Set the characteristic parameters
-	setFundamentalParameters(initTime, initPhase, fMin, M1, M2, Dist, P);
-	
-	
+	setFundamentalParameters(initTime, 
+							 totalTime,
+							 initPhase, 
+							 fMin, 
+							 M1, 
+							 M2, 
+							 Dist, 
+							 incline, 
+							 P);
+		
     // Set up struct to store vector of final data
 	vector<Signal> signalVector;
 	vector<Signal> *S = &signalVector;
@@ -64,20 +88,20 @@ int main(){
 		std::string tempFileIdentity = "temp_" + s1.str() + "_" + s2.str() + "." + s3.str();
 		
 		if(saveSignals(sigFileIdentity, S, csv)){
-			cout << "Signal stored successfully" << endl;
+			cout << "Signal stored successfully in the file " << sigFileIdentity << "." << endl;
 			OUTPUT = SUCCESS;
 		}
 		else{
-			cout << "There was an error" << endl;
+			cout << "There was an error storing the signal." << endl;
 			OUTPUT = FAILURE;
 		} 
 		
 		if(saveTemplates(tempFileIdentity, T, csv)){
-			cout << "Template stored successfully" << endl;
+			cout << "Template stored successfully in the file " << tempFileIdentity << "." << endl;
 			OUTPUT = SUCCESS;
 		}
 		else{
-			cout << "There was an error" << endl;
+			cout << "There was an error storing the template." << endl;
 			OUTPUT = FAILURE;
 		} 
 		
