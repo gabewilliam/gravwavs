@@ -113,23 +113,45 @@ int main() {
 	
 	std::cout << std::endl;
 	std::cout << "Sorting binaries..." << std::endl;
+	int Nr = binaries.size();
 
 	for(int i = N-1; i >= 0; i--) {
 
 		if(binaries[i].checkCandidate() == false) {
 			binaries.erase(binaries.begin() + i);
+			Nr=Nr-1;
 		}
 		else {
 			fprintf(popFile,"%.15g,%.15g\n",
-					binaries[i].getMass(1),binaries[i].getMass(2));			
+					binaries[i].getMass(1),binaries[i].getMass(2));	
 		}
 
 		std::cout << "\r" << std::setw(9) << std::right
-				  << i << " binaries remaining." << std::flush;
+				  << Nr << " binaries remaining." << std::flush;
 		
 	}
 
+	N = binaries.size();
+	double tm, tmMin=0;
+	int nextMerge;
+
+	for (int i=0; i<N; i++){
+		
+		tm=binaries[i].mergeTime();
+
+		if((tm<tmMin) || (i==0)){
+			nextMerge=i;
+			tmMin=tm;
+		}
+	}
+
 	std::cout << std::endl;
+	std::cout << "next binary merger will be: "<<std::endl;
+	binaries[nextMerge].printGets();
+			
+
+
+	
 
 	fclose(popFile);
 			

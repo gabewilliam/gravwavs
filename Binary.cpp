@@ -7,7 +7,8 @@
 
 //CONSTANTS
 const double c = 3.0e8; //ms^-2 
-const double G = 6.67408e-11; //m^3 kg^-1 s^-2
+const double G = 6.6748e-11; //m^3 kg^-1 s^-2
+const double Gs = 1.2e19; //m^3 Ms^-1 s^-2
 const double mSolar = 1.989e30; //kg
 const double rSolar = 6.975e8; //m
 const double AU = 1.496e11; //m
@@ -98,9 +99,9 @@ double Binary::getRatio(int n) {
     
 }
 
-void Binary::printGets(){//easy to check information on a binary
+void Binary::printGets(){//easy to check information on a binary (could probably change to access datamembers directly)
 	
-	std::cout<<"printing all gets"<<std::endl;
+	//std::cout<<"printing all gets"<<std::endl;
 
 	for(int n=1; n<3; n++) {
 
@@ -111,6 +112,7 @@ void Binary::printGets(){//easy to check information on a binary
 	}
 	std::cout<<"Binary separation = "<<this->getSeparation()<<std::endl;
 	std::cout<<"Binary mass ratio (m2/m1) = "<<this->getRatio(2)<<std::endl;
+	std::cout<<"Time to merger = "<<this->mergeTime()<<std::endl;
 	return;
 
 }
@@ -209,10 +211,10 @@ double Binary::mergeTime() {
 
 	double cFive = pow(c,5);
 	double GThree = pow(G,3);
-	double a = this->getSeparation()*AU;//Gets the separation in m
-	double m1 = this->getMass(1)*mSolar;
-	double m2 = this->getMass(2)*mSolar;
-	double b = pow(fa,4);
+	double a = fa*AU;//Gets the separation in m
+	double m1 = fm1*mSolar;
+	double m2 = fm2*mSolar;
+	double b = pow(a,4);
 	double Tmerge = (5/256)*(cFive/(GThree*m1*m2*(m1+m2)))*b;//In s
 	return Tmerge;//In seconds
 
@@ -319,12 +321,18 @@ bool Binary::checkMergeTime() {
 
 	double tm = this->mergeTime();
 	double tH =  4.55e17;// s, check using worksheet (this is the correct value for hubble time)
+	if (tm==0){
+		std::cout<<"broken"<<std::endl;
+	}
 	if(tm < tH) {
 		return true;
 	}
 	else {
 		return false;
+		std::cout<<"slow merger"<<std::endl;
 	}
+
+	
 }
 
 bool Binary::checkCandidate() {

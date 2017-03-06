@@ -46,6 +46,6 @@ class Binary {
 		double fm2;
 		double fr1;
 		double fr2;
-		double fa;		
+		double fa;	//atm SPV5 assigns this in AU	
 
 };
