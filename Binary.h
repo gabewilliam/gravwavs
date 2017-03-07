@@ -6,7 +6,8 @@ class Binary {
 
 		Binary();
 		
-		Binary(double mass1, double mass2, double separation);
+		Binary(double mass1, double mass2, double separation,
+				 double redshift, double metalicity);
 
 		virtual ~Binary();
 
@@ -47,5 +48,7 @@ class Binary {
 		double fr1;
 		double fr2;
 		double fa;	//atm SPV5 assigns this in AU	
+		double fz;
+		double fZ;
 
 };

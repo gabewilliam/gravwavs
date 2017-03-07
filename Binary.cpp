@@ -20,8 +20,9 @@ const double pi = 3.14;
 
 Binary::Binary() {}
 
-Binary::Binary(double mass1, double mass2,  double separation)
-	:fm1(mass1), fm2(mass2), fa(separation) {
+Binary::Binary(double mass1, double mass2,  double separation, 
+				double redshift, double metalicity)
+	:fm1(mass1), fm2(mass2), fa(separation) , fz(redshift), fZ(metalicity){
 
 	this->updateRadii();
 		
