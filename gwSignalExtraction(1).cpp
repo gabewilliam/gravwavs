@@ -6,26 +6,22 @@
 
 Extractor::Extractor(){}
 
-void Extractor::setSignalT(Signal* sig)
-{
+void Extractor::setSignalT(Signal* sig){
 	mSignalT = sig;
 	return;
 }
 
-void Extractor::setSignalF(Signal* sig)
-{
+void Extractor::setSignalF(Signal* sig){
 	mSignalF = sig;
 	return;
 }
 
-void Extractor::setTemplates(std::vector<Template>* temps)
-{
+void Extractor::setTemplates(std::vector<Template>* temps){
 	mTemplates = temps;
 	return;
 }
 
-void Extractor::fft(std::vector<Template>* output)
-{
+void Extractor::fft(std::vector<Template>* output){
 	size_t I=output->size();
 	int J = (mSignalT->waveform[0]).size();
 	int M =(int)(log2(J)+2);
@@ -71,8 +67,53 @@ void Extractor::fft(std::vector<Template>* output)
 	return;
 }
 
-void Extractor::Convolution/*crossCorrelation*/(std::vector<Template>* output)
-{
+void Extractor::fft(Signal* output){
+
+	size_t J = (output->waveform[0]).size();
+	int M =(int)(log2(J)+2);
+	size_t N= pow(2,M);
+	
+	double sampleFreq=J/((output->waveform[0])[J-1]-(output->waveform[0])[0]);
+	
+	vec_d freq;
+	for(int j=0; j<N/4; j++){
+		freq.push_back(j*sampleFreq/N);
+		freq.push_back(j*sampleFreq/N);
+	} 
+	for(int j=N/4; j<N/2; j++){
+		freq.push_back((N/4-j)*sampleFreq/N);
+		freq.push_back((N/4-j)*sampleFreq/N);
+	} 
+	
+		vec_d* Amp=new vec_d;
+	
+		for(size_t j=0;j<J;j++){
+			Amp->push_back((output->waveform[1])[j]);
+			Amp->push_back(0);
+			
+			//(output[0][i].waveform[1]).push_back(0);
+		}	
+		(output->waveform[1])=*Amp;
+		for(size_t j=J;j<N;j++){
+			(output->waveform[1]).push_back(0);
+			(output->waveform[1]).push_back(0);
+		}
+	
+
+	gsl_fft_complex_workspace* complexWS = gsl_fft_complex_workspace_alloc(N);
+	gsl_fft_complex_wavetable* complexWT = gsl_fft_complex_wavetable_alloc(N);
+
+	gsl_fft_complex_forward (&(output->waveform[1])[0], 1, N, complexWT, complexWS);
+	
+	output->waveform[0]=freq;
+	
+	gsl_fft_complex_workspace_free(complexWS);
+	gsl_fft_complex_wavetable_free(complexWT);
+	mSignalF=output;
+	return;
+}
+
+void Extractor::Convolution/*crossCorrelation*/(std::vector<Template>* output){
 	int I, J;
 	double imagResult;
 	double realResult;
@@ -144,8 +185,7 @@ void Extractor::Convolution/*crossCorrelation*/(std::vector<Template>* output)
 	return;
 }
 
-void Extractor::fftInverse(std::vector<Template>* output)
-{
+void Extractor::fftInverse(std::vector<Template>* output){
 	int I, N;
 	vec_d amp; 
 	vec_d freq;
@@ -191,8 +231,7 @@ void Extractor::fftInverse(std::vector<Template>* output)
 	return;
 }	
 
-bool Extractor::loadCurve(std::string filename)
-{
+bool Extractor::loadCurve(std::string filename){
 	std::ifstream inFile;
 	
 	inFile.open(filename.c_str());
@@ -234,8 +273,7 @@ bool Extractor::loadCurve(std::string filename)
 	return true;
 }
 
-double Extractor::getASD(double f)
-{
+double Extractor::getASD(double f){
 	
 	if((f < fNoiseCurve.fMin) || (f > fNoiseCurve.fMax))
 		return 0;
@@ -271,8 +309,7 @@ double Extractor::getASD(double f)
 	return asd;
 }
 
-double Extractor::fAutoCorrComplex(Template* temp)
-{
+double Extractor::fAutoCorrComplex(Template* temp){
 	int N, pn; 
 	double result;
 	vec_d op;
