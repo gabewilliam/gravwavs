@@ -45,17 +45,17 @@ Complex NoiseGenerator::genSample(double freq){ //Get real and imaginary parts o
 bool NoiseGenerator::genSpectrum(std::vector<double>* freqs, std::vector<Complex>* noise, double fMax, double fInc){
 	
 	//Calculate maximum number of elements for given sampling frequency fMax
-	int N = floor( (fMax / fInc) );
-
+	int N = (int)( fMax / fInc );
+	std::cout<<N<<"\r\n";
 	Complex sample;
 
 	//Populate all elements with zeroes and fill frequency;
 	sample.real = 0.0;
 	sample.imag = 0.0;
 	
-	double freq = - fMax;
+	double freq = -fMax;
 	
-	for(int i=0; i < 2*N; i++){
+	for(int i=0; i <= 2*N; i++){
 		
 		noise->push_back(sample);
 		
@@ -65,7 +65,7 @@ bool NoiseGenerator::genSpectrum(std::vector<double>* freqs, std::vector<Complex
 
 	}
 	
-	for(int j=N; j < 2*N; j++){
+	for(int j=N; j <= 2*N; j++){
 
 		//Get a random complex sample
 		sample=this->genSample(freqs->at(j));
@@ -228,7 +228,7 @@ double NumNoise::getASD(double f){
 		}
 		
 	}
-	
+
 	return asd;
 	
 }

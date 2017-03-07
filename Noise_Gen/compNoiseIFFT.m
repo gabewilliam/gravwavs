@@ -1,13 +1,18 @@
+sig = load('30_26.csv');
+
 noise = csvread('noise.csv');
+%noise(:,2) = noise(:,2) .* sqrt(3E8);
+n = transpose(noise);
 
-z = noise(:,2) + sqrt(-1) * noise(:,3);
+nsig = sig + n;
 
-t = size(z);
-f = transpose(linspace(-5000,5000,t(1)));
+plot(nsig(1,:),nsig(2,:));
 
-figure;
+csvwrite('Noisy_Sig.csv',nsig);
 
-subplot(2,1,1);
-plot(f, real(z));
-subplot(2,1,2);
-plot(f, imag(z));
+%nt = IFFT(nsig);
+
+%z = noise(:,2) + sqrt(-1) * noise(:,3);
+
+%t = size(z);
+%f = transpose(linspace(-5000,5000,t(1)));
