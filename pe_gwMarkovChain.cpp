@@ -23,7 +23,6 @@ int main() {
 	//Defines the mass of the sun
 	const double mSolar = 1.989e30;
 
-
 	/*Sets up a random number generator to seed the other two generators, and
 	/ seeds this based on the system time.*/
 	gsl_rng * seedGen = gsl_rng_alloc(gsl_rng_taus);
@@ -62,13 +61,16 @@ int main() {
 	double mChirp, mRatio, mChirpProposal, mRatioProposal;
 	long double p, pProposal, alpha;
 	double nZeroMChirp, nZeroMRatio, rZero;
-	double* maArray = new double[N];
-	double* mbArray = new double[N];
+	double* mChirpArray = new double[N];
+	double* mRatioArray = new double[N];
 	
 
 	//Sets the starting ma and mb values for the routine as random integers.
-	ma = gsl_rng_uniform(startGen)*(mUpper-mLower)+mLower;
-	mb = gsl_rng_uniform(startGen)*(mUpper-mLower)+mLower;
+	//ma = gsl_rng_uniform(startGen)*(mUpper-mLower)+mLower;
+	//mb = gsl_rng_uniform(startGen)*(mUpper-mLower)+mLower;
+	
+	ma = 45*mSolar;
+	mb = 35*mSolar;
 
 	if (mb > ma) {
 		double mDummy = ma;
@@ -124,26 +126,26 @@ int main() {
 			std::cout << (i*100)/N << "% complete." << std::endl;
 		}
 
-		maArray[i-1] = ma;
-		mbArray[i-1] = mb;
+		mChirpArray[i-1] = mChirp;
+		mRatioArray[i-1] = mRatio;
 		
 	}
 
-	double ACLMa = autoCorrelation(maArray,N);
-	double ACLMb = autoCorrelation(mbArray,N);
-	std::cout<<ACLMa<<"\t"<<ACLMb<<std::endl;
+	double ACLMChirp = autoCorrelation(mChirpArray,N);
+	double ACLMRatio = autoCorrelation(mRatioArray,N);
+	std::cout<<ACLMChirp<<"\t"<<ACLMRatio<<std::endl;
 
-	double ACLs [] = {ACLMa, ACLMb};
+	double ACLs [] = {ACLMChirp, ACLMRatio};
 	int ACLMax = *(std::max_element(ACLs,ACLs+2));	
 	std::cout<<ACLMax<<std::endl;
 	
-	saveToFile(maArray,mbArray,1,N,"MassFile.txt");
-	saveToFile(maArray,mbArray,10,N,"2DMonte.txt");
+	saveToFile(mChirpArray,mRatioArray,1,N,"MassFile.txt");
+	saveToFile(mChirpArray,mRatioArray,100,N,"2DMonte.txt");
 
 	/*Frees the memory associated with the random
 	/ number generators and deallocates memory.*/
-	delete [] maArray;
-	delete [] mbArray;
+	delete [] mChirpArray;
+	delete [] mRatioArray;
 	gsl_rng_free(seedGen);
 	gsl_rng_free(normGen);
 	gsl_rng_free(rGen);
@@ -156,7 +158,7 @@ int main() {
 double prior(double ma, double mb, double mUpper, double mLower) {
 
 	if((ma < mUpper && ma > mLower) 
-	&& (mb < mUpper && mb > mLower)) return 1; //pow(mUpper-mLower,-2);
+	&& (mb < mUpper && mb > mLower)) return 1;
 
 	else return 0;
 
@@ -182,6 +184,7 @@ double autoCorrelation(double parameterArray[], int size) {
 				std::cout<<parameterArray[i]<<std::endl;
 			}
 		}
+		if(lag%100==0) std::cout<<"Lag = "<<lag<<std::endl;
 
 		lag+=1;
 		ACL+=2*autoCorr;
@@ -193,7 +196,7 @@ double autoCorrelation(double parameterArray[], int size) {
 	return ACL;
 }
 
-void saveToFile(double ma[], double mb[], int lag, int size, std::string fileName) {
+void saveToFile(double parameterA[], double parameterB[], int lag, int size, std::string fileName) {
 	
 	//Opens the output text file
 	FILE * outFile;
@@ -201,7 +204,7 @@ void saveToFile(double ma[], double mb[], int lag, int size, std::string fileNam
 
 	for(int i = 0; i < size; i++){
 		if (i%lag==0){
-			fprintf(outFile,"%.15g,%.15g\n",ma[i],mb[i]);
+			fprintf(outFile,"%.15g,%.15g\n",parameterA[i],parameterB[i]);
 		}
 	}
 	
