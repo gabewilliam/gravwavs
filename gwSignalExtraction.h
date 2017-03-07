@@ -27,8 +27,7 @@ class Extractor
 		void setTemplates(std::vector<Template>* templates);	
 
 		void fft(std::vector<Template>* output);
-		void fft(Signal* output);
-	
+
 		void Convolution(std::vector<Template>* output);
 
 		void fftInverse(std::vector<Template>* output);
@@ -44,6 +43,7 @@ class Extractor
 		Signal* mSignalF;
 		std::vector<Template>* mTemplates;
 		std::vector<Template>* mConResults;
+		std::vector<double> mNorms;
 		NoiseCurve fNoiseCurve;
 };
 

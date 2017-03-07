@@ -1,7 +1,5 @@
-#include "gwDataTypes.h"
-#include "gwReadWrite.h"
-
 #include "gwSignalExtraction.h"
+#include "gwReadWrite.h"
 
 int main()
 {
@@ -13,7 +11,7 @@ int main()
 	if(!loadSignals("../data/sig_30_26.csv", &sigs, csv))
 		return 0;
 
-	if(!loadTemplates("../data/temp_30_26.csv", &temps, csv))
+	if(!loadTemplates("../data/temp_bank.csv", &temps, csv))
 		return 0;
 
 	int N, n;
@@ -23,7 +21,7 @@ int main()
 
 	if(N > 1)
 	{
-		std::cout << N << " signals found." << std::endl;
+		std::cout << "Multiple signals found." << std::endl;
 		std::cout << "Which signal would you like to investigate (" << 1 << "-" << N << ")..." << std::endl;
 		std::cin >> n;
 
@@ -37,7 +35,7 @@ int main()
 	bill.setSignalF(&sig);
 	bill.setTemplates(&temps);
 
-	std::cout << "Performing frequency domain convolution against all templates..." << std::endl;
+	std::cout << "Performing testuency domain convolution against all templates..." << std::endl;
 
 	std::vector<Template> conOut;
 
@@ -57,4 +55,3 @@ int main()
 
 	return 1;
 }
-
