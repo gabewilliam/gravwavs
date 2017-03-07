@@ -12,6 +12,7 @@ const double Gs = 1.2e19; //m^3 Ms^-1 s^-2
 const double mSolar = 1.989e30; //kg
 const double rSolar = 6.975e8; //m
 const double AU = 1.496e11; //m
+const double pi = 3.14;
 
 
 
@@ -161,8 +162,8 @@ void Binary::updateRadii() {
 double Binary::rocheLobe(int n) {
     
     double q = this->getRatio(n);
-    double qOneThird = pow(q,1/3);
-    double qTwoThird = pow(q,2/3);
+    double qOneThird = pow(q,1.0/3.0);
+    double qTwoThird = pow(q,2.0/3.0);
 	double a = this->getSeparation()*(AU/rSolar); //Finds a in rSolar
 
     double rl = 0.49*qTwoThird*a/((0.6*qTwoThird)+log(1+qOneThird));
@@ -176,8 +177,9 @@ double Binary::keplerFrequency() {
 	double m1 = this->getMass(1)*mSolar;
 	double m2 = this->getMass(2)*mSolar;//Gets both masses in kg
 	double b = pow(a,3);
-	double freqSquared = (G*(m1+m2))/b;//units of mass/G?
-	double freq = pow(freqSquared,1/2);
+	double freqSquared = (G*(m1+m2))/(b);//units of mass/G?
+	double freq = pow(freqSquared,0.5);
+	std::cout<<std::endl<<freq;
 	return freq;
 
 }
@@ -197,12 +199,15 @@ double Binary::mixingFrequency(int n) {
 		return 0;
 	}
 
-	if(m<50) {
+	if(m<50.0) {
 		omegaC=0.2+((2.7e-4)*(m-50)*(m-50));
 	}
-	else if(m>=50) {
+	else if(m>=50.0) {
 		omegaC=0.2;
 	}
+
+	std::cout<<"  ,  "<<omegaC<<std::endl;
+
 	return omegaC;
 
 }
@@ -308,7 +313,7 @@ bool Binary::checkHomogeneousMixing() {
 
 bool Binary::checkPairInstability() {
 
-	if(fm1 < 63 && fm2 < 63) {
+	if(fm1 < 63.0 && fm2 < 63.0) {
 		return true;
 	}
 	else {
@@ -335,37 +340,37 @@ bool Binary::checkMergeTime() {
 	
 }
 
-bool Binary::checkCandidate() {
+int Binary::checkCandidate() {
 
 	if(this->checkMassRange() == false) {
-		return false;
+		return 1;
 	}
 	if(this->checkRocheLobe() == false) {
-		return false;
+		return 2;
 	}
 	if(this->checkHomogeneousMixing() == false) {
-		return false;
+		return 3;
 	}	
 	else {
 		this->evolveMainSequence();
 	}
 	if(this->checkHomogeneousMixing() == false) {
-		return false;
+		return 4;
 	}
 	else {
 		this->evolveWolfRayet();
 	}
 	if(this->checkPairInstability() == false) {
-		return false;
+		return 5;
 	}
 	else {
 		this->evolveSupernova();
 	}
 	if(this->checkMergeTime() == false){
-		return false;
+		return 6;
 	}	
 	else {
-		return true;
+		return 0;
 	}
 }
 	

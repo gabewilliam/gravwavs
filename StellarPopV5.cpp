@@ -114,10 +114,15 @@ int main() {
 	std::cout << std::endl;
 	std::cout << "Sorting binaries..." << std::endl;
 	int Nr = binaries.size();
+	int check;
+	int WhatWentWrong [7]={0, 0, 0, 0, 0, 0, 0};
 
 	for(int i = N-1; i >= 0; i--) {
 
-		if(binaries[i].checkCandidate() == false) {
+		check = binaries[i].checkCandidate();
+		WhatWentWrong[check]++;
+
+		if( check > 0) {
 			binaries.erase(binaries.begin() + i);
 			Nr=Nr-1;
 		}
@@ -132,6 +137,11 @@ int main() {
 	}
 
 	N = binaries.size();
+
+	if(N==0){
+		std::cout<<"sorry there are no binaries left"<<std::endl;
+	}
+	
 	double tm, tmMin;
 	int nextMerge;
 
@@ -142,12 +152,16 @@ int main() {
 		if((tm<tmMin) || (i==0)){
 			nextMerge=i;
 			tmMin=tm;
-	std::cout << std::endl << "tm =" <<tm << std::endl;
+	//std::cout << std::endl << "tm =" <<tm << std::endl;
 		}
 	}
 
 	std::cout << "next binary merger will be: "<<std::endl;
 	binaries[nextMerge].printGets();
+
+	for (int i=0; i<7; i++){
+		std::cout<<WhatWentWrong[i]<<std::endl;
+	}
 			
 
 
