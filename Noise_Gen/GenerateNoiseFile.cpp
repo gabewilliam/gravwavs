@@ -19,7 +19,11 @@ int main(){
 	AligoNoSrm nGen;
 
 	ofstream oFile;
-
+	oFile.open("noise.csv");
+	
+	ofstream oFile2;
+	oFile2.open("noise2.csv");
+	
 	double fMax, fInc;
 	
 	vector<double> *freq = new vector<double>;
@@ -32,11 +36,21 @@ int main(){
 	
 	nGen.genSpectrum(freq, noise, fMax, fInc);
 	
-	oFile.open("noise.csv");
+	
 
+	for(int k=freq->size()/2; k < freq->size(); k++){
+		
+		oFile << freq->at(k) << "," << (noise->at(k)).real << "\r\n" << freq->at(k) << "," << (noise->at(k)).imag << "\r\n";
+
+	}
+	for(int k=0; k <= freq->size()/2; k++){
+		
+		oFile << freq->at(k) << "," << (noise->at(k)).real << "\r\n" << freq->at(k) << "," << (noise->at(k)).imag << "\r\n";
+
+	}
 	for(int k=0; k < freq->size(); k++){
 		
-		oFile << freq->at(k) << "," << (noise->at(k)).real << "," << (noise->at(k)).imag << "\r\n";
+		oFile2 << freq->at(k) << "," << (noise->at(k)).real << "," << (noise->at(k)).imag << "\r\n";
 
 	}
 	
