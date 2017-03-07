@@ -15,7 +15,7 @@
 double gaussian(double, double, double, double, double);
 double prior(double, double, double, double);
 double autoCorrelation(double [], int);
-void saveToFile(double [],double [],int,int,char*);
+void saveToFile(double [],double [],int,int,std::string);
 
 
 int main() {
@@ -98,8 +98,8 @@ int main() {
 		mChirpProposal = mChirp + nZeroMChirp;
 		mRatioProposal = mRatio + nZeroMRatio;
 
-		maProposal = mChirpProposal*pow((1+mRatioProposal),1./5)*pow(mRatioProposal,2./5);
-		mbProposal = mChirpProposal*pow((1+mRatioProposal),1./5)*pow(mRatioProposal,-3./5);
+		maProposal = mChirpProposal*pow((1+mRatioProposal),1./5)*pow(mRatioProposal,-3./5);
+		mbProposal = mChirpProposal*pow((1+mRatioProposal),1./5)*pow(mRatioProposal,2./5);
 
 		if (mRatioProposal > 1) {
 			mRatioProposal = 1./mRatioProposal;
@@ -193,11 +193,11 @@ double autoCorrelation(double parameterArray[], int size) {
 	return ACL;
 }
 
-void saveToFile(double ma[], double mb[], int lag, int size, char* fileName) {
+void saveToFile(double ma[], double mb[], int lag, int size, std::string fileName) {
 	
 	//Opens the output text file
 	FILE * outFile;
-	outFile = fopen(fileName,"w");
+	outFile = fopen(fileName.c_str(),"w");
 
 	for(int i = 0; i < size; i++){
 		if (i%lag==0){
