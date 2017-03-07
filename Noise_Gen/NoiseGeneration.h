@@ -70,8 +70,7 @@ class NumNoise: public NoiseGenerator{
 		double getASD(double);
 		
 	protected:
-	
-		std::string fCurveFile;
+
 		NoiseCurve fNoiseCurve;
 	
 };
