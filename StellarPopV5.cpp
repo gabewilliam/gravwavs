@@ -102,7 +102,7 @@ int main() {
 		a = pow(10,la);	
 		a = a/AU;
 				
-		binaries.push_back(Binary(m1, m2, a));
+		binaries.push_back(Binary(m1, m2, a, 1, 1));
 		n++;
 
 		std::cout << "\r"<< std::setw(9) << std::right

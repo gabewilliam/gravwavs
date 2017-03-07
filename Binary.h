@@ -25,7 +25,8 @@ class Binary {
 
 		double rocheLobe(int n);
 		double keplerFrequency();
-		double mixingFrequency(int n);
+		double mixingRatio(int n);
+		double omegaC(int n);
 		double mergeTime();
 
 		void evolveMainSequence();

@@ -178,16 +178,16 @@ double Binary::keplerFrequency() {
 	double m1 = this->getMass(1)*mSolar;
 	double m2 = this->getMass(2)*mSolar;//Gets both masses in kg
 	double b = pow(a,3);
-	double freqSquared = (G*(m1+m2))/(b);//units of mass/G?
+	double freqSquared = ((m1+m2))/(b);//removed factor of G
 	double freq = pow(freqSquared,0.5);
-	std::cout<<std::endl<<freq;
+	//std::cout<<std::endl<<freq;
 	return freq;
 
 }
 
-double Binary::mixingFrequency(int n) {
+double Binary::mixingRatio(int n) {
 
-	double omegaC = 0.0; 
+	double mr = 0.0; 
 	double m;	
 	if(n==1) {
 		m = fm1;//In solar masses
@@ -201,14 +201,31 @@ double Binary::mixingFrequency(int n) {
 	}
 
 	if(m<50.0) {
-		omegaC=0.2+((2.7e-4)*(m-50)*(m-50));
+		mr=0.2+((2.7e-4)*(m-50)*(m-50));
 	}
 	else if(m>=50.0) {
-		omegaC=0.2;
+		mr=0.2;
 	}
 
-	std::cout<<"  ,  "<<omegaC<<std::endl;
+	//std::cout<<"  ,  "<<mr<<std::endl;
 
+	return mr;
+
+}
+
+double Binary::omegaC (int n){
+
+	double omegaC = this->keplerFrequency();
+	double r;
+	
+	if (n==1){
+		r=pow(fr1,1.5)/pow(fm1,0.5);
+	}
+	if (n==2){
+		r=pow(fr2,1.5)/pow(fm2,0.5);
+	}
+
+	omegaC = omegaC*r;
 	return omegaC;
 
 }
@@ -300,10 +317,11 @@ bool Binary::checkRocheLobe() {
 
 bool Binary::checkHomogeneousMixing() {
 
-	double omegaK = this-> keplerFrequency();
-	double omegaM1 = this->mixingFrequency(1);
-	double omegaM2 = this->mixingFrequency(2);
-	if(omegaK >= omegaM1 && omegaK >= omegaM2) {
+	double mr1 = this->mixingRatio(1);
+	double mr2 = this->mixingRatio(2);
+	double omegaC1 = this->omegaC(1);
+	double omegaC2 = this->omegaC(2);
+	if(omegaC1 >= mr1 && omegaC2 >= mr2) {
 		return true;
 	}
 	else {
