@@ -39,19 +39,6 @@ int main() {
 	gsl_rng * startGen = gsl_rng_alloc(gsl_rng_taus);
 	gsl_rng_set(startGen, gsl_rng_get(seedGen));
 
-	
-	/*Takes an input for the standard deviation, sigma of distribution
-	/ which is sampled to find the next ma and mb value [N(0,nSigma)]. The
-	/ distribution from which the random number is drawn.*/
-	std::cout << "Enter the standard deviation, sigma, of the distribution "
-			  << "used to advance the Markov Chain routine. This should be "
-			  << "given in solar masses."
-			  << std::endl;
-	double sigma;
-	std::cin >> sigma;
-	
-	sigma*=mSolar;
-
 	//Takes mass limits for the prior function
 	double mLower,mUpper;
 	
@@ -71,18 +58,26 @@ int main() {
 
 	//Declares the variables used throughout the routine
 	std::string fileName = "signal.csv";
-	double ma, maProposal, mb, mbProposal;
+	double ma, mb, maProposal, mbProposal;
+	double mChirp, mRatio, mChirpProposal, mRatioProposal;
 	long double p, pProposal, alpha;
-	double nZeroMA, nZeroMB, rZero;
+	double nZeroMChirp, nZeroMRatio, rZero;
 	double* maArray = new double[N];
 	double* mbArray = new double[N];
 	
 
 	//Sets the starting ma and mb values for the routine as random integers.
-	//do {
 	ma = gsl_rng_uniform(startGen)*(mUpper-mLower)+mLower;
 	mb = gsl_rng_uniform(startGen)*(mUpper-mLower)+mLower;
-	//} while(PdhFunction(ma,mb,fileName)==0);
+
+	if (mb > ma) {
+		double mDummy = ma;
+		ma = mb;
+		mb = mDummy;
+	}
+
+	mChirp = pow((ma*mb),3./5)/pow((ma+mb),1./5);
+	mRatio = mb/ma;
 
 	/*Loops over the number of iterations specified by the input. In each run,
 	/ the likelihood function is evaluated at (ma,mb). Then, one of the RNGs is
@@ -95,18 +90,25 @@ int main() {
 	/ is output to the file.*/
 	for(int i = 1; i <= N; i++) {
 
-		p = likelihood(ma,mb,fileName)+log(prior(ma,mb,mUpper,mLower));
+		p = likelihood(ma,mb,fileName)+log((pow(ma,2)/mChirp)*prior(ma,mb,mUpper,mLower));
 
-		nZeroMA = gsl_ran_gaussian(normGen, sigma);
-		nZeroMB = gsl_ran_gaussian(normGen, sigma);
+		nZeroMChirp = gsl_ran_gaussian(normGen, 0.5*mSolar);
+		nZeroMRatio = gsl_ran_gaussian(normGen, 0.1);
 
-		maProposal = ma + nZeroMA;
-		mbProposal = mb + nZeroMB;
-		pProposal = likelihood(maProposal,mbProposal,fileName)+log(prior(maProposal,mbProposal,mUpper,mLower));
+		mChirpProposal = mChirp + nZeroMChirp;
+		mRatioProposal = mRatio + nZeroMRatio;
+
+		maProposal = mChirpProposal*pow((1+mRatioProposal),1./5)*pow(mRatioProposal,2./5);
+		mbProposal = mChirpProposal*pow((1+mRatioProposal),1./5)*pow(mRatioProposal,-3./5);
+
+		if (mRatioProposal > 1) {
+			mRatioProposal = 1./mRatioProposal;
+		}
+		
+		pProposal = likelihood(maProposal,mbProposal,fileName)+log((pow(maProposal,2)/mChirpProposal)*prior(maProposal,mbProposal,mUpper,mLower));
 
 		alpha = exp(pProposal-p);
-		//std::cout<<alpha<<std::endl;
-		//std::cout<<PdhFunction (ma,mb,fileName)<<"\t"<<prior(ma,mb,mUpper,mLower)<<std::endl;
+
 		rZero = gsl_rng_uniform_pos(rGen);
 		
 		if(alpha > rZero) {
@@ -114,6 +116,8 @@ int main() {
 			ma = maProposal;
 			mb = mbProposal;
 
+			mChirp = mChirpProposal;
+			mRatio = mRatioProposal;
 		}
 
 		if (i%(N/20)==0) {
