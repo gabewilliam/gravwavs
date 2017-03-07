@@ -13,15 +13,16 @@
 #include "pe_gwLikelihood.h"
 
 double gaussian(double, double, double, double, double);
-double prior(double, double, double, double);
+double prior(double, double, double, double, double, double, double);
 double autoCorrelation(double [], int);
-void saveToFile(double [],double [],int,int,std::string);
+void saveToFile(double [],double [],double [],int,int,std::string);
 
 
 int main() {
 
 	//Defines the mass of the sun
 	const double mSolar = 1.989e30;
+	const double MPc = 3.0857e22;
 
 	/*Sets up a random number generator to seed the other two generators, and
 	/ seeds this based on the system time.*/
@@ -39,15 +40,21 @@ int main() {
 	gsl_rng_set(startGen, gsl_rng_get(seedGen));
 
 	//Takes mass limits for the prior function
-	double mLower,mUpper;
+	double mLower,mUpper,dLower,dUpper;
 	
 	std::cout<< "Enter the mass upper limit in solar masses:" << std::endl;
 	std::cin >> mUpper;
 	std::cout<< "Enter the mass lower limit in solar masses:" << std::endl;
 	std::cin >> mLower;	
-	
+	std::cout<< "Enter the distance upper limit in MPc:" << std::endl;
+	std::cin >> dUpper;	
+	std::cout<< "Enter the distance lower limit in MPc:" << std::endl;
+	std::cin >> dLower;	
+
 	mLower*=mSolar;
 	mUpper*=mSolar;
+	dLower*=MPc;
+	dUpper*=MPc;
 	
 	//Takes an input for the number of samples used in the Monte Carlo routine
 	std::cout<< "Enter the number of Monte-Carlo samples:" << std::endl;
@@ -59,18 +66,17 @@ int main() {
 	std::string fileName = "signal.csv";
 	double ma, mb, maProposal, mbProposal;
 	double mChirp, mRatio, mChirpProposal, mRatioProposal;
+	double distance, distanceProposal;
 	long double p, pProposal, alpha;
-	double nZeroMChirp, nZeroMRatio, rZero;
+	double nZeroMChirp, nZeroMRatio, nZeroDistance, rZero;
 	double* mChirpArray = new double[N];
 	double* mRatioArray = new double[N];
-	
+	double* distanceArray = new double[N];
 
 	//Sets the starting ma and mb values for the routine as random integers.
-	//ma = gsl_rng_uniform(startGen)*(mUpper-mLower)+mLower;
-	//mb = gsl_rng_uniform(startGen)*(mUpper-mLower)+mLower;
-	
-	ma = 45*mSolar;
-	mb = 35*mSolar;
+	ma = gsl_rng_uniform(startGen)*(mUpper-mLower)+mLower;
+	mb = gsl_rng_uniform(startGen)*(mUpper-mLower)+mLower;
+	distance = gsl_rng_uniform(startGen)*(dUpper-dLower)+dLower;
 
 	if (mb > ma) {
 		double mDummy = ma;
@@ -92,13 +98,15 @@ int main() {
 	/ is output to the file.*/
 	for(int i = 1; i <= N; i++) {
 
-		p = likelihood(ma,mb,fileName)+log((pow(ma,2)/mChirp)*prior(ma,mb,mUpper,mLower));
+		p = likelihood(ma,mb,distance,fileName)+log((pow(ma,2)/mChirp)*prior(ma,mb,mUpper,mLower,distance,dUpper,dLower));
 
 		nZeroMChirp = gsl_ran_gaussian(normGen, 0.5*mSolar);
 		nZeroMRatio = gsl_ran_gaussian(normGen, 0.1);
+		nZeroDistance =	gsl_ran_gaussian(normGen, 5*MPc);
 
 		mChirpProposal = mChirp + nZeroMChirp;
 		mRatioProposal = mRatio + nZeroMRatio;
+		distanceProposal = distance + nZeroDistance;
 
 		maProposal = mChirpProposal*pow((1+mRatioProposal),1./5)*pow(mRatioProposal,-3./5);
 		mbProposal = mChirpProposal*pow((1+mRatioProposal),1./5)*pow(mRatioProposal,2./5);
@@ -107,7 +115,7 @@ int main() {
 			mRatioProposal = 1./mRatioProposal;
 		}
 		
-		pProposal = likelihood(maProposal,mbProposal,fileName)+log((pow(maProposal,2)/mChirpProposal)*prior(maProposal,mbProposal,mUpper,mLower));
+		pProposal = likelihood(maProposal,mbProposal,distanceProposal,fileName)+log((pow(maProposal,2)/mChirpProposal)*prior(maProposal,mbProposal,mUpper,mLower,distanceProposal,dUpper,dLower));
 
 		alpha = exp(pProposal-p);
 
@@ -120,6 +128,8 @@ int main() {
 
 			mChirp = mChirpProposal;
 			mRatio = mRatioProposal;
+
+			distance = distanceProposal;
 		}
 
 		if (i%(N/20)==0) {
@@ -128,19 +138,21 @@ int main() {
 
 		mChirpArray[i-1] = mChirp;
 		mRatioArray[i-1] = mRatio;
+		distanceArray[i-1] = distance;
 		
 	}
-
+	/*
 	double ACLMChirp = autoCorrelation(mChirpArray,N);
 	double ACLMRatio = autoCorrelation(mRatioArray,N);
-	std::cout<<ACLMChirp<<"\t"<<ACLMRatio<<std::endl;
+	double ACLDistance = autoCorrelation(distanceArray,N);
+	std::cout<<ACLMChirp<<"\t"<<ACLMRatio<<"\t"<<ACLDistance<<std::endl;
 
-	double ACLs [] = {ACLMChirp, ACLMRatio};
-	int ACLMax = *(std::max_element(ACLs,ACLs+2));	
+	double ACLs [] = {ACLMChirp, ACLMRatio, ACLDistance};
+	int ACLMax = *(std::max_element(ACLs,ACLs+3));	
 	std::cout<<ACLMax<<std::endl;
-	
-	saveToFile(mChirpArray,mRatioArray,1,N,"MassFile.txt");
-	saveToFile(mChirpArray,mRatioArray,100,N,"2DMonte.txt");
+	*/
+	saveToFile(mRatioArray,mChirpArray,distanceArray,1,N,"MassFile.txt");
+	saveToFile(mRatioArray,mChirpArray,distanceArray,100,N,"2DMonte.txt");
 
 	/*Frees the memory associated with the random
 	/ number generators and deallocates memory.*/
@@ -155,10 +167,11 @@ int main() {
 
 /*Defines a prior function which is a step of height 1, centred on the origin,
 / with a width of w.*/
-double prior(double ma, double mb, double mUpper, double mLower) {
+double prior(double ma, double mb, double mUpper, double mLower, double d, double dUpper, double dLower) {
 
 	if((ma < mUpper && ma > mLower) 
-	&& (mb < mUpper && mb > mLower)) return 1;
+	&& (mb < mUpper && mb > mLower)
+	&& (d < dUpper && d > dLower)) return 1;
 
 	else return 0;
 
@@ -196,7 +209,7 @@ double autoCorrelation(double parameterArray[], int size) {
 	return ACL;
 }
 
-void saveToFile(double parameterA[], double parameterB[], int lag, int size, std::string fileName) {
+void saveToFile(double parameterA[], double parameterB[], double parameterC[], int lag, int size, std::string fileName) {
 	
 	//Opens the output text file
 	FILE * outFile;
@@ -204,7 +217,7 @@ void saveToFile(double parameterA[], double parameterB[], int lag, int size, std
 
 	for(int i = 0; i < size; i++){
 		if (i%lag==0){
-			fprintf(outFile,"%.15g,%.15g\n",parameterA[i],parameterB[i]);
+			fprintf(outFile,"%.15g,%.15g,%.15g\n",parameterA[i],parameterB[i],parameterC[i]);
 		}
 	}
 	

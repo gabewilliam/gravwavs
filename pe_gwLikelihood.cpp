@@ -13,7 +13,7 @@
 //Uses d(f), h(f) and s(f) using equation A20 in "Veich, Vecchio (2010)" to calculate likelihood using two parameters m1 and m2.
 //Returns a NON-NORMALISED likelihood.
 
-long double likelihood( double m1, double m2, std::string signalFile ){
+long double likelihood( double m1, double m2, double d, std::string signalFile ){
 	//std::cout<<"L1"<<std::endl;
 	Signal dt;//Data signal (time domain)
 	std::vector< Signal > idt; //loadSignals requires std::vector
@@ -25,7 +25,7 @@ long double likelihood( double m1, double m2, std::string signalFile ){
 
 	dt = idt[0];//converts from vector of signals to signal
 
-	vec_d ht2 = ParameterFunction( m1, m2, dt.waveform[0] );//Creates model function for given masses.
+	vec_d ht2 = ParameterFunction( m1, m2, d, dt.waveform[0] );//Creates model function for given masses.
 
 	ht.waveform[0] = dt.waveform[0]; //ht uses same time scale as dt
 	ht.waveform[1] = ht2;	//sets ht equal to vector produced by function
@@ -59,13 +59,13 @@ long double likelihood( double m1, double m2, std::string signalFile ){
 
 }
 
-vec_d ParameterFunction( double m1, double m2, vec_d t ){ 
+vec_d ParameterFunction( double m1, double m2, double d, vec_d t ){ 
 	
 	int n = t.size();
 	vec_d ht;
 
 	for( int i = 0; i < n; i++ ){
-		ht.push_back(generate(m1,m2,t[i],140e6*3.0857e16,0,0,1)); //PLACEHOLDER: INSERT PARAMETER FUNCTION IN PARENTHESIS
+		ht.push_back(generate(m1,m2,t[i],d,0,0,1)); //PLACEHOLDER: INSERT PARAMETER FUNCTION IN PARENTHESIS
 	}
 
 	return ht;
