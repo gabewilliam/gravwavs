@@ -102,7 +102,7 @@ int main() {
 		a = pow(10,la);	
 		a = a/AU;
 				
-		binaries.push_back(Binary(m1, m2, a, 1, 1));
+		binaries.push_back(Binary(m1, m2, a));
 		n++;
 
 		std::cout << "\r"<< std::setw(9) << std::right
@@ -139,7 +139,7 @@ int main() {
 	N = binaries.size();
 
 	if(N==0){
-		std::cout<<"sorry there are no binaries left"<<std::endl;
+		std::cout<< "Sorry there are no binaries left." <<std::endl;
 	}
 	
 	double tm, tmMin;
