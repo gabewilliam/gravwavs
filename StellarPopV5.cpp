@@ -20,6 +20,7 @@ int main() {
 	double AU = 1.496e11; //m
 	double c = 3.0e8; //ms^-2
 	double G = 6.67408e-11;//m^3 kg^-1 s^-2
+	double yr = 365.25*24*60*60;//s
 
 
 	/*Sets up a random number generator to seed the other two generators, and
@@ -115,20 +116,22 @@ int main() {
 	std::cout << "Sorting binaries..." << std::endl;
 	int Nr = binaries.size();
 	int check;
-	int WhatWentWrong [7]={0, 0, 0, 0, 0, 0, 0};
+	int whatWentWrong[7] = {0, 0, 0, 0, 0, 0, 0};
+	double tMerge;
 
 	for(int i = N-1; i >= 0; i--) {
 
 		check = binaries[i].checkCandidate();
-		WhatWentWrong[check]++;
+		whatWentWrong[check]++;
 
-		if( check > 0) {
+		if(check > 0) {
 			binaries.erase(binaries.begin() + i);
 			Nr=Nr-1;
 		}
 		else {
-			fprintf(popFile,"%.15g,%.15g\n",
-					binaries[i].getMass(1),binaries[i].getMass(2));	
+			tMerge = binaries[i].mergeTime()/yr;
+			fprintf(popFile,"%.15g,%.15g,%.15g\n",
+					binaries[i].getMass(1),binaries[i].getMass(2),tMerge);	
 		}
 
 		std::cout << "\r" << std::setw(9) << std::right
@@ -136,36 +139,40 @@ int main() {
 		
 	}
 
+	
 	N = binaries.size();
 
-	if(N==0){
+	if(N==0) {
 		std::cout<< "Sorry there are no binaries left." <<std::endl;
 	}
 	
+
 	double tm, tmMin;
 	int nextMerge;
 
-	for (int i=0; i<N; i++){
+	for(int i=0; i<N; i++) {
 		
-		tm=binaries[i].mergeTime();
+		tm = binaries[i].mergeTime();
 
 		if((tm<tmMin) || (i==0)){
 			nextMerge=i;
 			tmMin=tm;
-	//std::cout << std::endl << "tm =" <<tm << std::endl;
 		}
 	}
 
-	std::cout << "next binary merger will be: "<<std::endl;
+	std::cout << std::endl;	
+	std::cout << "Next binary merger will be: "<< std::endl;
 	binaries[nextMerge].printGets();
 
-	for (int i=0; i<7; i++){
-		std::cout<<WhatWentWrong[i]<<std::endl;
+
+	std::cout << std::endl;
+	std::cout << "Binaries kept: " << whatWentWrong[0] << std::endl;
+	std::cout << "Binaries lost at each sorting phase: " << std::endl;
+
+	for (int i=1; i<7; i++){
+		std::cout << i << ": " << whatWentWrong[i] << std::endl;
 	}
 			
-
-
-	
 
 	fclose(popFile);
 			
