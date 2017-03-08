@@ -162,10 +162,10 @@ void Extractor::Convolution/*crossCorrelation*/(std::vector<Template>* output){
 			imagResult = -mSignalF->waveform[1][2*j+1] * temp->waveform[1][2*j+1] / noisePower;
 			
 			realTemp += temp->waveform[1][2*j] * temp->waveform[1][2*j] / noisePower;
-			imagTemp += -temp->waveform[1][2*j] * temp->waveform[1][2*j+1] / noisePower;
+			imagTemp += -temp->waveform[1][2*j+1] * temp->waveform[1][2*j+1] / noisePower;
 			
 			
-			op.waveform[1].push_back(realResult); //this should maybe be changed to SNR
+			op.waveform[1].push_back(realResult); 
 			op.waveform[1].push_back(imagResult);
 		}	
 		
@@ -173,6 +173,7 @@ void Extractor::Convolution/*crossCorrelation*/(std::vector<Template>* output){
 		imagTemp = imagTemp * 2 * df;
 		
 		norm = realTemp * realTemp + imagTemp * imagTemp;
+		norm = sqrt(norm);
 		norm = sqrt(norm);
 		
 		mNorms.push_back(norm);
