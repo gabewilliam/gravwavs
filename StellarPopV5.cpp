@@ -140,9 +140,9 @@ int main() {
 	}
 
 	
-	N = binaries.size();
+	double nCandidates = binaries.size();
 
-	if(N==0) {
+	if(nCandidates==0) {
 		std::cout<< "Sorry there are no binaries left." <<std::endl;
 	}
 	
@@ -150,7 +150,7 @@ int main() {
 	double tm, tmMin;
 	int nextMerge;
 
-	for(int i=0; i<N; i++) {
+	for(int i=0; i<nCandidates; i++) {
 		
 		tm = binaries[i].mergeTime();
 
@@ -160,16 +160,27 @@ int main() {
 		}
 	}
 
-	std::cout << std::endl;	
+	std::cout << std::endl << std::endl;	
 	std::cout << "Next binary merger will be: "<< std::endl;
 	binaries[nextMerge].printGets();
 
 
 	std::cout << std::endl;
 	std::cout << "Binaries kept: " << whatWentWrong[0] << std::endl;
+	std::cout << "Binaries remaining after each sorting phase:" << std::endl;
+
+	int nRemaining = N;
+
+	for(int i=1; i<7; i++) {
+
+		nRemaining -= whatWentWrong[i];
+		std::cout << i << ": " << nRemaining << std::endl;
+
+	}
+
 	std::cout << "Binaries lost at each sorting phase: " << std::endl;
 
-	for (int i=1; i<7; i++){
+	for(int i=1; i<7; i++) {
 		std::cout << i << ": " << whatWentWrong[i] << std::endl;
 	}
 			
