@@ -52,9 +52,10 @@ int main() {
 	double laMax = std::log10(aMax);
 
 	
-	/*Declares variables for the masses, mass ratio, radii, separation and 
-	/ minimum separation.*/
-	double m1, m2, q, r1, r2, la, a, aMin, laMin;
+	/*Declares variables for the masses, mass ratio, radii, separation, 
+	/ minimum separation and total mass generated.*/
+	double m1, m2, q, r1, r2, la, a, aMin, laMin, mTotal;
+	mTotal = 0;
 
 
 	FILE * popFile;
@@ -72,8 +73,7 @@ int main() {
 	
 	std::cout << "Generating binaries..." << std::endl;
 
-	int test = 0;
-
+	
 	/*Generates N binaries with component masses governed by the expressions
 	/ cited in the Mandel and deMink paper. First m1 is sampled. Then the
 	/ mass ratio is sampled and used to find m2.  Then, using m1 and m2, the 
@@ -108,6 +108,8 @@ int main() {
 
 		std::cout << "\r"<< std::setw(9) << std::right
 					  << n << " binaries generated." << std::flush;
+
+		mTotal += (m1+m2);
 				
 		
 	}
@@ -117,7 +119,8 @@ int main() {
 	int Nr = binaries.size();
 	int check;
 	int whatWentWrong[7] = {0, 0, 0, 0, 0, 0, 0};
-	double tMerge;
+	double tm;
+	double mCandidates = 0;
 
 	for(int i = N-1; i >= 0; i--) {
 
@@ -129,9 +132,11 @@ int main() {
 			Nr=Nr-1;
 		}
 		else {
-			tMerge = binaries[i].mergeTime()/yr;
-			fprintf(popFile,"%.15g,%.15g,%.15g\n",
-					binaries[i].getMass(1),binaries[i].getMass(2),tMerge);	
+			tm = binaries[i].mergeTime()/yr;
+			m1 = binaries[i].getMass(1);
+			m2 = binaries[i].getMass(2);
+			fprintf(popFile,"%.15g,%.15g,%.15g\n", m1, m2, tm);
+			mCandidates += (m1+m2);
 		}
 
 		std::cout << "\r" << std::setw(9) << std::right
@@ -147,7 +152,7 @@ int main() {
 	}
 	
 
-	double tm, tmMin;
+	double tmMin;
 	int nextMerge;
 
 	for(int i=0; i<nCandidates; i++) {
@@ -183,6 +188,10 @@ int main() {
 	for(int i=1; i<7; i++) {
 		std::cout << i << ": " << whatWentWrong[i] << std::endl;
 	}
+
+	std::cout << std::endl;
+	std::cout << "Total Mass of Binaries = " << mTotal << std::endl;
+	std::cout << "Total Mass of Candidates = " << mCandidates << std::endl;
 			
 
 	fclose(popFile);
