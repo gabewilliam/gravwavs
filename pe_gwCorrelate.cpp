@@ -99,7 +99,7 @@ void saveToFile(double parameterA[], double parameterB[], double parameterC[], i
 	outFile = fopen(fileName.c_str(),"w");
 
 	for(int i = 0; i < size; i++){
-		if (i%lag==0){
+		if (i%lag==0 && i!=0){
 			fprintf(outFile,"%.15g,%.15g,%.15g\n",parameterA[i],parameterB[i],parameterC[i]);
 		}
 	}
