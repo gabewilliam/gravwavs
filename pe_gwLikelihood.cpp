@@ -1,7 +1,8 @@
 #include "pe_gwLikelihood.h"
 #include "gwReadWrite.h"
 #include "gwFFT.h"
-#include "generate.h"
+//#include "generate.h"
+#include "gwSigGen.h"
 
 #include <cmath>
 #include <iostream>
@@ -64,8 +65,21 @@ vec_d ParameterFunction( double m1, double m2, double d, vec_d t ){
 	int n = t.size();
 	vec_d ht;
 
+	parameters PARAMS;
+	parameters *P = &PARAMS;
+	
+	// Set the characteristic parameters
+	setFundamentalParameters(5.0, 
+							 20.0,
+							 0.0, 
+							 10.0, 
+							 m1, 
+							 m2, 
+							 d, 
+							 P);
+
 	for( int i = 0; i < n; i++ ){
-		ht.push_back(generate(m1,m2,t[i],d,0,0,1)); //PLACEHOLDER: INSERT PARAMETER FUNCTION IN PARENTHESIS
+		ht.push_back(updatedAmplitude(P,n[i], ,));
 	}
 
 	return ht;
