@@ -13,8 +13,8 @@ int main() {
 	Signal signal;
 	
 	double //define parameters in natural units
-	ma = 40*1.989e30, //mass of star a in kg
-	mb = 30*1.989e30, //mass of star a in kg
+	ma = 140*1.989e30, //mass of star a in kg
+	mb = 130*1.989e30, //mass of star a in kg
 	r = 140e6*3.0857e16, //distance from source in m
 	theta = 0, //angle of emission measured from axis of orbit (i.e. orientation of orbit)
 	phi = 0, //angle of emission around axis of orbit (this is just an arbitrary phase shift
@@ -32,7 +32,7 @@ int main() {
 
 	signalV.push_back(signal);
 
-	saveSignals("signal.csv", &signalV, csv);
+	saveSignals("signaltest.csv", &signalV, csv);
 
 	//fclose(output);
 	

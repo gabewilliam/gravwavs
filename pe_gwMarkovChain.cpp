@@ -16,8 +16,6 @@ double gaussian(double, double, double, double, double);
 double prior(double, double, double, double, double, double, double);
 void saveToFile(double [],double [],double [],int,int,std::string);
 
-
-
 int main() {
 
 	//Defines the mass of the sun
