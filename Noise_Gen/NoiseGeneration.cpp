@@ -184,7 +184,7 @@ AligoNoSrm::AligoNoSrm(){
 }
 AligoHighFreq::AligoHighFreq(){
 	
-	this->loadCurve("Curves/High_Freqcsv");
+	this->loadCurve("Curves/High_Freq.csv");
 	
 }
 AligoBhbh20Deg::AligoBhbh20Deg(){
