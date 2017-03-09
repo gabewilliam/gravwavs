@@ -39,11 +39,11 @@ int main(){
 	}
 
 	double corrFactorChirp = checkForNaN( autoCorrelation( chirpMass, N ) );
-	double corrFactorRatio = checkForNan( autoCorrelation( massRatio, N ) );
+	double corrFactorRatio = checkForNaN( autoCorrelation( massRatio, N ) );
 	double corrFactorDistance = checkForNaN( autoCorrelation( distance, N ) );
 	
-	double acls [] = {ACLMChirp, ACLMRatio, ACLDistance};
-	int aclMax = *(std::max_element(ACLs,ACLs+3));
+	double acls [] = {corrFactorChirp, corrFactorRatio, corrFactorDistance};
+	int aclMax = *(std::max_element(acls,acls+3));
 
 	saveToFile( chirpMass, massRatio, distance, aclMax, N, "UncorrelatedData.txt" );
 
