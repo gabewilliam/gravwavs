@@ -44,6 +44,11 @@ int main(){
 	double corrFactorRatio = checkForNaN( autoCorrelation( massRatio, N ) );
 	double corrFactorDistance = checkForNaN( autoCorrelation( distance, N ) );
 	
+	std::cout << "Chirp Mass: " << corrFactorChirp << std::endl;
+	std::cout << "Mass Ratio: " << corrFactorRatio << std::endl;
+	std::cout << "Distance: " << corrFactorDistance << std::endl;
+
+	
 	double acls [] = {corrFactorChirp, corrFactorRatio, corrFactorDistance};
 	int aclMax = *(std::max_element(acls,acls+3));
 
