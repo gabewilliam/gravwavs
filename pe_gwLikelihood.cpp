@@ -1,6 +1,6 @@
 #include "pe_gwLikelihood.h"
 #include "gwReadWrite.h"
-#include "gwFFT.h"
+//#include "gwFFT.h"
 //#include "generate.h"
 #include "gwSigGen.h"
 
@@ -31,11 +31,11 @@ long double likelihood( double m1, double m2, double d, std::string signalFile )
 	ht.waveform[0] = dt.waveform[0]; //ht uses same time scale as dt
 	ht.waveform[1] = ht2;	//sets ht equal to vector produced by function
 	
-	Extractor Fourier = Extractor(); //performs fourier transforms on each of the time domain signals 
-	Fourier.setSignal(&dt);
-	Fourier.fft(&df);
-	Fourier.setSignal(&ht);
-	Fourier.fft(&hf);
+	//Extractor Fourier = Extractor(); //performs fourier transforms on each of the time domain signals 
+	//Fourier.setSignal(&dt);
+	//Fourier.fft(&df);
+	//Fourier.setSignal(&ht);
+	//Fourier.fft(&hf);
 	
 
 	vec_d sf = NoiseFunction( df.waveform[0] ); //creates noise probability function
@@ -78,8 +78,19 @@ vec_d ParameterFunction( double m1, double m2, double d, vec_d t ){
 							 d, 
 							 P);
 
+	complex<double> gravWav = 0.0;
+	complex<double> * gw = &gravWav;
+
+	double scalingAmp = effAmp(P);
+
+	double df = 1.0/(P->totTime*C_CONST);
+	double f;
+
 	for( int i = 0; i < n; i++ ){
-		ht.push_back(updatedAmplitude(P,n[i], ,));
+
+		f = double(i)*df;
+
+		ht.push_back(updatedAmplitude(P,f, gw, scalingAmp));
 	}
 
 	return ht;
