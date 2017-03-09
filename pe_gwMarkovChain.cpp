@@ -16,6 +16,7 @@ double gaussian(double, double, double, double, double);
 double prior(double, double, double, double, double, double, double);
 double autoCorrelation(double [], int);
 void saveToFile(double [],double [],double [],int,int,std::string);
+double checkForNaN(double);
 
 
 int main() {
@@ -63,7 +64,7 @@ int main() {
 
 
 	//Declares the variables used throughout the routine
-	std::string fileName = "signal.csv";
+	std::string fileName = "30_26.csv";
 	double ma, mb, maProposal, mbProposal;
 	double mChirp, mRatio, mChirpProposal, mRatioProposal;
 	double distance, distanceProposal;
@@ -141,16 +142,16 @@ int main() {
 		distanceArray[i-1] = distance;
 		
 	}
-	/*
-	double ACLMChirp = autoCorrelation(mChirpArray,N);
-	double ACLMRatio = autoCorrelation(mRatioArray,N);
-	double ACLDistance = autoCorrelation(distanceArray,N);
+	
+	double ACLMChirp = checkForNaN(autoCorrelation(mChirpArray,N));
+	double ACLMRatio = checkForNaN(autoCorrelation(mRatioArray,N));
+	double ACLDistance = checkForNaN(autoCorrelation(distanceArray,N));
 	std::cout<<ACLMChirp<<"\t"<<ACLMRatio<<"\t"<<ACLDistance<<std::endl;
 
 	double ACLs [] = {ACLMChirp, ACLMRatio, ACLDistance};
 	int ACLMax = *(std::max_element(ACLs,ACLs+3));	
 	std::cout<<ACLMax<<std::endl;
-	*/
+	
 	saveToFile(mRatioArray,mChirpArray,distanceArray,1,N,"MassFile.txt");
 	saveToFile(mRatioArray,mChirpArray,distanceArray,100,N,"2DMonte.txt");
 
@@ -223,6 +224,11 @@ void saveToFile(double parameterA[], double parameterB[], double parameterC[], i
 	
 	//Closes the output file
 	fclose(outFile);
+}
+
+double checkForNaN(double ACL) {
+	if(!(ACL==ACL)) return 1;
+	else return ACL;
 }
 
 
