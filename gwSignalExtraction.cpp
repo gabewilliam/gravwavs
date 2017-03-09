@@ -1,7 +1,6 @@
 #include <gsl/gsl_fft_complex.h>
 #include "gwSignalExtraction.h"
 
-#include <cmath>
 #include <iostream>
 
 Extractor::Extractor(){}
@@ -9,7 +8,9 @@ Extractor::Extractor(){}
 void Extractor::setSignalT(Signal* sig)
 {
 	mSignalT = sig;
+	mOriginalTime=sig->waveform[0];
 	return;
+	
 }
 
 void Extractor::setSignalF(Signal* sig)
@@ -23,10 +24,13 @@ void Extractor::setTemplates(std::vector<Template>* temps)
 	mTemplates = temps;
 	return;
 }
-
-void Extractor::fft(std::vector<Template>* output)
+void Extractor::setTemplatesT(std::vector<Template>* temps)
 {
-	size_t I=output->size();
+	mTemplatesT = temps;
+	return;
+}
+void Extractor::fft(std::vector<Template>* output){
+	size_t I=mTemplatesT->size();
 	int J = (mSignalT->waveform[0]).size();
 	int M =(int)(log2(J)+2);
 	size_t N= pow(2,M);
@@ -45,104 +49,154 @@ void Extractor::fft(std::vector<Template>* output)
 	
 	gsl_fft_complex_workspace* complexWS = gsl_fft_complex_workspace_alloc(N);
 	gsl_fft_complex_wavetable* complexWT = gsl_fft_complex_wavetable_alloc(N);
-	;
+
+	
 	for(size_t i=0;i<I;i++){
 		
 		vec_d* Amp=new vec_d;
-	
+		Template* Temp=new Template;
+		J=mTemplatesT[0][i].waveform[1].size();
+		
 		for(size_t j=0;j<J;j++){
-			Amp->push_back((output[0][i].waveform[1])[j]);
+			Amp->push_back((mTemplatesT[0][i].waveform[1])[j]);
 			Amp->push_back(0);
 		}	
-		(output[0][i].waveform[1])=*Amp;
+		//(output[0][i].waveform[1])=*Amp;
 		for(size_t j=J;j<N;j++){
-			(output[0][i].waveform[1]).push_back(0);
-			(output[0][i].waveform[1]).push_back(0);
+			Amp->push_back(0);
+			Amp->push_back(0);
 		}
 		
-		gsl_fft_complex_forward(&(output[0][i].waveform[1])[0], 1, N, complexWT, complexWS);
-		output[0][i].waveform[0]=freq;/**/
+		gsl_fft_complex_forward(&(*Amp)[0], 1, N, complexWT, complexWS);
+		
+		Temp->param[0]=mTemplatesT[0][i].param[0];
+			Temp->param[1]=mTemplatesT[0][i].param[1];
+		Temp->waveform[0]=freq;/**/
+		Temp->waveform[1]=*Amp;
+		output->push_back(*Temp);
+		
 	}
+	setTemplates(output);
 	gsl_fft_complex_workspace_free(complexWS);
 	gsl_fft_complex_wavetable_free(complexWT);
 	
-	mTemplates=output;
+	return;
+}
+void Extractor::fft(Signal* output){
+
+	size_t J = (mSignalT->waveform[0]).size();
+	int M =(int)(log2(J)+2);
+	size_t N= pow(2,M);
+	
+	double sampleFreq=J/((mSignalT->waveform[0])[J-1]-(mSignalT->waveform[0])[0]);
+	vec_d freq;
+	for(int j=0; j<N/4; j++){
+		freq.push_back(j*sampleFreq/N);
+		freq.push_back(j*sampleFreq/N);
+	} 
+	for(int j=N/4; j<N/2; j++){
+		freq.push_back((N/4-j)*sampleFreq/N);
+		freq.push_back((N/4-j)*sampleFreq/N);
+	} 
+	
+		vec_d Amp;
+		
+		for(size_t j=0;j<J;j++){
+			Amp.push_back((mSignalT->waveform[1])[j]);
+			Amp.push_back(0);
+			
+			//(output[0][i].waveform[1]).push_back(0);
+		}	
+		//(output->waveform[1])=*Amp;
+		for(size_t j=J;j<N;j++){
+			Amp.push_back(0);
+			Amp.push_back(0);
+		}
+	
+
+	gsl_fft_complex_workspace* complexWS = gsl_fft_complex_workspace_alloc(N);
+	gsl_fft_complex_wavetable* complexWT = gsl_fft_complex_wavetable_alloc(N);
+
+	gsl_fft_complex_forward (&Amp[0], 1, N, complexWT, complexWS);
+	
+
+	(output->waveform[0])=freq;
+	(output->waveform[1])=Amp;
+
+	setSignalF(&(*output));
+	std::cout<<mSignalF->waveform[1].size()<<std::endl;
+	gsl_fft_complex_workspace_free(complexWS);
+	gsl_fft_complex_wavetable_free(complexWT);
+	
 	
 	return;
 }
-
-void Extractor::Convolution/*crossCorrelation*/(std::vector<Template>* output)
+void Extractor::Convolution(std::vector<Template>* output)
 {
-	int I, J;
+	int I, J, pn;
 	double imagResult;
 	double realResult;
 	double noise;
 	double noisePower;
-	double realTemp = 0;
-	double imagTemp = 0;
-	double df = fabs(mSignalF->waveform[0][2] - mSignalF->waveform[0][0]);
-	double norm;
+	double power;
+	double SNR;
 	
 	I = mTemplates->size();
-	J = mSignalF->waveform[1].size();
+	J = (mSignalF->waveform[1]).size();
+	Template* temp;
+	pn = 1;
 
-	
 	for(int i=0; i<I; i++)
 	{	
-		Template* temp = &mTemplates[0][i];
+		temp = &mTemplates[0][i];
 		
-		Template op;
+		Template* op=new Template;
 
-		op.param[0] = temp->param[0];
-		op.param[1] = temp->param[1];
-		
-		realTemp = 0;
-		imagTemp = 0;
-		
-		//not sure if this is looping through all of the elements correctly;
-		//the alternative for the more sensible frequency packing is commented out
-		for(int j = 0 ; j < J/2; j++){
+		SNR = 0;
+
+
+		op->param[0] = temp->param[0];
+		op->param[1] = temp->param[1];
+		for(int j = 0; j <J/2; j++){
 			
-			/*
+
+			//noise = getASD(mSignalF->waveform[0][2*j]);
+
+			op->waveform[0].push_back(mSignalF->waveform[0][2*j]);
+			op->waveform[0].push_back(mSignalF->waveform[0][2*j+1]);
+			noise=1.0;
+			noisePower = noise*noise;
+		
+			realResult = mSignalF->waveform[1][2*j] * temp->waveform[1][2*j];
+			imagResult = -mSignalF->waveform[1][2*j+1] * temp->waveform[1][2*j+1];
+			
+			power = realResult*realResult + imagResult*imagResult;
+			
+			SNR += (power/noisePower);
+			
+			op->waveform[1].push_back(realResult); //this should maybe be changed to SNR
+			op->waveform[1].push_back(imagResult);
+		}	
+		
+		
+		mSNR.push_back(SNR);
+
+		output->push_back(*op);
+	}
+
+	mConResults = output;/**/
+	
+	return;
+}
+			/*	
+			//not sure if this is looping through all of the elements correctly;
+			//the alternative for the more sensible frequency packing is commented out
 				
 			noise = getASD(mSignalF->waveform[0][j]);
 			op.waveform[0].push_back(mSignalF->waveform[0][j]);
 			
 			noisePower = noise*noise;
 			*/	
-			noise = getASD(mSignalF->waveform[0][2*j]);
-
-			op.waveform[0].push_back(mSignalF->waveform[0][2*j]);
-			op.waveform[0].push_back(mSignalF->waveform[0][2*j+1]);
-			
-			noisePower = noise*noise;
-		
-			realResult = mSignalF->waveform[1][2*j] * temp->waveform[1][2*j] / noisePower;
-			imagResult = -mSignalF->waveform[1][2*j+1] * temp->waveform[1][2*j+1] / noisePower;
-			
-			realTemp += temp->waveform[1][2*j] * temp->waveform[1][2*j] / noisePower;
-			imagTemp += -temp->waveform[1][2*j] * temp->waveform[1][2*j+1] / noisePower;
-			
-			
-			op.waveform[1].push_back(realResult); //this should maybe be changed to SNR
-			op.waveform[1].push_back(imagResult);
-		}	
-		
-		realTemp = realTemp * 2 * df;
-		imagTemp = imagTemp * 2 * df;
-		
-		norm = realTemp * realTemp + imagTemp * imagTemp;
-		norm = sqrt(norm);
-		
-		mNorms.push_back(norm);
-
-		output->push_back(op);
-	}
-
-	mConResults = output;
-	
-	return;
-}
 
 void Extractor::fftInverse(std::vector<Template>* output)
 {
@@ -151,10 +205,10 @@ void Extractor::fftInverse(std::vector<Template>* output)
 	vec_d freq;
 	double dt;
 	double norm;
-
+	int K=mOriginalTime.size();
 	I = (*mConResults).size();	
 	N = (*mConResults)[0].waveform[0].size();	
-
+	
 	gsl_fft_complex_workspace* complexWS = gsl_fft_complex_workspace_alloc(N/2);
 	gsl_fft_complex_wavetable* compWT = gsl_fft_complex_wavetable_alloc(N/2);
 	
@@ -162,27 +216,28 @@ void Extractor::fftInverse(std::vector<Template>* output)
 	{		
 		freq = (*mConResults)[i].waveform[0];
 
-		dt = 2.0/(freq[N/2-1]);
+		dt = 1/(freq[N/2-1]);
 	
 		amp = (*mConResults)[i].waveform[1];
 
 		gsl_fft_complex_inverse(&amp[0], 1, N/2, compWT, complexWS);		
 
-		Template temp;
+		Template *temp=new Template;
 
-		norm = mNorms[i];
+		norm = fAutoCorrComplex(&(*mTemplates)[i]);
 
-
-		temp.param[0] = (*mConResults)[i].param[0];
-		temp.param[1] = (*mConResults)[i].param[1];
-
-		for(int n=0; n<N/2; n++)
+		//std::cout<<norm<<std::endl;
+		
+		temp->param[0] = (*mConResults)[i].param[0];
+		temp->param[1] = (*mConResults)[i].param[1];
+		
+		for(int n=0; n<K; n++)
 		{
-			temp.waveform[0].push_back(n*dt);
-			temp.waveform[1].push_back((amp[2*n] * amp[2*n]) / norm);
+			temp->waveform[1].push_back(amp[2*n]/norm);
 		}
-
-		output->push_back(temp);
+		
+		temp->waveform[0]=mOriginalTime;
+		output->push_back(*temp);
 	}
 
 	gsl_fft_complex_workspace_free(complexWS);
@@ -271,8 +326,7 @@ double Extractor::getASD(double f)
 	return asd;
 }
 
-double Extractor::fAutoCorrComplex(Template* temp)
-{
+double Extractor::fAutoCorrComplex(Template* temp){
 	int N, pn; 
 	double result;
 	vec_d op;
@@ -284,6 +338,7 @@ double Extractor::fAutoCorrComplex(Template* temp)
 	{  
 		result = pn * temp->waveform[1][n] * temp->waveform[1][n];	
 		op.push_back(result);
+
 		pn = -pn;
 	}
 
