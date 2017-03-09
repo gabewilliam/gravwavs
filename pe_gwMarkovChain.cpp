@@ -14,9 +14,8 @@
 
 double gaussian(double, double, double, double, double);
 double prior(double, double, double, double, double, double, double);
-double autoCorrelation(double [], int);
 void saveToFile(double [],double [],double [],int,int,std::string);
-double checkForNaN(double);
+
 
 
 int main() {
@@ -141,19 +140,9 @@ int main() {
 		mRatioArray[i-1] = mRatio;
 		distanceArray[i-1] = distance;
 		
-	}
+	}	
 	
-	double ACLMChirp = checkForNaN(autoCorrelation(mChirpArray,N));
-	double ACLMRatio = checkForNaN(autoCorrelation(mRatioArray,N));
-	double ACLDistance = checkForNaN(autoCorrelation(distanceArray,N));
-	std::cout<<ACLMChirp<<"\t"<<ACLMRatio<<"\t"<<ACLDistance<<std::endl;
-
-	double ACLs [] = {ACLMChirp, ACLMRatio, ACLDistance};
-	int ACLMax = *(std::max_element(ACLs,ACLs+3));	
-	std::cout<<ACLMax<<std::endl;
-	
-	saveToFile(mRatioArray,mChirpArray,distanceArray,1,N,"MassFile.txt");
-	saveToFile(mRatioArray,mChirpArray,distanceArray,100,N,"2DMonte.txt");
+	saveToFile(mRatioArray,mChirpArray,distanceArray,1,N,"RawData.txt");
 
 	/*Frees the memory associated with the random
 	/ number generators and deallocates memory.*/
@@ -178,38 +167,6 @@ double prior(double ma, double mb, double mUpper, double mLower, double d, doubl
 
 }
 
-/*Iterates through different lag values, calculating the autocorrelation until it falls below the threshold
-/ value of 0.05.*/
-double autoCorrelation(double parameterArray[], int size) {
-	
-	int lag=1;
-	double ACL=0;
-	double autoCorr=1;
-
-	while(autoCorr==std::abs(autoCorr)) {
-
-		double * lagArray = new double[size-lag];
-		double * leadArray = new double[size-lag];
-		std::copy(parameterArray+lag,parameterArray+size,leadArray);
-		std::copy(parameterArray,parameterArray+(size-lag),lagArray);
-		autoCorr=gsl_stats_correlation(lagArray, 1, leadArray, 1, (size-lag));
-		if(!(autoCorr==autoCorr)){
-			for(int i=0;i<size;i++){
-				std::cout<<parameterArray[i]<<std::endl;
-			}
-		}
-		if(lag%100==0) std::cout<<"Lag = "<<lag<<std::endl;
-
-		lag+=1;
-		ACL+=2*autoCorr;
-
-		delete [] lagArray;
-		delete [] leadArray;
-	}
-
-	return ACL;
-}
-
 void saveToFile(double parameterA[], double parameterB[], double parameterC[], int lag, int size, std::string fileName) {
 	
 	//Opens the output text file
@@ -226,10 +183,6 @@ void saveToFile(double parameterA[], double parameterB[], double parameterC[], i
 	fclose(outFile);
 }
 
-double checkForNaN(double ACL) {
-	if(!(ACL==ACL)) return 1;
-	else return ACL;
-}
 
 
 
