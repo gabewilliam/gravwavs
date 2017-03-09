@@ -14,8 +14,10 @@ void saveToFile(double [],double [],double [],int,int,std::string);
 
 int main(){
 	
+	std::string fileName = "RawData.txt";
+	
 	std::ifstream lineFile;
-	lineFile.open( "MassFile.txt" );
+	lineFile.open( fileName.c_str() );
 
 	int N = 0;
 	std::string line;
@@ -28,7 +30,7 @@ int main(){
 	std::cout << N << std::endl;
 
 	FILE * inFile;
-	inFile=fopen("RawData.txt","r");
+	inFile=fopen( fileName.c_str() ,"r" );
 	
 	double * chirpMass = new double[N];
 	double * massRatio = new double[N];
