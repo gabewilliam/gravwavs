@@ -15,9 +15,29 @@ int main(){
 
 	srand(time(NULL));
 
+	cout<<"Select type of noise:\r\n\t"
+	<< "1) ALIGO Schutz\r\n\t"
+	<< "2) ALIGO Zero Det High P\r\n\t"
+	<< "3) ALIGO Zero Det Low P\r\n\t"
+	<< "4) ALIGO NSNS Opt\r\n\t"
+	<< "5) ALIGO No SRM\r\n\t"
+	<< "6) ALIGO High Freq\r\n\t"
+	<< "7) ALIGO BHBH 20 Deg\r\n";
 	
-	AligoNoSrm nGen;
-
+	int choice;
+	cin >> choice;
+	
+	NoiseGenerator *nGen;
+	
+	if(choice == 1)		{	nGen =  new AligoSchutz();		}
+	else if(choice == 2){	nGen = new AligoZeroDetHighP();	}
+	else if(choice == 3){	nGen = new AligoZeroDetLowP();	}
+	else if(choice == 4){	nGen = new AligoNsnsOpt();		}
+	else if(choice == 5){	nGen = new AligoNoSrm();		}
+	else if(choice == 6){	nGen = new AligoHighFreq();		}
+	else if(choice == 7){	nGen = new AligoBhbh20Deg();	}
+	else				{	nGen = new AligoSchutz();		}	
+	
 	ofstream oFile;
 	oFile.open("noise.csv");
 	
@@ -34,10 +54,8 @@ int main(){
 	cout << "Enter frequency increment: \r\n";
 	cin >> fInc;
 	
-	nGen.genSpectrum(freq, noise, fMax, fInc);
+	nGen->genSpectrum(freq, noise, fMax, fInc);
 	
-	
-
 	for(int k=freq->size()/2; k < freq->size(); k++){
 		
 		oFile << freq->at(k) << "," << (noise->at(k)).real << "\r\n" << freq->at(k) << "," << (noise->at(k)).imag << "\r\n";

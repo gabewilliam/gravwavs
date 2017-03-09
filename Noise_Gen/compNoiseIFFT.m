@@ -1,18 +1,28 @@
-sig = load('30_26.csv');
-
-noise = csvread('noise.csv');
+noise = csvread('noise2.csv');
 %noise(:,2) = noise(:,2) .* sqrt(3E8);
-n = transpose(noise);
+Z = noise(:,2) + noise(:,3) * sqrt(-1);
+F = noise(:,1);
 
-nsig = sig + n;
+figure;
 
-plot(nsig(1,:),nsig(2,:));
 
-csvwrite('Noisy_Sig.csv',nsig);
+loglog(F,(imag(Z)).^2);
+hold on;
+loglog(F,real(Z).^2);
+xlim([0 8000]);
+ylim([-2E-21 2E-21]);
+nt = ifft(Z, 'symmetric');
 
-%nt = IFFT(nsig);
+h = ((length(F) - 1) / 2) + 2 ;
 
-%z = noise(:,2) + sqrt(-1) * noise(:,3);
+sz2 = floor(length(F(:,1)));
+df = F(h,1);
+T = 1 / df;
+dt = T / (sz2);
 
-%t = size(z);
-%f = transpose(linspace(-5000,5000,t(1)));
+t = (0:dt:T-dt);
+
+figure;
+
+plot(t, nt);
+

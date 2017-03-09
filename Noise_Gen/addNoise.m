@@ -1,4 +1,8 @@
-sig = csvread('FreqSigDat.csv');
+nsig = cleanData + nt;
 
-sig(:,1) = sig(:,1) .* 1000000;
+plot(t, nsig);
 
+signal(1,:) = t;
+signal(2,:) = nsig;
+
+csvwrite('SpecialNoiseSignalForEverybody.csv',signal);
