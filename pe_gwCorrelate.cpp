@@ -14,8 +14,10 @@ void saveToFile(double [],double [],double [],int,int,std::string);
 
 int main(){
 	
+	std::string fileName = "RawData.txt";
+	
 	std::ifstream lineFile;
-	lineFile.open( "MassFile.txt" );
+	lineFile.open( fileName.c_str() );
 
 	int N = 0;
 	std::string line;
@@ -28,7 +30,7 @@ int main(){
 	std::cout << N << std::endl;
 
 	FILE * inFile;
-	inFile=fopen("RawData.txt","r");
+	inFile=fopen( fileName.c_str() ,"r" );
 	
 	double * chirpMass = new double[N];
 	double * massRatio = new double[N];
@@ -39,11 +41,16 @@ int main(){
 	}
 
 	double corrFactorChirp = checkForNaN( autoCorrelation( chirpMass, N ) );
-	double corrFactorRatio = checkForNan( autoCorrelation( massRatio, N ) );
+	double corrFactorRatio = checkForNaN( autoCorrelation( massRatio, N ) );
 	double corrFactorDistance = checkForNaN( autoCorrelation( distance, N ) );
 	
-	double acls [] = {ACLMChirp, ACLMRatio, ACLDistance};
-	int aclMax = *(std::max_element(ACLs,ACLs+3));
+	std::cout << "Chirp Mass: " << corrFactorChirp << std::endl;
+	std::cout << "Mass Ratio: " << corrFactorRatio << std::endl;
+	std::cout << "Distance: " << corrFactorDistance << std::endl;
+
+	
+	double acls [] = {corrFactorChirp, corrFactorRatio, corrFactorDistance};
+	int aclMax = *(std::max_element(acls,acls+3));
 
 	saveToFile( chirpMass, massRatio, distance, aclMax, N, "UncorrelatedData.txt" );
 
@@ -92,7 +99,7 @@ void saveToFile(double parameterA[], double parameterB[], double parameterC[], i
 	outFile = fopen(fileName.c_str(),"w");
 
 	for(int i = 0; i < size; i++){
-		if (i%lag==0){
+		if (i%lag==0 && i!=0){
 			fprintf(outFile,"%.15g,%.15g,%.15g\n",parameterA[i],parameterB[i],parameterC[i]);
 		}
 	}

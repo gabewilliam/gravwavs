@@ -95,7 +95,6 @@ int main() {
 
 		p = likelihood(x,y,a,b,sigma)*prior(x,y,w);
 
-
 		nZeroX = gsl_ran_gaussian(normGen, nSigma);
 		nZeroY = gsl_ran_gaussian(normGen, nSigma);
 
@@ -135,7 +134,7 @@ int main() {
 / and with a standard deviation of s.*/
 double likelihood(double x, double y, double a, double b, double s) {
 
-	return 1/(2*atan(1)/4*s*s)*exp(-(pow((x-a),2) + pow((y-b),2))/(2*s*s));
+	return 1/(2*M_PI*s*s)*exp(-(pow((x-a),2) + pow((y-b),2))/(2*s*s));
 
 }
 
