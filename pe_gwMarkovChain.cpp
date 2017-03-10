@@ -96,7 +96,7 @@ int main() {
 	/ is output to the file.*/
 	for(int i = 1; i <= N; i++) {
 
-		p = likelihood(ma,mb,distance,fileName)+log((pow(ma,2)/mChirp)*prior(ma,mb,mUpper,mLower,distance,dUpper,dLower));
+		p = likelihood(ma/mSolar,mb/mSolar,distance/MPc,fileName)+log((pow(ma,2)/mChirp)*prior(ma,mb,mUpper,mLower,distance,dUpper,dLower));
 
 		nZeroMChirp = gsl_ran_gaussian(normGen, 0.5*mSolar);
 		nZeroMRatio = gsl_ran_gaussian(normGen, 0.1);
@@ -113,7 +113,7 @@ int main() {
 			mRatioProposal = 1./mRatioProposal;
 		}
 		
-		pProposal = likelihood(maProposal,mbProposal,distanceProposal,fileName)+log((pow(maProposal,2)/mChirpProposal)*prior(maProposal,mbProposal,mUpper,mLower,distanceProposal,dUpper,dLower));
+		pProposal = likelihood(maProposal/mSolar,mbProposal/mSolar,distanceProposal/MPc,fileName)+log((pow(maProposal,2)/mChirpProposal)*prior(maProposal,mbProposal,mUpper,mLower,distanceProposal,dUpper,dLower));
 
 		alpha = exp(pProposal-p);
 

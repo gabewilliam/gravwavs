@@ -9,8 +9,8 @@
 int main(){
 	
 	// Set masses of components (Solar Masses)
-	double M1 = 30.0;
-	double M2 = 26.0;
+	double M1 = 26.0;
+	double M2 = 30.0;
 	// Set distance of system (MPc)
 	double Dist = 500.0;
 	// Set total time of signal (s)
@@ -21,6 +21,11 @@ int main(){
 	double initPhase = 0.0;
 	// Set minimum detector frequency (Hz)
 	double fMin = 10.0;
+	
+	// Set inclination angles (arbitrary for now)
+	double theta = 0.0;
+	double psi = 0.0;
+	double phi = 0.0;
 	
 	// Set up struct to store characteristic information of signal
 	parameters PARAMS;
@@ -34,6 +39,9 @@ int main(){
 							 M1, 
 							 M2, 
 							 Dist, 
+							 theta,
+							 psi,
+							 phi,
 							 P);
 							 
 	// Set up struct to store vector of final data
@@ -57,20 +65,14 @@ int main(){
 	// Set maximum frequency
 	double maxFreq = 4095.0/C_CONST;
 	
-	// Set frequency increment
-	double df = 1.0/(totalTime*C_CONST);
-	
 	// Set the number of frequency bins to loop over
-	double nFreq = maxFreq/df + 1.0;
-	
-	// Calculate the scaling amplitude of the wave
-	double amp0 = effAmp(P);
+	double nFreq = maxFreq/P->df + 1.0;
 	
 	for (int i = 0; i < nFreq; i++){
 		
-		freq = double(i)*df;
+		freq = double(i)*P->df;
 		
-		amp_Hz = updatedAmplitude(P, freq, gWave, amp0);
+		amp_Hz = updatedAmplitude(P, freq, gWave);
 		
 		// Convert frequency back to Hz
 		freq_Hz = freq*C_CONST;		

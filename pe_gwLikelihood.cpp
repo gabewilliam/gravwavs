@@ -38,18 +38,22 @@ long double likelihood( double m1, double m2, double d, std::string signalFile )
 	//Fourier.fft(&hf);
 	
 
-	vec_d sf = NoiseFunction( df.waveform[0] ); //creates noise probability function
-	int n = df.waveform[0].size();//finds number of elements in freq domain signal
+	vec_d sf = NoiseFunction( dt.waveform[0] ); //creates noise probability function
+	int n = dt.waveform[0].size();//finds number of elements in freq domain signal
 
 	long double sum = 0.0;
 	long double SNR = 0.0;
-	vec_d vdf = df.waveform[1]; //splits signal into std::vectors for use in loop
-	vec_d vhf = hf.waveform[1];
-	
-	for( int i = 0; i < n; i++ ){ //evaluates the sum part in equation A20	
-		sum += pow( std::abs( vdf[i]/20 - vhf[i]/20 ), 2 )/sf[i];
-		SNR += pow( std::abs( vdf[i]/20 ), 2 )/sf[i];
+	vec_d vdf = dt.waveform[1]; //splits signal into std::vectors for use in loop
+	vec_d vhf = ht.waveform[1];
+	//std::cout<<n<<std::endl;
+
+	for( int i = 0; i < n; i++ ){ //evaluates the sum part in equation A20
+		//if (i==500) std::cout << vdf[i] << "\t" << vhf[i] << std::endl;	
+		if(!(vhf[i]==vhf[i]) || vhf[i]==0) vhf[i]=vdf[i];
+		sum += pow( std::abs( vdf[i] - vhf[i] ), 2 )/sf[i];
+		SNR += pow( std::abs( vdf[i] ), 2 )/sf[i];
 	}
+
 	vec_d t = dt.waveform[0];//takes the time vector
 	int n2 = t.size();//finds the number of elements	
 	double T = t[n2-1];//takes the last element for T (total time elapsed)
@@ -67,30 +71,31 @@ vec_d ParameterFunction( double m1, double m2, double d, vec_d t ){
 
 	parameters PARAMS;
 	parameters *P = &PARAMS;
-	
+
 	// Set the characteristic parameters
-	setFundamentalParameters(5.0, 
+	setFundamentalParameters(10.0, 
 							 20.0,
 							 0.0, 
 							 10.0, 
 							 m1, 
 							 m2, 
-							 d, 
+							 d,
+							 0.0,
+							 0.0,
+							 0.0, 
 							 P);
 
 	complex<double> gravWav = 0.0;
 	complex<double> * gw = &gravWav;
 
-	double scalingAmp = effAmp(P);
-
-	double df = 1.0/(P->totTime*C_CONST);
+	double df = P->df;
 	double f;
 
 	for( int i = 0; i < n; i++ ){
 
 		f = double(i)*df;
 
-		ht.push_back(updatedAmplitude(P,f, gw, scalingAmp));
+		ht.push_back(updatedAmplitude(P,f,gw));
 	}
 
 	return ht;
