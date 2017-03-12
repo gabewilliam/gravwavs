@@ -32,7 +32,7 @@ int main()
 
 	Extractor bill;
 	
-	if(bill.loadCurve("../data/noisecurve.csv")){
+	if(bill.loadCurve("noisecurve.csv")){
 		std::cout<<"noise successfully loaded"<<std::endl;
 	}else{
 		std::cout<<"no noise I'm afraid"<<std::endl;
@@ -60,21 +60,25 @@ int main()
 
 	std::cout << "Performing inverse fourier transform" << std::endl;
 	
+	
 	std::vector<Template> output1;
 	std::vector<Template> output2;
 
 	bill.fftInverse(&output1);
 	std::cout<<"doe breah"<<std::endl;
-	std::cout<<output1[0].waveform[0][0]<<std::endl;
+	std::cout<<output1[0].waveform[0][345]<<std::endl;
 	
 	std::cout << "Saving output to output.dat..." << std::endl;
 	
+	
+	
+	
+	
 	saveTemplates("../data/output1.dat", &output1, csv);
 	//saveTemplates("../data/output2.dat", output2, csv);
-
+	std::cout<<"here"<<std::endl;
+	
 	bill.clearOtherMemory();
-
-	std::cout<<"Complete."<<std::endl;
 
 	return 1;
 }
