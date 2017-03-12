@@ -38,7 +38,7 @@ void Extractor::splitSignal(){
 	size = pow(2,size);
 	
 	double dt = mSignalT->waveform[0][2] - mSignalT->waveform[0][0];
-	
+	std::cout<<"dt = "<<dt<<std::endl;
 	
 	for (int i = N; i < size; i++){
 		mSignalT->waveform[1].push_back(0.0);
@@ -54,7 +54,7 @@ void Extractor::splitSignal(){
 	
 	int chunkSize = (*mTemplates)[0].waveform[0].size();
 	
-	int nChunks = size/chunkSize;
+	int nChunks = 2*size/chunkSize;
 	
 	int start;
 	
@@ -63,7 +63,7 @@ void Extractor::splitSignal(){
 	for (int i = 0; i < nChunks; i++){
 		
 		Signal *sig = new Signal;
-		start = i*(chunkSize);
+		start = i*(chunkSize)/2;
 		if (i < nChunks){
 			for(int j = start; j < start + chunkSize; j++){			
 				
@@ -71,6 +71,8 @@ void Extractor::splitSignal(){
 				sig->waveform[1].push_back(mSignalT->waveform[1][j]);			
 					
 			}	
+		}else{
+			//for(int j = 
 		}
 		dummy->push_back(sig);
 	}	
@@ -145,9 +147,11 @@ void Extractor::fft(){
 	
 	std::vector<Signal*>* dummy = new std::vector<Signal*>;
 	
-	double sampleFreq = 1/(2.0*N*((*mSignalsT)[0]->waveform[0][2] - (*mSignalsT)[0]->waveform[0][0]));
-
+	double dt = ((*mSignalsT)[0]->waveform[0][2] - (*mSignalsT)[0]->waveform[0][0]);
 	
+	double sampleFreq = 1/(2.0*N*((*mSignalsT)[0]->waveform[0][2] - (*mSignalsT)[0]->waveform[0][0]));
+	
+	std::cout<<"dt = "<<dt<<std::endl;
 	
 	
 	gsl_fft_complex_workspace* complexWS =  gsl_fft_complex_workspace_alloc(N);
@@ -533,7 +537,7 @@ void Extractor::clearConvolutionMemory(){
 		}
 		delete ((*mConResults)[i]);
 	}
-
+	delete (mConResults);
 }
 
 void Extractor::clearOtherMemory(){
