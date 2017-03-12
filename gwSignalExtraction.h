@@ -24,13 +24,16 @@ class Extractor
 
 		void setSignalT(Signal* input);
 		void setSignalF(Signal* input);
+		void splitSignal();
 		void setTemplates(std::vector<Template>* templates);	
+		
 
-		void fft(std::vector<Template>* output);
+		//void fft(std::vector<Template>* output);
+		void fft();
 
-		void Convolution(std::vector<Template>* output);
+		void Convolution();
 
-		void fftInverse(std::vector<Template>* output);
+		void fftInverse(std::vector<Template>* out1);
 
 		double getASD(double f);
 
@@ -38,12 +41,20 @@ class Extractor
 
 		bool loadCurve(std::string filename);
 		
+		void clearSignalMemory();
+		void clearConvolutionMemory();
+		void clearOtherMemory();
+		void clear();
+		
 	private:
-		Signal* mSignalT;
-		Signal* mSignalF;
+		Signal *mSignalT;
+		Signal *mSignalF;
+		std::vector<Signal*>* mSignalsT;
+		std::vector<Signal*>* mSignalsF;
 		std::vector<Template>* mTemplates;
-		std::vector<Template>* mConResults;
-		std::vector<double> mNorms;
+		std::vector<std::vector<Template*>* >* mConResults;
+		std::vector<std::vector<Template*>* >* mToBeDeleted;
+		std::vector<std::vector<double> > mNorms;
 		NoiseCurve fNoiseCurve;
 };
 
