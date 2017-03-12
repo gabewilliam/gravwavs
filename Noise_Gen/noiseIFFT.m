@@ -1,9 +1,7 @@
-noise = csvread('noise.csv');
+noise = csvread('noise2.csv');
 
 Z = noise(:,1).*exp(noise(:,2)*sqrt(-1));
-
-plot(Z);
-
+F = noise(:,1)
 nt = 1/0.001 .* ifft(Z, 340446);
 figure;
 plot(real(nt));
