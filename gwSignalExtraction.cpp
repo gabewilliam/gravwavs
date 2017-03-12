@@ -43,7 +43,7 @@ void Extractor::splitSignal(){
 	for (int i = N; i < size; i++){
 		mSignalT->waveform[1].push_back(0.0);
 	}
-	mSignalT.clear();
+	mSignalT->waveform[0].clear();
 	
 	for(int i = 0; i < size/2; i++){
 		mSignalT->waveform[0].push_back(dt*i);
@@ -163,14 +163,14 @@ void Extractor::fft(){
 		freq.push_back((N/2-j)*sampleFreq/N);
 	} 
 	
-	vec_d amp;
 	
+	vec_d amp;
 		
 	for (int i = 0; i < I; i++){
-		
-	
+				
 		Signal *sig = new Signal;
-		amp = (*mSignalsT)[0]->waveform[1];
+		
+		amp = (*mSignalsT)[i]->waveform[1];
 	
 		gsl_fft_complex_forward (&amp[0], 1, N, complexWT, complexWS);
 		
