@@ -43,7 +43,7 @@ void Extractor::splitSignal(){
 	for (int i = N; i < size; i++){
 		mSignalT->waveform[1].push_back(0.0);
 	}
-	std::cout<<mSignalT->waveform[0].size()<<std::endl;
+	mSignalT.clear();
 	
 	for(int i = 0; i < size/2; i++){
 		mSignalT->waveform[0].push_back(dt*i);
