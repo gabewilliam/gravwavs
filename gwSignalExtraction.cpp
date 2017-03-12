@@ -32,19 +32,22 @@ void Extractor::splitSignal(){
 	double base = log2(N);
 	int size = base;
 	std::vector<Signal*> *dummy = new std::vector<Signal*>;
-	if(N != size){
-		size = ceil(base);
-	}
+	
+	size = ceil(base);
+	
 	
 	size = pow(2,size);
 	
 	double dt = mSignalT->waveform[1][1] - mSignalT->waveform[1][0];
 	
-	for (int i = N; i < size; i+=2){
+	for (int i = N; i < size; i++){
 		mSignalT->waveform[1].push_back(0.0);
-		mSignalT->waveform[1].push_back(0.0);
-		mSignalT->waveform[0].push_back(i*dt);
-		mSignalT->waveform[0].push_back(i*dt);
+	}
+	mSignalT->waveform[0].clear();
+	
+	for(int i = 0; i < size; i++){
+		mSignalT->waveform[0].push_back(dt*i);
+		mSignalT->waveform[0].push_back(dt*i);
 	}
 	
 	int chunkSize = (*mTemplates)[0].waveform[0].size();
@@ -327,9 +330,7 @@ void Extractor::fftInverse(std::vector<Template>* out1)
 			
 			for(int n=0; n<N/2; n++)
 			{
-				index = (n + (k*limit)) % fullSignal;
-
-				temp->waveform[0].push_back(n);
+				temp->waveform[0].push_back((*mSignalsT)[k]->waveform[0][2*n]);
 				temp->waveform[1].push_back((amp[2*n] * amp[2*n]) / norm);
 			}
 			
