@@ -228,7 +228,7 @@ int main() {
 	double zMax = 25;
 
 	//Defines the number of bins the universe is to be split into
-	size_t nBins = 10;
+	size_t nBins = 25;
 
 	gsl_histogram * zHist = gsl_histogram_alloc(nBins);
 	gsl_histogram_set_ranges_uniform(zHist,0,zMax);
@@ -293,11 +293,11 @@ int main() {
 				tiMax += tm;
 		
 				//std::cout<<tiMax<<std::endl;	
-				gsl_histogram_find(tHist, tiMin, &mergeIndexMin);
-				gsl_histogram_find(tHist, tiMax, &mergeIndexMax);
+				//gsl_histogram_find(tHist, tiMin, &mergeIndexMin);
+				//gsl_histogram_find(tHist, tiMax, &mergeIndexMax);
 
-				if((mergeIndexMin == j) || (mergeIndexMax == j)) {
-					dNMergedtdV += birthRate(Zmax, zj, mTotal)*(dti/dtj);
+				if(((tiMin>=tjMin)&&(tiMin<=tjMax))||((tiMax>=tjMin)&&(tiMax<=tjMax))) {
+					dNMergedtdV += birthRate(Zmax, zi, mTotal)*(dti/dtj);
 				}
 											
 			}
