@@ -2,31 +2,79 @@
 //                                    Data Generation                                  //
 
 #include "gwSigGen.h"
+#include <iostream>
 
 int main(){
 	
+	//		MASSES
 	// Set masses of components (Solar Masses)
-	double M1 = 30;
-	double M2 = 26;
-	// Set distance of system (MPc)
-	double Dist = 500.0;
-	// Set total time of signal (s)
-	double totalTime = 100.0;
-	// Set time of arrival of signal (s)
-	double initTime = 10.0;
-	// Set phase of wave at arrival (rads)
-	double initPhase = 0.0;
-	// Set minimum detector frequency (Hz)
-	double fMin = 10.0;
-	// Angle of inclination of binary (rads)
-	double psi = 3.0*M_PI/4.0;
-	// Angle of incident wave (1)
-	double theta = 3.0*M_PI/4.0;
-	// Angle of incident wave (2)
-	double phi = 3.0*M_PI/4.0;
-	// Inclination angle
-	double inclination = M_PI/4.0;
+	double M1;
 	
+	std::cout << "\tMASSES\r\n\r\n(1/2)\tEnter first mass (Solar Masses):\r\n";
+	std::cin >> M1;
+	
+	double M2;
+	
+	std::cout << "(2/2)\tEnter second mass (Solar Masses):\r\n";
+	std::cin >> M2;
+	
+	//		FURTHER SOURCE SETTINGS
+	// Set distance of system (MPc)
+	double Dist;
+	
+	std::cout << "\r\n\r\n\tFURTHER SOURCE SETTINGS\r\n\r\n(1/4)\tEnter distance of system (MPc):\r\n";
+	std::cin >> Dist;
+	
+	// Angle of inclination of binary (rads)
+	double psi;
+	
+	std::cout << "(2/4)\tEnter inclination angle of binary (radians):\r\n";
+	cin >> psi;
+	
+	// Angle of incident wave (1)
+	double theta;
+	
+	std::cout << "(3/4)\tEnter sky angle of incident wave (radians):\r\n";
+	cin >> theta;
+	
+	// Angle of incident wave (2)
+	double phi;
+	
+	std::cout << "(4/4)\tEnter plane angle of incident wave (radians):\r\n";
+	cin >> phi;
+	
+	//		SIGNAL SETTINGS
+	// Set total time of signal (s)
+	double totalTime;
+	
+	std::cout << "\r\n\r\n\tSIGNAL SETTINGS\r\n\r\n(1/5)\tEnter total time of signal (s):\r\n";
+	std::cin >> totalTime;
+	
+	// Set time of arrival of signal (s)
+	double initTime;
+	
+	std::cout << "(2/5)\tEnter time of arrival of signal (s):\r\n";
+	cin >> initTime;
+	
+	// Set phase of wave at arrival (rads)
+	double initPhase;
+	
+	std::cout << "(3/5)\tEnter phase of wave at arrival (rads):\r\n";
+	cin >> initPhase;
+	
+	// Set minimum detector frequency (Hz)
+	double fMin;
+	
+	std::cout << "(4/5)\tEnter minimum detector frequency (Hz):\r\n";
+	cin >> fMin;
+	
+	// Inclination angle
+	double inclination;
+	
+	std::cout << "(5/5)\tEnter inclination angle (rads):\r\n";
+	cin >> inclination;
+	
+	std::cout << "\r\nGenerating wave...\r\n";
 	
 	// Set up struct to store characteristic information of signal
 	parameters PARAMS;
@@ -47,7 +95,7 @@ int main(){
 							 P);
 	
 	cout << P->mu[0]*C_CONST << " " << P->mu[1]*C_CONST << " " << P->mu[3]*C_CONST << endl;
-	cout << P->redShift << endl;
+	cout << P->theta[2] << endl;
     // Set up struct to store vector of final data
 	vector<Signal> signalVector;
 	vector<Signal> *S = &signalVector;
