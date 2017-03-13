@@ -70,12 +70,18 @@ int main() {
 	double* mChirpArray = new double[N];
 	double* mRatioArray = new double[N];
 	double* distanceArray = new double[N];
+	double acceptance=0;
 
 	//Sets the starting ma and mb values for the routine as random integers.
+	
 	ma = gsl_rng_uniform(startGen)*(mUpper-mLower)+mLower;
 	mb = gsl_rng_uniform(startGen)*(mUpper-mLower)+mLower;
 	distance = gsl_rng_uniform(startGen)*(dUpper-dLower)+dLower;
-
+	/*
+	ma=35.0*mSolar;
+	mb=20.0*mSolar;
+	distance=550.0*MPc;
+	*/
 	if (mb > ma) {
 		double mDummy = ma;
 		ma = mb;
@@ -99,8 +105,8 @@ int main() {
 		p = likelihood(ma/mSolar,mb/mSolar,distance/MPc,fileName)+log((pow(ma,2)/mChirp)*prior(ma,mb,mUpper,mLower,distance,dUpper,dLower));
 
 		nZeroMChirp = gsl_ran_gaussian(normGen, 0.5*mSolar);
-		nZeroMRatio = gsl_ran_gaussian(normGen, 0.1);
-		nZeroDistance =	gsl_ran_gaussian(normGen, 5*MPc);
+		nZeroMRatio = gsl_ran_gaussian(normGen, 0.005);
+		nZeroDistance =	gsl_ran_gaussian(normGen, MPc);
 
 		mChirpProposal = mChirp + nZeroMChirp;
 		mRatioProposal = mRatio + nZeroMRatio;
@@ -128,6 +134,8 @@ int main() {
 			mRatio = mRatioProposal;
 
 			distance = distanceProposal;
+
+			acceptance++;
 		}
 
 		if (i%(N/20)==0) {
@@ -139,6 +147,8 @@ int main() {
 		distanceArray[i-1] = distance;
 		
 	}	
+
+	std::cout<<"Accepted: "<<acceptance<<std::endl;
 	
 	saveToFile(mRatioArray,mChirpArray,distanceArray,1,N,"RawData.txt");
 

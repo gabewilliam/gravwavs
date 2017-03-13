@@ -15,7 +15,7 @@
 //Returns a NON-NORMALISED likelihood.
 
 long double likelihood( double m1, double m2, double d, std::string signalFile ){
-	//std::cout<<"L1"<<std::endl;
+
 	Signal dt;//Data signal (time domain)
 	std::vector< Signal > idt; //loadSignals requires std::vector
 	Signal df;//Data signal (freq domain)
@@ -45,14 +45,21 @@ long double likelihood( double m1, double m2, double d, std::string signalFile )
 	long double SNR = 0.0;
 	vec_d vdf = dt.waveform[1]; //splits signal into std::vectors for use in loop
 	vec_d vhf = ht.waveform[1];
-	//std::cout<<n<<std::endl;
+
+	int nan=0;
 
 	for( int i = 0; i < n; i++ ){ //evaluates the sum part in equation A20
 		//if (i==500) std::cout << vdf[i] << "\t" << vhf[i] << std::endl;	
-		if(!(vhf[i]==vhf[i]) || vhf[i]==0) vhf[i]=vdf[i];
+		if(!(vhf[i]==vhf[i])) {
+			vhf[i]=vdf[i];
+			nan++;
+		}
+
 		sum += pow( std::abs( vdf[i] - vhf[i] ), 2 )/sf[i];
 		SNR += pow( std::abs( vdf[i] ), 2 )/sf[i];
 	}
+	
+	//std::cout<<"SNR="<<SNR<<std::endl;
 
 	vec_d t = dt.waveform[0];//takes the time vector
 	int n2 = t.size();//finds the number of elements	
@@ -107,7 +114,7 @@ vec_d NoiseFunction( vec_d f ){
 	vec_d sf;
 
 	for( int i = 0; i < n; i++ ){
-		sf.push_back( 1e-40 ); //PLACEHOLDER: INSERT NOISE FUNCTION IN PARENTHESIS
+		sf.push_back( 1e-39 ); //PLACEHOLDER: INSERT NOISE FUNCTION IN PARENTHESIS
 	}
 
 	return sf;
