@@ -14,6 +14,9 @@
 #include <vector>
 #include <complex>
 
+#include <gsl/gsl_math.h>
+#include <gsl/gsl_spline.h>
+
 #include "gwReadWrite.h"
 #include "gwLumDist.h"
 
@@ -62,7 +65,7 @@ enum polarisation {
 struct parameters{
 	
 	// Inclinatinon angles of orbit (radians)
-	theta_vec angles;
+	mu_vec angles;
 	
 	// Vector of initial values:
 	// init[0] = time of signal arrival
@@ -128,6 +131,7 @@ void setFundamentalParameters(
 	double Thet,
 	double Psi,
 	double Phi,
+	double Incl,
 	parameters *params
 	){
 		
@@ -151,6 +155,7 @@ void setFundamentalParameters(
 	params->angles[0] = Thet;
 	params->angles[1] = Phi;
 	params->angles[2] = Psi;
+	params->angles[3] = Incl;
 	
 	// Set total time of signal
 	params->totTime = total_time;
@@ -243,13 +248,14 @@ complex<double> inclinationEffects(parameters *params, complex<double> gWave){
 	double thet = params->angles[0];
 	double phi = params->angles[1];
 	double psi = params->angles[2];
+	double inc = params->angles[3];
 	
 	complex<double> new_gWave;
 	
-	double fplus = (0.5*
+	double fplus = (1.0 + pow(cos(inc), 2.0))*(0.5*
 						(1+cos(thet)*cos(thet))*cos(2*phi)*cos(2*psi)) 
 										- (cos(thet)*sin(2*phi)*sin(2*psi));
-	double fcross = (0.5*
+	double fcross = (2.0*cos(inc))*(0.5*
 						(1+cos(thet)*cos(thet))*cos(2*phi)*cos(2*psi)) 
 										+ (cos(thet)*sin(2*phi)*cos(2*psi));
 		
@@ -354,7 +360,7 @@ int gravitationalWave(parameters *params, vector<Signal> *sigs){
         amp_Hz = updatedAmplitude(params, freq, gWave);
 		
 		// Apply inclination effects to this wave
-		// gravWav = inclinationEffects(params, gravWav);
+		gravWav = inclinationEffects(params, gravWav);
 		
 		// Convert frequency back to Hz
 		freq_Hz = freq*C_CONST;		
