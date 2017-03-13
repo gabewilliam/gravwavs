@@ -11,7 +11,7 @@ int main()
 	if(!loadSignals("../data/SpecialNoiseSignalForEverybody.csv", &sigs, csv))
 		return 0;
 
-	if(!loadTemplates("../data/templates/alltemps.csv", &temps, csv))
+	if(!loadTemplates("../data/temp_50_30.csv", &temps, csv))
 		return 0;
 
 	int N, n;

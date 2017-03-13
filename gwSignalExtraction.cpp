@@ -30,10 +30,9 @@ void Extractor::splitSignal(){
 
 	int N = mSignalT->waveform[0].size();
 	double base = log2(N);
-
 	std::vector<Signal*> *dummy = new std::vector<Signal*>;
 	int size = ceil(base);
-	
+		
 	size = pow(2,size);
 	
 	double dt = mSignalT->waveform[0][2] - mSignalT->waveform[0][0];
@@ -47,7 +46,7 @@ void Extractor::splitSignal(){
 		mSignalT->waveform[0].push_back(dt*i);
 		mSignalT->waveform[0].push_back(dt*i);
 	}
-
+	
 	int chunkSize = (*mTemplates)[0].waveform[0].size();
 	
 	int nChunks = size/chunkSize;
@@ -72,7 +71,6 @@ void Extractor::splitSignal(){
 	}	
 	
 	mSignalsT = dummy;
-
 }
 /*
 void Extractor::fft(std::vector<Template>* output){
@@ -136,18 +134,13 @@ void Extractor::fft(){
 	int N = (*mSignalsT)[0]->waveform[0].size()/2;
 	int I = (*mSignalsT).size();
 
-
-	
 	std::vector<Signal*>* dummy = new std::vector<Signal*>;
 	
 	double sampleFreq = 1/(2.0*N*((*mSignalsT)[0]->waveform[0][2] - (*mSignalsT)[0]->waveform[0][0]));
-
-	
-	
 	
 	gsl_fft_complex_workspace* complexWS =  gsl_fft_complex_workspace_alloc(N);
 	gsl_fft_complex_wavetable* complexWT = gsl_fft_complex_wavetable_alloc(N);
-	
+        
 	vec_d freq;
 	for(int j=0; j<N/2; j++){
 		freq.push_back(j*sampleFreq/N);
@@ -207,7 +200,7 @@ void Extractor::Convolution/*crossCorrelation*/()
 	int signals = mSignalsF->size();
 	
 	for (int k = 0; k < signals; k++){
-		
+	        
 		std::vector<Template*>* dummy = new std::vector<Template*>;
 		vec_d norms;
 				
@@ -247,7 +240,7 @@ void Extractor::Convolution/*crossCorrelation*/()
 				op->waveform[0].push_back((*mSignalsF)[k]->waveform[0][2*j+1]);
 			
 				noisePower = noise*noise;
-		
+	        
 				realResult = (*mSignalsF)[k]->waveform[1][2*j] * temp.waveform[1][2*j] / noisePower;
 				imagResult = -(*mSignalsF)[k]->waveform[1][2*j+1] * temp.waveform[1][2*j+1] / noisePower;
 			
@@ -261,7 +254,7 @@ void Extractor::Convolution/*crossCorrelation*/()
 		
 			realTemp = realTemp * 2 * df;
 			imagTemp = imagTemp * 2 * df;
-		
+        
 			norm = realTemp * realTemp + imagTemp * imagTemp;
 			norm = sqrt(norm);
 			norm=sqrt(norm);
@@ -308,7 +301,6 @@ void Extractor::fftInverse(std::vector<Template>* out1)
 	
 	std::vector<std::vector<Template*>* > * final=new std::vector<std::vector<Template*>* >;
 	
-	
 	std::cout<<mNorms[0][0]<<std::endl;
 	
 	for(int k = 0; k < signals; k++){
@@ -337,7 +329,7 @@ void Extractor::fftInverse(std::vector<Template>* out1)
 		}
 		
 		final->push_back(result);		
-		
+	        
 	}
 
 	clearSignalMemory();
@@ -360,7 +352,7 @@ void Extractor::fftInverse(std::vector<Template>* out1)
 				//temp2->waveform[1].push_back((*(final[2*j+1]))[i]->waveform[1][k]);
 			}
 		}
-		
+	        
 		out1->push_back(temp1);
 		//outs2->push_back(*temp2);
 	}
@@ -371,8 +363,8 @@ void Extractor::fftInverse(std::vector<Template>* out1)
 	std::cout<<"asdfvrfusbecd"<<std::endl;
 	std::cout<<(*out1)[0].waveform[0][0]<<std::endl;
 	gsl_fft_complex_workspace_free(complexWS);
-	gsl_fft_complex_wavetable_free(compWT);		
-	
+	gsl_fft_complex_wavetable_free(compWT); 
+
 	return;
 }	
 
@@ -482,6 +474,7 @@ double Extractor::fAutoCorrComplex(Template* temp)
 
 	return op[0];
 }
+
 
 void Extractor::clearSignalMemory(){
 	//if (mSignalsT && mSignalsF){
