@@ -11,13 +11,7 @@ int main()
 	if(!loadSignals("../data/SpecialNoiseSignalForEverybody.csv", &sigs, csv))
 		return 0;
 
-<<<<<<< HEAD
-	if(!loadTemplates("../data/templates/alltemps.csv", &temps, csv))
-||||||| merged common ancestors
-	if(!loadTemplates("../data/temp_bank.csv", &temps, csv))
-=======
 	if(!loadTemplates("../data/temp_50_30.csv", &temps, csv))
->>>>>>> 79fd5d780623b369c13fa0895728bab5aab56091
 		return 0;
 
 	int N, n;
