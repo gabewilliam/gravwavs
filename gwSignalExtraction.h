@@ -33,7 +33,7 @@ class Extractor
 
 		void Convolution();
 
-		void fftInverse(std::vector<Template>* out1);
+		void fftInverse(std::vector<Template>* out1, std::vector<Template>* out2);
 
 		double getASD(double f);
 
@@ -53,8 +53,9 @@ class Extractor
 		std::vector<Signal*>* mSignalsF;
 		std::vector<Template>* mTemplates;
 		std::vector<std::vector<Template*>* >* mConResults;
+		std::vector<Signal*>* mNoiseConvolution;
 		std::vector<std::vector<Template*>* >* mToBeDeleted;
-		std::vector<std::vector<double> > mNorms;
+		std::vector<double> mNorms;
 		NoiseCurve fNoiseCurve;
 };
 

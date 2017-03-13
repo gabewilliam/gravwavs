@@ -1,27 +1,22 @@
 #include <gsl/gsl_fft_complex.h>
 #include "gwSignalExtraction.h"
-#include <cassert>
 
 #include <cmath>
 #include <iostream>
 
 Extractor::Extractor(){}
 
-void Extractor::setSignalT(Signal* sig)
-{
-
+void Extractor::setSignalT(Signal* sig){
 	mSignalT = sig;
 	return;
 }
 
-void Extractor::setSignalF(Signal* sig)
-{
+void Extractor::setSignalF(Signal* sig){
 	mSignalF = sig;
 	return;
 }
 
-void Extractor::setTemplates(std::vector<Template>* temps)
-{
+void Extractor::setTemplates(std::vector<Template>* temps){
 	mTemplates = temps;
 	return;
 }
@@ -58,7 +53,7 @@ void Extractor::splitSignal(){
 	
 	int start;
 	
-	std::cout<<nChunks<<std::endl;		
+	std::cout<<nChunks<<"  ,  "<<log2(chunkSize)<<std::endl;		
 		
 	for (int i = 0; i < nChunks; i++){
 		
@@ -72,7 +67,14 @@ void Extractor::splitSignal(){
 					
 			}	
 		}else{
-			//for(int j = 
+			for(int j = start; j < start + chunkSize/2; j++){
+				sig->waveform[0].push_back(mSignalT->waveform[0][j]);
+				sig->waveform[1].push_back(mSignalT->waveform[1][j]);
+			}
+			for(int j = 0; j < chunkSize/2; j++){
+				sig->waveform[0].push_back(mSignalT->waveform[0][j]);
+				sig->waveform[1].push_back(mSignalT->waveform[1][j]);
+			}
 		}
 		dummy->push_back(sig);
 	}	
@@ -81,60 +83,7 @@ void Extractor::splitSignal(){
 
 	
 }
-/*
-void Extractor::fft(std::vector<Template>* output){
-	size_t I=mTemplatesT->size();
-	int J = (mSignalT->waveform[0]).size();
-	int M =(int)(log2(J)+2);
-	size_t N= pow(2,M);
-	
-	double sampleFreq=J/((mSignalT->waveform[0])[J-1]-(mSignalT->waveform[0])[0]);
-	
-	vec_d freq;
-	for(int j=0; j<N/4; j++){
-		freq.push_back(j*sampleFreq/N);
-		freq.push_back(j*sampleFreq/N);
-	} 
-	for(int j=N/4; j<N/2; j++){
-		freq.push_back((N/4-j)*sampleFreq/N);
-		freq.push_back((N/4-j)*sampleFreq/N);
-	} 
-	
-	gsl_fft_complex_workspace* complexWS = gsl_fft_complex_workspace_alloc(N);
-	gsl_fft_complex_wavetable* complexWT = gsl_fft_complex_wavetable_alloc(N);
 
-	
-	for(size_t i=0;i<I;i++){
-		
-		vec_d* Amp=new vec_d;
-		Template* Temp=new Template;
-		J=mTemplatesT[0][i].waveform[1].size();
-		
-		for(size_t j=0;j<J;j++){
-			Amp->push_back((mTemplatesT[0][i].waveform[1])[j]);
-			Amp->push_back(0);
-		}	
-		//(output[0][i].waveform[1])=*Amp;
-		for(size_t j=J;j<N;j++){
-			Amp->push_back(0);
-			Amp->push_back(0);
-		}
-		
-		gsl_fft_complex_forward(&(*Amp)[0], 1, N, complexWT, complexWS);
-		
-		Temp->param[0]=mTemplatesT[0][i].param[0];
-			Temp->param[1]=mTemplatesT[0][i].param[1];
-		Temp->waveform[0]=freq;/*
-		Temp->waveform[1]=*Amp;
-		output->push_back(*Temp);
-		
-	}
-	setTemplates(output);
-	gsl_fft_complex_workspace_free(complexWS);
-	gsl_fft_complex_wavetable_free(complexWT);
-	
-	return;
-}*/
 void Extractor::fft(){
 	
 	
@@ -149,24 +98,25 @@ void Extractor::fft(){
 	
 	double dt = ((*mSignalsT)[0]->waveform[0][2] - (*mSignalsT)[0]->waveform[0][0]);
 	
-	double sampleFreq = 1/(2.0*N*((*mSignalsT)[0]->waveform[0][2] - (*mSignalsT)[0]->waveform[0][0]));
+	double sampleFreq = 1/(2.0*N*dt);
 	
 	std::cout<<"dt = "<<dt<<std::endl;
+	std::cout<<"df = "<<sampleFreq<<std::endl;
 	
+	std::cout<<"max freq = "<<sampleFreq*N<<std::endl;
 	
 	gsl_fft_complex_workspace* complexWS =  gsl_fft_complex_workspace_alloc(N);
 	gsl_fft_complex_wavetable* complexWT = gsl_fft_complex_wavetable_alloc(N);
 	
 	vec_d freq;
 	for(int j=0; j<N/2; j++){
-		freq.push_back(j*sampleFreq/N);
-		freq.push_back(j*sampleFreq/N);
+		freq.push_back(j*sampleFreq);
+		freq.push_back(j*sampleFreq);
 	} 
 	for(int j=N/2; j<N; j++){
-		freq.push_back((N/2-j)*sampleFreq/N);
-		freq.push_back((N/2-j)*sampleFreq/N);
+		freq.push_back((N/2-j)*sampleFreq);
+		freq.push_back((N/2-j)*sampleFreq);
 	} 
-	
 	
 	vec_d amp;
 		
@@ -180,6 +130,7 @@ void Extractor::fft(){
 		
 		
 		sig->waveform[0] = freq;
+		
 		sig->waveform[1] = amp;
 		dummy->push_back(sig);
 	
@@ -192,8 +143,6 @@ void Extractor::fft(){
 	
 	return;
 }
-
-
 void Extractor::Convolution/*crossCorrelation*/()
 {
 	int I, J;
@@ -213,14 +162,51 @@ void Extractor::Convolution/*crossCorrelation*/()
 	J = (*mSignalsF)[0]->waveform[1].size();
 	
 	
+	
 	std::vector<std::vector<Template*> *>* result = new std::vector<std::vector<Template*>* >;
 	
 	int signals = mSignalsF->size();
 	
+	for (int i = 0; i < I; i++){
+		Template temp = (*mTemplates)[i];
+		std::cout<<"noise number: "<<i<<std::endl;
+		for(int j = 0; j < J/2; j++){
+			
+			freq = temp.waveform[0][2*j];
+			if(freq < 9){
+				noise = 1.0;
+			}else{
+				noise = getASD(freq);
+			}
+		
+			noisePower = noise*noise;
+			//std::cout<<noisePower<<"  ,  "<<freq<<std::endl;
+			
+			realTemp += temp.waveform[1][2*j] * temp.waveform[1][2*j] / noisePower;
+			imagTemp += temp.waveform[1][2*j] * temp.waveform[1][2*j] / noisePower;
+		
+		}
+		
+		
+		realTemp = realTemp * 2* df;
+		imagTemp = imagTemp * 2* df;
+		
+		norm = realTemp * realTemp + imagTemp * imagTemp;
+		
+		norm = sqrt(norm);
+		norm = sqrt(norm);
+		
+		mNorms.push_back(1/norm);
+		
+		
+	}	
+	
+	std::cout<<"noise here guys"<<std::endl;
 	for (int k = 0; k < signals; k++){
 		
 		std::vector<Template*>* dummy = new std::vector<Template*>;
-		vec_d norms;
+		
+		std::cout<<"signal: "<<k<<std::endl;
 				
 		for(int i=0; i<I; i++)
 		{	
@@ -245,50 +231,48 @@ void Extractor::Convolution/*crossCorrelation*/()
 			
 				noisePower = noise*noise;
 				*/	
-				freq = (*mSignalsF)[k]->waveform[0][2*j];
-				if(freq < 9){
-					noise = 1.0;
-				}else{
-					noise = getASD((*mSignalsF)[k]->waveform[0][2*j]);
-				}
+				freq = fabs((*mSignalsF)[k]->waveform[0][2*j]);
 				
+				
+				
+				
+				noise = getASD((*mSignalsF)[k]->waveform[0][2*j]);
+				
+				if (noise == 0){
+					noise = 1;
+				}
 				
 
 				op->waveform[0].push_back((*mSignalsF)[k]->waveform[0][2*j]);
 				op->waveform[0].push_back((*mSignalsF)[k]->waveform[0][2*j+1]);
-			
-				noisePower = noise*noise;
-		
-				realResult = (*mSignalsF)[k]->waveform[1][2*j] * temp.waveform[1][2*j] / noisePower;
-				imagResult = -(*mSignalsF)[k]->waveform[1][2*j+1] * temp.waveform[1][2*j+1] / noisePower;
-			
-				realTemp += temp.waveform[1][2*j] * temp.waveform[1][2*j] / noisePower;
-				imagTemp += -temp.waveform[1][2*j] * temp.waveform[1][2*j+1] / noisePower;
-			
+				
+				
+				noisePower = 1/(noise*noise);
+				realResult = (*mSignalsF)[k]->waveform[1][2*j] * temp.waveform[1][2*j] * noisePower;
+				imagResult = -(*mSignalsF)[k]->waveform[1][2*j+1] * temp.waveform[1][2*j+1] * noisePower;
 			
 				op->waveform[1].push_back(realResult); //this should maybe be changed to SNR
 				op->waveform[1].push_back(imagResult);
 			}	
 		
-			realTemp = realTemp * 2 * df;
-			imagTemp = imagTemp * 2 * df;
 		
-			norm = realTemp * realTemp + imagTemp * imagTemp;
-			norm = sqrt(norm);
-			norm = sqrt(norm);
-			norms.push_back(norm);
 
 			dummy->push_back(op);
 		}
-		mNorms.push_back(norms);
 		result->push_back(dummy);
 	}
 	mConResults = result;
+
+	
+	
+	
 	
 	return;
 }
 
-void Extractor::fftInverse(std::vector<Template>* out1)
+
+
+void Extractor::fftInverse(std::vector<Template>* out1, std::vector<Template>* out2)
 {
 	int I, N;
 	vec_d amp; 
@@ -323,7 +307,7 @@ void Extractor::fftInverse(std::vector<Template>* out1)
 	
 
 	
-	std::cout<<mNorms[0][0]<<std::endl;
+	std::cout<<mNorms[0]<<std::endl;
 	
 	
 	
@@ -339,7 +323,8 @@ void Extractor::fftInverse(std::vector<Template>* out1)
 			//dt = 2.0/(freq[N/2-1]);
 			amp = (*(*mConResults)[k])[i]->waveform[1];
 			gsl_fft_complex_inverse(&amp[0], 1, N/2, compWT, complexWS);		
-			norm = mNorms[k][i];
+			norm = mNorms[i];
+			std::cout<<norm<<std::endl;
 			temp->param[0] = (*(*mConResults)[k])[i]->param[0];
 			temp->param[1] = (*(*mConResults)[k])[i]->param[1];
 			
@@ -349,7 +334,7 @@ void Extractor::fftInverse(std::vector<Template>* out1)
 					std::cout<<"tooo biiiiiig"<<std::endl;
 				}
 				temp->waveform[0].push_back((*mSignalsT)[k]->waveform[0][2*n]);
-				temp->waveform[1].push_back((amp[2*n] * amp[2*n]) / norm);
+				temp->waveform[1].push_back(fabs(amp[2*n] / norm));
 			}
 			
 			
@@ -372,24 +357,24 @@ void Extractor::fftInverse(std::vector<Template>* out1)
 	for (int i = 0; i < I; i++){
 		std::cout<<i<<std::endl;
 		Template temp1;
-		//Template *temp2 = new Template;
+		Template temp2;
 		temp1.param[0] = (*mTemplates)[i].param[0];
 		temp1.param[1] = (*mTemplates)[i].param[1];
-		for (int j = 0; j < signals; j++){
+		for (int j = 0; j < signals/2; j++){
 		std::cout<<j<<std::endl;
 			for(int k = 0; k < N/2; k++){
 				
 				
-				temp1.waveform[0].push_back((*((*final)[j]))[i]->waveform[0][k]);
-				temp1.waveform[1].push_back((*((*final)[j]))[i]->waveform[1][k]);
-				//temp2->waveform[0].push_back((*(final[2*j+1]))[i]->waveform[0][k]);
-				//temp2->waveform[1].push_back((*(final[2*j+1]))[i]->waveform[1][k]);
+				temp1.waveform[0].push_back((*((*final)[2*j]))[i]->waveform[0][k]);
+				temp1.waveform[1].push_back((*((*final)[2*j]))[i]->waveform[1][k]);
+				temp2.waveform[0].push_back((*((*final)[2*j]))[i]->waveform[0][k]);
+				temp2.waveform[1].push_back((*((*final)[2*j]))[i]->waveform[1][k]);
 			}
 		}
 		
 		
 		out1->push_back(temp1);
-		//outs2->push_back(*temp2);
+		out2->push_back(temp2);
 
 	}
 	
@@ -447,9 +432,7 @@ bool Extractor::loadCurve(std::string filename)
 	
 	return true;
 }
-
-double Extractor::getASD(double f)
-{
+double Extractor::getASD(double f){
 	
 	if((f < fNoiseCurve.fMin) || (f > fNoiseCurve.fMax))
 		return 0;
@@ -485,8 +468,7 @@ double Extractor::getASD(double f)
 	return asd;
 }
 
-double Extractor::fAutoCorrComplex(Template* temp)
-{
+double Extractor::fAutoCorrComplex(Template* temp){
 	int N, pn; 
 	double result;
 	vec_d op;
@@ -511,6 +493,7 @@ double Extractor::fAutoCorrComplex(Template* temp)
 
 	return op[0];
 }
+
 
 void Extractor::clearSignalMemory(){
 
@@ -558,7 +541,4 @@ void Extractor::clear(){
 	clearConvolutionMemory();
 	clearOtherMemory();
 }
-
-
-
 
