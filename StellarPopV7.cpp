@@ -61,23 +61,23 @@ int main() {
 	//FILE * popFile0;
 	//popFile0 = fopen("pop0.csv","w");
 	FILE * popFile1;
-	popFile1 = fopen("pop1.csv","w");
+	popFile1 = fopen("pop11.csv","w");
 	FILE * popFile2;
-	popFile2 = fopen("pop2.csv","w");
+	popFile2 = fopen("pop21.csv","w");
 	FILE * popFile3;
-	popFile3 = fopen("pop3.csv","w");
+	popFile3 = fopen("pop31.csv","w");
 	FILE * popFile3a;
-	popFile3a = fopen("pop3a.csv","w");
+	popFile3a = fopen("pop3a1.csv","w");
 	FILE * popFile4;
-	popFile4 = fopen("pop4.csv","w");
+	popFile4 = fopen("pop41.csv","w");
 	FILE * popFile4a;
-	popFile4a = fopen("pop4a.csv","w");
+	popFile4a = fopen("pop4a1.csv","w");
 	FILE * popFile5;
-	popFile5 = fopen("pop5.csv","w");
+	popFile5 = fopen("pop51.csv","w");
 	FILE * popFile5a;
-	popFile5a = fopen("pop5a.csv","w");
+	popFile5a = fopen("pop5a1.csv","w");
 	FILE * popFile6;
-	popFile6 = fopen("pop6.csv","w");
+	popFile6 = fopen("pop61.csv","w");
 	
 	std::vector <Binary> binaries;
 	
@@ -140,6 +140,7 @@ int main() {
 	int whatWentWrong[7] = {0, 0, 0, 0, 0, 0, 0};
 	//double a;
 	double mCandidates = 0;
+	bool cand;
 
 	for(int i = N-1; i >= 0; i--) {
 		
@@ -148,32 +149,36 @@ int main() {
 		m1 = binaries[i].getMass(1);
 		m2 = binaries[i].getMass(2);
 		//fprintf(popFile0,"%.15g,%.15g,%.15g\n", m1, m2, a);
+		cand = true;
 
 		if(binaries[i].checkMassRange() == false) {
 			binaries.erase(binaries.begin() + i);
 			Nr=Nr-1;
+			cand = false;
 		}
-		else if(true) {
+		if(cand) {
 			a = binaries[i].getSeparation();
 			m1 = binaries[i].getMass(1);
 			m2 = binaries[i].getMass(2);
 			fprintf(popFile1,"%.15g,%.15g,%.15g\n", m1, m2, a);
 		}
-		else if(binaries[i].checkRocheLobe() == false) {
+		if((binaries[i].checkRocheLobe() == false) && (cand)) {
 			binaries.erase(binaries.begin() + i);
 			Nr=Nr-1;
+			cand = false;
 		}
-		else if(true) {
+		if (cand) {
 			a = binaries[i].getSeparation();
 			m1 = binaries[i].getMass(1);
 			m2 = binaries[i].getMass(2);
 			fprintf(popFile2,"%.15g,%.15g,%.15g\n", m1, m2, a);
 		}
-		else if(binaries[i].checkHomogeneousMixing() == false) {
+		if((binaries[i].checkHomogeneousMixing() == false) && (cand)) {
 			binaries.erase(binaries.begin() + i);
 			Nr=Nr-1;
+			cand = false;
 		}	
-		else if(true) {
+		if (cand) {
 			a = binaries[i].getSeparation();
 			m1 = binaries[i].getMass(1);
 			m2 = binaries[i].getMass(2);
@@ -184,11 +189,12 @@ int main() {
 			m2 = binaries[i].getMass(2);
 			fprintf(popFile3a,"%.15g,%.15g,%.15g\n", m1, m2, a);
 		}
-		else if(binaries[i].checkHomogeneousMixing() == false) {
+		if((binaries[i].checkHomogeneousMixing() == false) && (cand)) {
 			binaries.erase(binaries.begin() + i);
 			Nr=Nr-1;
+			cand = false;
 		}
-		else if(true) {
+		if (cand) {
 			a = binaries[i].getSeparation();
 			m1 = binaries[i].getMass(1);
 			m2 = binaries[i].getMass(2);
@@ -199,11 +205,12 @@ int main() {
 			m2 = binaries[i].getMass(2);
 			fprintf(popFile4a,"%.15g,%.15g,%.15g\n", m1, m2, a);
 		}
-		else if(binaries[i].checkPairInstability() == false) {
+		if((binaries[i].checkPairInstability() == false) &&(cand)) {
 			binaries.erase(binaries.begin() + i);
 			Nr=Nr-1;
+			cand = false;
 		}
-		else if(true) {
+		if(cand) {
 			a = binaries[i].getSeparation();
 			m1 = binaries[i].getMass(1);
 			m2 = binaries[i].getMass(2);
@@ -214,11 +221,11 @@ int main() {
 			m2 = binaries[i].getMass(2);
 			fprintf(popFile5a,"%.15g,%.15g,%.15g\n", m1, m2, a);
 		}
-		else if(binaries[i].checkMergeTime() == false){
+		if((binaries[i].checkMergeTime() == false) && (cand)){
 			binaries.erase(binaries.begin() + i);
 			Nr=Nr-1;
 		}	
-		else {
+		if (cand){
 			a = binaries[i].getSeparation();
 			m1 = binaries[i].getMass(1);
 			m2 = binaries[i].getMass(2);
