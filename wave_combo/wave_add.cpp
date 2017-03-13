@@ -24,40 +24,40 @@ int main(){
 	
 	//Generate wave
 	
-	cout << "Enter first mass of component (Solar Masses): \r\n";
+	cout << "Enter first mass of component (Solar Masses) 26/30: \r\n";
 	double M1, M2;
 	cin >> M1;
-	cout << "Enter other mass of component (Solar Masses): \r\n";
+	cout << "Enter other mass of component (Solar Masses) 30/26: \r\n";
 	cin >> M2;
 	
-	cout << "Enter distance of system (MPc): \r\n";
+	cout << "Enter distance of system (MPc) 500: \r\n";
 	double Dist;
 	cin >> Dist;
 	
-	cout << "Enter total time of signal (s): \r\n";
+	cout << "Enter total time of signal (s) 20/100: \r\n";
 	double totalTime;
 	cin >> totalTime;
 	
-	cout << "Enter time of arrival of signal (s): \r\n";
+	cout << "Enter time of arrival of signal (s) 10: \r\n";
 	double initTime;
 	cin >> initTime;
 	
-	cout << "Enter phase of wave at arrival (rads): \r\n";
+	cout << "Enter phase of wave at arrival (rads) 0: \r\n";
 	double initPhase;
 	cin >> initPhase;
 	
-	cout << "Enter minimum detector frequency (Hz): \r\n";
+	cout << "Enter minimum detector frequency (Hz) 10: \r\n";
 	double fMin;
 	cin >> fMin;
 	
-	cout << "Enter angle of inclination of binary (rads): \r\n";
+	cout << "Enter angle of inclination of binary (rads) 0/10: \r\n";
 	double psi;
 	cin >> psi;
 	
-	cout << "Enter angle of incident wave theta: \r\n";
+	cout << "Enter angle of incident wave theta 0/3: \r\n";
 	double theta, phi;
 	cin >> theta;
-	cout << "Enter angle of incident wave phi: \r\n";
+	cout << "Enter angle of incident wave phi 0/5: \r\n";
 	cin >> phi;
 	
 	// Set up struct to store characteristic information of signal
@@ -91,7 +91,7 @@ int main(){
 	// Set variable for storing frequency in Hz
 	double freq_Hz = 0.0;
 	
-	cout << "Enter maximum frequency: \r\n";
+	cout << "Enter maximum frequency 4095/?: \r\n";
 	double maxFreq;
 	cin >> maxFreq;
 	maxFreq = maxFreq/C_CONST;
@@ -127,6 +127,12 @@ int main(){
 		Wim.push_back(m);
 	}
 	
+	ofstream oFileW;
+	oFileW.open("AVWavey.csv");
+	for (int i=0; i < Wfreq.size(); i++){
+		oFileW << Wfreq[i] << "," << Wre[i] << "," << Wim[i] << "\r\n" ;
+	}
+	cout << "wave finished and written to 'AVWavey.csv' \n" << endl;
 	
 	//______________________________
 	//Generate Noise
@@ -156,38 +162,51 @@ int main(){
 	else if(choice == 7){	nGen = new AligoBhbh20Deg();	}
 	else				{	nGen = new AligoSchutz();		}
 	
-	vector<double> Nfreq;
-	vector<double> *Nf = &Nfreq;
+	vector<double> *freq = new vector<double>;
+	vector<Complex> *noise = new vector<Complex>;
 	
-	vector<Complex> noise;
-	vector<Complex> *N = &noise ;
+	double fMax, fInc;
+	fMax = maxFreq;
+	fInc = P->df;
 	
-	nGen->genSpectrum(Nf, N, maxFreq, P->df);
+	nGen->genSpectrum(freq, noise, fMax, fInc);
 	
 	vector<double> Nre;
 	vector<double> Nim;
-	
+	vector<double> Nfreq;
+	cout << "a"<<endl;
+	for(i=0; i < freq->size(); i++){
+		Nfreq.push_back(freq->at(i));
+	}
+	cout << "b"<<endl;
 	//Change units of noise into same units as wave
-	for (i=0; i < noise.size(); i++){
-		Nre.push_back(noise[i].real/sqrt(fabs(Nfreq[i])));
-		Nim.push_back(noise[i].imag/sqrt(fabs(Nfreq[i])));
+	for (i=0; i < noise->size(); i++){
+		Nre.push_back(((noise->at(i)).real)/sqrt(fabs(Nfreq[i])));
+		Nim.push_back(((noise->at(i)).imag)/sqrt(fabs(Nfreq[i])));
 	}
 	
+	cout << "c"<<endl;
 	
+	ofstream oFileN;
+	oFileN.open("AVNoisy.csv");
+	for (int i=0; i < Nfreq.size(); i++){
+		oFileN << Nfreq[i] << "," << Nre[i] << "," << Nim[i] << "\r\n" ;
+	}
+	cout << "noise finished and written to 'AVNoisy.csv' \n" << endl;
 	
 	//______________________________
 	//Addition of values
 	
-	vector<double> freq;
+	vector<double> frq;
 	vector<double> re;
 	vector<double> im;
-	
+	cout << "d"<<endl;
 	//Goes through vectors until both empty
 	while( !Wfreq.empty() || !Nfreq.empty() ){
 		
 		//if Wfreq and Nfreq are same, add values
 		if( !(fabs(Wfreq[0]-Nfreq[0]) > 0 )){
-			freq.push_back(Wfreq[0]);
+			frq.push_back(Wfreq[0]);
 			re.push_back(Wre[0]+Nre[0]);
 			im.push_back(Wim[0]+Nim[0]);
 			
@@ -202,7 +221,7 @@ int main(){
 	
 		//if empty vectors adds other vector
 		else if(Nfreq.empty()){
-			freq.push_back(Wfreq[0]);
+			frq.push_back(Wfreq[0]);
 			re.push_back(Wre[0]);
 			im.push_back(Wim[0]);
 		
@@ -212,7 +231,7 @@ int main(){
 		}
 	
 		else if(Wfreq.empty()){
-			freq.push_back(Nfreq[0]);
+			frq.push_back(Nfreq[0]);
 			re.push_back(Nre[0]);
 			im.push_back(Nim[0]);
 		
@@ -223,7 +242,7 @@ int main(){
 	
 		//Adds lowest time value to end of vector for increasing time
 		else if(Wfreq[0]<Nfreq[0]){
-			freq.push_back(Wfreq[0]);
+			frq.push_back(Wfreq[0]);
 			re.push_back(Wre[0]);
 			im.push_back(Wim[0]);
 		
@@ -233,7 +252,7 @@ int main(){
 		}
 	
 		else if(Nfreq[0]<Wfreq[0]){
-			freq.push_back(Nfreq[0]);
+			frq.push_back(Nfreq[0]);
 			re.push_back(Nre[0]);
 			im.push_back(Nim[0]);
 		
@@ -242,7 +261,7 @@ int main(){
 			Nim.erase(Nim.begin());
 		}
 	}
-	
+	cout << "e"<<endl;
 	//______________________________
 	//vector<Signal> Noisy;
 	//vector<Signal>* noisy;
@@ -264,13 +283,13 @@ int main(){
 	
 	//Write to output file
 	ofstream oFile;
-	oFile.open("NoisyWave.csv");
-	
-	for (int i=0; i < freq.size(); i++){
-		oFile << freq[i] << "," << re[i] << "," << im[i] << "\r\n" ;
+	oFile.open("AVNoisyWave.csv");
+	cout << "f"<<endl;
+	for (int i=0; i < frq.size(); i++){
+		oFile << frq[i] << "," << re[i] << "," << im[i] << "\r\n" ;
 	}
 	
-	cout << "Output finished and written to 'NoisyWave.csv' \n" << endl;
+	cout << "Output finished and written to 'AVNoisyWave.csv' \n" << endl;
 	
 	oFile.close();
 	
