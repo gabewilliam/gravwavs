@@ -253,6 +253,10 @@ void simulateGravitationalWave(Parameters *P,
 		signalComplex->waveform[0].push_back(0.0);
 		signalComplex->waveform[1].push_back(0.0);
 		
+	}
+	
+	for (int p=0; p < int(nPosFreq*2.0); p++){
+		
 		signalForNoise->frequency.push_back(0.0);
 		signalForNoise->compWave.push_back(0.0);
 		
@@ -286,8 +290,12 @@ void simulateGravitationalWave(Parameters *P,
 		signalAmplitude->waveform[1].push_back(hzAmplitude);
 		
 		//-- Store signal in format convenient for noise addition(1)
-		signalForNoise->frequency[2*i] = hzFreq;
-		signalForNoise->compWave[2*i] = hzWave;
+		signalForNoise->frequency[i] = -hzFreq;
+		signalForNoise->compWave[i] = conj(hzWave);
+		
+		//-- Store signal in format convenient for noise addition(2)
+		signalForNoise->frequency[i + nPosFreq + 1] = hzFreq;
+		signalForNoise->compWave[i + nPosFreq + 1] = hzWave;
 		
 		//-- Store signal in format convenient for Signal Extraction(1)
 		signalComplex->waveform[0][2*i] = hzFreq;
@@ -298,10 +306,6 @@ void simulateGravitationalWave(Parameters *P,
 		
 		//-- Repeat the procedure for negative frequencies
 		int k = nDataPoints - 2*(i + 1);
-		
-		//-- Store signal in format convenient for noise addition(2)
-		signalForNoise->frequency[k] = -hzFreq;
-		signalForNoise->compWave[k] = conj(hzWave);
 		
 		//-- Store signal in format convenient for Signal Extraction(2)
 		signalComplex->waveform[0][k] = -hzFreq;
