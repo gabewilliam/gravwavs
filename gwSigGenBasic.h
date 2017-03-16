@@ -68,6 +68,14 @@ struct Parameters{
 	double fScalingAmplitude;
 	
 };	
+
+//-- Struct for storing signal in format convenient for noise addition
+struct NoisySignal{
+	
+	vector<double> frequency;
+	vector< complex<double> > compWave;
+	
+};
 //--------------------------------------------------------------------//
 //--------------------- CONSTANT CALCULATIONS ------------------------//
 
@@ -227,23 +235,26 @@ double updatedAmplitude(Parameters *P,
 //--------------------------------------------------------------------//
 //--------------------- WHOLE WAVE CALCULATION -----------------------//
 
-//-- Generate entire signal and store result in Parameters struct
-int simulateGravitationalWave(Parameters *P, 
-							  vector<Signal> *signalVector){
+//-- Generate entire signal 
+void simulateGravitationalWave(Parameters *P, 
+							   Signal *signalAmplitude,
+							   Signal *signalComplex,
+							   NoisySignal *signalForNoise,
+							   vector<Signal> *signalVector){
 	
 	//-- Number of positive frequencies
 	double nPosFreq = P->fMaxFreq/P->fDF + 1.0;
 	//-- Number of data points
 	double nDataPoints = 4.0*nPosFreq + 1.0;
 	
-	//-- Storage of both complex wave and wave amplitude
-	Signal signalComplex, signalAmplitude;
-	
 	//-- Populate waveform with zeros to allow direct index reference
 	for (int p=0; p < int(nDataPoints); p++){
 		
-		signalComplex.waveform[0].push_back(0.0);
-		signalComplex.waveform[1].push_back(0.0);
+		signalComplex->waveform[0].push_back(0.0);
+		signalComplex->waveform[1].push_back(0.0);
+		
+		signalForNoise->frequency.push_back(0.0);
+		signalForNoise->compWave.push_back(0.0);
 		
 	}
 	
@@ -270,29 +281,38 @@ int simulateGravitationalWave(Parameters *P,
 		hzFreq = mFreq*C_CONST;	
 		hzWave = mWave/C_CONST;
 		
-		//-- Store pure amplitude for positive frequencies
-		signalAmplitude.waveform[0].push_back(hzFreq);
-		signalAmplitude.waveform[1].push_back(hzAmplitude);
-			
-		signalComplex.waveform[0][2*i] = hzFreq;
-		signalComplex.waveform[0][2*i+1] = hzFreq;
+		//-- Store pure amplitude for Parameter Extraction
+		signalAmplitude->waveform[0].push_back(hzFreq);
+		signalAmplitude->waveform[1].push_back(hzAmplitude);
 		
-		signalComplex.waveform[1][2*i] = hzWave.real();
-		signalComplex.waveform[1][2*i+1] = hzWave.imag();
+		//-- Store signal in format convenient for noise addition(1)
+		signalForNoise->frequency[2*i] = hzFreq;
+		signalForNoise->compWave[2*i] = hzWave;
 		
+		//-- Store signal in format convenient for Signal Extraction(1)
+		signalComplex->waveform[0][2*i] = hzFreq;
+		signalComplex->waveform[0][2*i+1] = hzFreq;
+		
+		signalComplex->waveform[1][2*i] = hzWave.real();
+		signalComplex->waveform[1][2*i+1] = hzWave.imag();
+		
+		//-- Repeat the procedure for negative frequencies
 		int k = nDataPoints - 2*(i + 1);
 		
-		signalComplex.waveform[0][k] = -hzFreq;
-		signalComplex.waveform[0][k+1] = -hzFreq;
+		//-- Store signal in format convenient for noise addition(2)
+		signalForNoise->frequency[k] = -hzFreq;
+		signalForNoise->compWave[k] = conj(hzWave);
 		
-		signalComplex.waveform[1][k] = hzWave.real();
-		signalComplex.waveform[1][k+1] = -hzWave.imag();		
+		//-- Store signal in format convenient for Signal Extraction(2)
+		signalComplex->waveform[0][k] = -hzFreq;
+		signalComplex->waveform[0][k+1] = -hzFreq;
+		
+		signalComplex->waveform[1][k] = hzWave.real();
+		signalComplex->waveform[1][k+1] = -hzWave.imag();		
 			
 	}
 	
-	signalVector->push_back(signalComplex);
-	
-	return SUCCESS;
+	signalVector->push_back(*signalComplex);
 	
 }
 //--------------------------------------------------------------------//
@@ -369,6 +389,34 @@ void setParameters(double M1,
 //--------------------------------------------------------------------//
 //------------------------- ENTIRE PROCESS ---------------------------//
 
+//-- Simulate the detection, passing pointers to storage for the wave 
+//-- amplitude and complex wave
+void gwSimulateDetection(double M1,
+						 double M2,
+						 double lumDistance,
+						 double arrivalTime,
+						 double phaseOffset,
+						 double minFreq,
+						 double totalTime,
+						 Parameters *P,
+						 Signal *A,
+						 Signal *C,
+						 NoisySignal *N,
+						 vector<Signal> *S){
+						  
+	//-- Construct the system	
+	setParameters(M1, M2, 
+				  lumDistance, 
+				  arrivalTime, 
+				  phaseOffset, 
+				  minFreq, 
+				  totalTime, P);
+	
+	//-- Compute the graviational wave signature
+	simulateGravitationalWave(P, A, C, N, S);
+	
+}
+
 //-- Simulate the detection and output the data to a file of the 
 //-- designated type
 int gwGenerateAndPack(double M1,
@@ -391,16 +439,22 @@ int gwGenerateAndPack(double M1,
 	vector<Template> vectorTemplate;
 	vector<Template> *T = &vectorTemplate;
 	
-    //-- Construct the system	
-	setParameters(M1, M2, 
-				  lumDistance, 
-				  arrivalTime, 
-				  phaseOffset, 
-				  minFreq, 
-				  totalTime, P);
+	//-- Signals for passing through the simulation	
+	Signal sigAmplitude, sigComplex;
+	Signal *A = &sigAmplitude;
+	Signal *C = &sigComplex;
 	
-	//-- Compute the graviational wave signature
-	int waveComputed = simulateGravitationalWave(P, S);
+	//-- Signal intended to be embedded in noise
+	NoisySignal sigNoisy;
+	NoisySignal *N = &sigNoisy;
+	
+    gwSimulateDetection(M1, M2,
+						lumDistance,
+						arrivalTime,
+						phaseOffset,
+						minFreq,
+						totalTime,
+						P, A, C, N, S);
 	
 	if (OUT == TEMP){
 		
@@ -427,53 +481,50 @@ int gwGenerateAndPack(double M1,
 		
 		vectorTemplate.push_back(outputTemplate);
 	}
+		
+	//-- Set up the name of the data file
+	ostringstream s1, s2, s3, s4;
 	
-	if (waveComputed == SUCCESS){
-		
-		//-- Set up the name of the data file
-		ostringstream s1, s2, s3, s4;
-		
-		if (OUT == SIG){
-			s1 << "SIG";
-		}
-		else if (OUT == TEMP){
-			s1 << "TEMP";
-		}
-		
-		s2 << M1;
-		s3 << M2;
-		string del = "csv";
-		s4 << del;
-		std::string fileIdentity = s1.str() + "_"
-								   + s2.str() + "_" 
-								   + s3.str() + "." 
-								   + s4.str();
-		
-		//-- Save the signal/template using gwReadWrite functions
-		if (OUT == SIG){
-			
-			if (saveSignals(fileIdentity, S, csv)){
-				
-				cout << "Signal stored successfully in the file " 
-					 << fileIdentity << "." << endl;
-					 
-			return SUCCESS;
-			
-			}
-		}
-		else if (OUT == TEMP){
-			
-			if (saveTemplates(fileIdentity, T, csv)){
-				
-				cout << "Template stored successfully in the file " 
-					 << fileIdentity << "." << endl;
-					 
-			return SUCCESS;
-			
-			}
-		}
+	if (OUT == SIG){
+		s1 << "SIG";
+	}
+	else if (OUT == TEMP){
+		s1 << "TEMP";
 	}
 	
+	s2 << M1;
+	s3 << M2;
+	string del = "csv";
+	s4 << del;
+	std::string fileIdentity = s1.str() + "_"
+							   + s2.str() + "_" 
+							   + s3.str() + "." 
+							   + s4.str();
+	
+	//-- Save the signal/template using gwReadWrite functions
+	if (OUT == SIG){
+		
+		if (saveSignals(fileIdentity, S, csv)){
+			
+			cout << "Signal stored successfully in the file " 
+				 << fileIdentity << "." << endl;
+				 
+		return SUCCESS;
+		
+		}
+	}
+	else if (OUT == TEMP){
+		
+		if (saveTemplates(fileIdentity, T, csv)){
+			
+			cout << "Template stored successfully in the file " 
+				 << fileIdentity << "." << endl;
+				 
+		return SUCCESS;
+		
+		}
+	}
+
 	cout << "There was an error" << endl;
 	
 	return FAILURE;	
