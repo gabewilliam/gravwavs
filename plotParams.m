@@ -1,4 +1,4 @@
-function[] = plotParams(param1Val, param1Name, param1Unit, param2Val, param2Name, param2Unit)
+function[best1, best2] = plotParams(param1Val, param1Name, param1Unit, param2Val, param2Name, param2Unit)
 
 figure
 
