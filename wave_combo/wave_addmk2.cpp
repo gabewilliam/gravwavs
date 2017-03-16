@@ -19,7 +19,7 @@
 using namespace std;
  
 int main(){
-	//iterator
+	//loop iterator
 	int i = 0;
 	
 	//Generate wave
@@ -88,7 +88,27 @@ int main(){
 	vector<double> Wre;
 	vector<double> Wim;
 	
-	for(i=0; i < signalVector[0].waveform[0].size(); i+=2){
+	//for(i=0; i < signalVector[0].waveform[0].size(); i+=2){
+	//	double f = signalVector[0].waveform[0][i];
+	//	double r = signalVector[0].waveform[1][i];
+	//	double m = signalVector[0].waveform[1][i+1];
+		
+	//	Wfreq.push_back(f);
+	//	Wre.push_back(r);
+	//	Wim.push_back(m);
+	//}
+	
+	for(i=(signalVector[0].waveform[0].size())/2; i < signalVector[0].waveform[0].size(); i+=2){
+		double f = signalVector[0].waveform[0][i];
+		double r = signalVector[0].waveform[1][i];
+		double m = signalVector[0].waveform[1][i+1];
+		
+		Wfreq.push_back(f);
+		Wre.push_back(r);
+		Wim.push_back(m);
+	}
+	
+	for(i=2; i < (signalVector[0].waveform[0].size())/2; i+=2){
 		double f = signalVector[0].waveform[0][i];
 		double r = signalVector[0].waveform[1][i];
 		double m = signalVector[0].waveform[1][i+1];
@@ -101,7 +121,7 @@ int main(){
 	//wave intial data with columns down page, freq, real, imag
 	ofstream oFileW;
 	oFileW.open("AVWavey.csv");
-	for (int i=0; i < Wfreq.size(); i++){
+	for (i=0; i < Wfreq.size(); i++){
 		oFileW << Wfreq[i] << "," << Wre[i] << "," << Wim[i] << "\r\n" ;
 	}
 	cout << "wave finished and written to 'AVWavey.csv' \n" << endl;
@@ -163,12 +183,14 @@ int main(){
 	for (i=0; i < noise->size(); i++){
 		Nre.push_back(((noise->at(i)).real)/sqrt(fabs(Nfreq[i])));
 		Nim.push_back(((noise->at(i)).imag)/sqrt(fabs(Nfreq[i])));
+		//Nre.push_back((noise->at(i)).real);
+		//Nim.push_back((noise->at(i)).imag);
 	}
 	
 	//noise intial data with columns down page, freq, real, imag
 	ofstream oFileN;
 	oFileN.open("AVNoisy.csv");
-	for (int i=0; i < Nfreq.size(); i++){
+	for (i=0; i < Nfreq.size(); i++){
 		oFileN << Nfreq[i] << "," << Nre[i] << "," << Nim[i] << "\r\n" ;
 	}
 	cout << "noise finished and written to 'AVNoisy.csv' \n" << endl;
@@ -181,67 +203,14 @@ int main(){
 	vector<double> re;
 	vector<double> im;
 	
-	//Goes through vectors until both empty
-	while( !Wfreq.empty() || !Nfreq.empty() ){
-		
-		//if Wfreq and Nfreq are same, add values
-		if( !(fabs(Wfreq[0]-Nfreq[0]) > 0 )){
-			frq.push_back(Wfreq[0]);
-			re.push_back(Wre[0]+Nre[0]);
-			im.push_back(Wim[0]+Nim[0]);
-			
-			Wfreq.erase(Wfreq.begin());
-			Wre.erase(Wre.begin());
-			Wim.erase(Wim.begin());
-		
-			Nfreq.erase(Nfreq.begin());
-			Nre.erase(Nre.begin());
-			Nim.erase(Nim.begin());
-		}
-	
-		//if empty vectors adds other vector
-		else if(Nfreq.empty()){
-			frq.push_back(Wfreq[0]);
-			re.push_back(Wre[0]);
-			im.push_back(Wim[0]);
-		
-			Wfreq.erase(Wfreq.begin());
-			Wre.erase(Wre.begin());
-			Wim.erase(Wim.begin());
-		}
-	
-		else if(Wfreq.empty()){
-			frq.push_back(Nfreq[0]);
-			re.push_back(Nre[0]);
-			im.push_back(Nim[0]);
-		
-			Nfreq.erase(Nfreq.begin());
-			Nre.erase(Nre.begin());
-			Nim.erase(Nim.begin());
-		}
-	
-		//Adds lowest time value to end of vector for increasing time
-		else if(Wfreq[0]<Nfreq[0]){
-			frq.push_back(Wfreq[0]);
-			re.push_back(Wre[0]);
-			im.push_back(Wim[0]);
-		
-			Wfreq.erase(Wfreq.begin());
-			Wre.erase(Wre.begin());
-			Wim.erase(Wim.begin());
-		}
-	
-		else if(Nfreq[0]<Wfreq[0]){
-			frq.push_back(Nfreq[0]);
-			re.push_back(Nre[0]);
-			im.push_back(Nim[0]);
-		
-			Nfreq.erase(Nfreq.begin());
-			Nre.erase(Nre.begin());
-			Nim.erase(Nim.begin());
-		}
+	//adds bits together
+	//note:sometimes can be wrong from extra 0 term bits in  Wfreq vector
+	for(i=0; i < Nfreq.size(); i++){
+		frq.push_back(Nfreq[i]);
+		re.push_back(Wre[i]+Nre[i]);
+		im.push_back(Wim[i]+Nim[i]);
 	}
-	
+		
 	//______________________________
 	//Write to output file
 	
@@ -249,12 +218,12 @@ int main(){
 	oFile.open("AVNoisyWave.csv");
 	
 	//file with columns down page, freq, real, imag
-//	for (int i=0; i < frq.size(); i++){
-//		oFile << frq[i] << "," << re[i] << "," << im[i] << "\r\n" ;
-//	}
+	for (i=0; i < frq.size(); i++){
+		oFile << frq[i] << "," << re[i] << "," << im[i] << "\r\n" ;
+	}
 	
 	//file with rows across, freq first row, real, imag
-//	for (int i=0; i < frq.size(); i++){
+//	for (i=0; i < frq.size(); i++){
 //		oFile << frq[i] << ",";
 //	}
 //	oFile << "\r\n";
@@ -271,15 +240,15 @@ int main(){
 	
 	
 	//file with freq1, freq1, next row real, imag (izzie style pack)
-	for (int i=0; i < frq.size(); i++){
-		oFile << frq[i] << "," << frq[i] << ",";
-	}
-	oFile << "\r\n";
+//	for (i=0; i < frq.size(); i++){
+//		oFile << frq[i] << "," << frq[i] << ",";
+//	}
+//	oFile << "\r\n";
 	
-	for (int i=0; i < frq.size(); i++){
-		oFile << re[i] << "," << im[i] << ",";
-	}
-	oFile << "\r\n";
+//	for (int i=0; i < frq.size(); i++){
+//		oFile << re[i] << "," << im[i] << ",";
+//	}
+//	oFile << "\r\n";
 	
 	cout << "Output finished and written to 'AVNoisyWave.csv' \n" << endl;
 	
