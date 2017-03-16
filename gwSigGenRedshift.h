@@ -2,7 +2,7 @@
 //------------------------ DATA GENERATION ---------------------------//
 
 //----------- FREQUENCY DOMAIN GRAVITATIONAL WAVE GENERATOR ----------//
-//----(Simplest model, no redshift or incident angle dependencies)----//
+//------------------(No incident angle dependencies)------------------//
 //--- Model simplified from IMRPhenomB model described by P. Ajith ---//
 //-------------------- et al. in paper available at ------------------// 
 //---------------- [https://arxiv.org/pdf/0710.2335.pdf] -------------//
@@ -21,6 +21,7 @@
 
 //-- Include files
 #include "gwReadWrite.h"
+#include "luminosityDistance.h"
 
 //-- Definitions for calculations
 #define C_CONST 2.99792458E8
@@ -253,10 +254,6 @@ void simulateGravitationalWave(Parameters *P,
 		signalComplex->waveform[0].push_back(0.0);
 		signalComplex->waveform[1].push_back(0.0);
 		
-	}
-	
-	for (int p=0; p < int(nPosFreq*2.0); p++){
-		
 		signalForNoise->frequency.push_back(0.0);
 		signalForNoise->compWave.push_back(0.0);
 		
@@ -332,17 +329,20 @@ void setParameters(double M1,
 				   Parameters *P){
 
 	//-- Assign stored variables in natural geometric units
-	
-	double massConversionFactor = SM_CONST*G_CONST/pow(C_CONST, 2.0);
-	
-	P->fM1 = M1*massConversionFactor;
-	P->fM2 = M2*massConversionFactor;
 	P->fLumDistance = lumDistance*MPc_CONST;
 	P->fArrivalTime = arrivalTime*C_CONST;
 	P->fPhaseOffset = phaseOffset;
 	P->fMinFreq = minFreq/C_CONST;
 	P->fTotalTime = totalTime*C_CONST;
 	P->fDF = 1.0/P->fTotalTime;
+	
+	//-- Compute redshift of source
+	double redShift = rs(P->fLumDistance);
+	//-- Get redshifted mass in natural geometric units
+	double massConversionFactor = (1.0 + redShift)*SM_CONST*G_CONST/pow(C_CONST, 2.0);
+	
+	P->fM1 = M1*massConversionFactor;
+	P->fM2 = M2*massConversionFactor;
 	
 	//-- Number of data points
 	double nPoints = pow(2.0, 20.0);
