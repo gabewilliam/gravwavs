@@ -25,7 +25,7 @@ long double likelihood( double m1, double m2, double d, std::string signalFile )
 
 	vec_d noiseAmplitude = NoiseFunction( dataSignal.waveform[0] ); //creates noise probability function
 	int n = dataSignal.waveform[0].size();//finds number of elements in freq domain signal
-
+	//std::cout<<n<<"\t"<<modelAmplitude.size()<<std::endl;
 	long double sum = 0.0;
 	long double SNR = 0.0;
 	vec_d dataAmplitude = dataSignal.waveform[1];//splits signal into std::vectors for use in loop
@@ -51,11 +51,31 @@ long double likelihood( double m1, double m2, double d, std::string signalFile )
 
 }
 
-vec_d ParameterFunction( double m1, double m2, double d, vec_d t ){ 
+vec_d ParameterFunction( double m1, double m2, double d, vec_d f ){ 
 
+	int n = f.size();
+	vec_d modelAmplitude;	
+	
 	Parameters PARAMS;
 	Parameters *P = &PARAMS;
 
+	setParameters(m1, m2, d, 0.0, 0.0, 10.0, 3.0, P);
+	
+	complex<double> GRAVWAV;
+	complex<double> *G = &GRAVWAV;
+
+	for(int i=0; i<n; i++){
+		modelAmplitude.push_back(updatedAmplitude(P,i,G));
+	}
+
+	return modelAmplitude;
+
+
+
+
+
+	
+	/*
 	NoisySignal NOISY;
 	NoisySignal *N = &NOISY;
 
@@ -69,8 +89,9 @@ vec_d ParameterFunction( double m1, double m2, double d, vec_d t ){
 	vector<Signal> *S = &sigVect;
 
 	gwSimulateDetection(m1,m2,d,0.0,0.0,10.0,3.0,P,A,C,N,S);
-
+	//std::cout<<amp.waveform[1][10]<<std::endl;
 	return amp.waveform[1];
+	*/
 }
 
 vec_d NoiseFunction( vec_d f ){
