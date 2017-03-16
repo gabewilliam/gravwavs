@@ -18,16 +18,11 @@ void saveToFile(double [],double [],double [],int,int,std::string);
 
 int main() {
 
-	//Defines the mass of the sun
-	const double mSolar = 1.989e30;
-	const double MPc = 3.0857e22;
-
 	/*Sets up a random number generator to seed the other two generators, and
 	/ seeds this based on the system time.*/
 	gsl_rng * seedGen = gsl_rng_alloc(gsl_rng_taus);
 	gsl_rng_set(seedGen,(long unsigned int) time(NULL));
 			
-
 	/*Initialises random number generators to be used in the Markov-Chain
 	/ routine, and seeds them using values from the previous RNG.*/
 	gsl_rng * normGen = gsl_rng_alloc(gsl_rng_taus);
@@ -48,20 +43,14 @@ int main() {
 	std::cin >> dUpper;	
 	std::cout<< "Enter the distance lower limit in MPc:" << std::endl;
 	std::cin >> dLower;	
-
-	mLower*=mSolar;
-	mUpper*=mSolar;
-	dLower*=MPc;
-	dUpper*=MPc;
 	
 	//Takes an input for the number of samples used in the Monte Carlo routine
 	std::cout<< "Enter the number of Monte-Carlo samples:" << std::endl;
 	int N;
 	std::cin >> N;
 
-
 	//Declares the variables used throughout the routine
-	std::string fileName = "30_26.csv";
+	std::string fileName = "26_30.csv";
 	double ma, mb, maProposal, mbProposal;
 	double mChirp, mRatio, mChirpProposal, mRatioProposal;
 	double distance, distanceProposal;
@@ -77,11 +66,7 @@ int main() {
 	ma = gsl_rng_uniform(startGen)*(mUpper-mLower)+mLower;
 	mb = gsl_rng_uniform(startGen)*(mUpper-mLower)+mLower;
 	distance = gsl_rng_uniform(startGen)*(dUpper-dLower)+dLower;
-	/*
-	ma=35.0*mSolar;
-	mb=20.0*mSolar;
-	distance=550.0*MPc;
-	*/
+
 	if (mb > ma) {
 		double mDummy = ma;
 		ma = mb;
@@ -102,11 +87,11 @@ int main() {
 	/ is output to the file.*/
 	for(int i = 1; i <= N; i++) {
 
-		p = likelihood(ma/mSolar,mb/mSolar,distance/MPc,fileName)+log((pow(ma,2)/mChirp)*prior(ma,mb,mUpper,mLower,distance,dUpper,dLower));
+		p = likelihood(ma,mb,distance,fileName)+log((pow(ma,2)/mChirp)*prior(ma,mb,mUpper,mLower,distance,dUpper,dLower));
 
-		nZeroMChirp = gsl_ran_gaussian(normGen, 0.5*mSolar);
+		nZeroMChirp = gsl_ran_gaussian(normGen, 0.5);
 		nZeroMRatio = gsl_ran_gaussian(normGen, 0.005);
-		nZeroDistance =	gsl_ran_gaussian(normGen, MPc);
+		nZeroDistance =	gsl_ran_gaussian(normGen, 1);
 
 		mChirpProposal = mChirp + nZeroMChirp;
 		mRatioProposal = mRatio + nZeroMRatio;
@@ -119,7 +104,7 @@ int main() {
 			mRatioProposal = 1./mRatioProposal;
 		}
 		
-		pProposal = likelihood(maProposal/mSolar,mbProposal/mSolar,distanceProposal/MPc,fileName)+log((pow(maProposal,2)/mChirpProposal)*prior(maProposal,mbProposal,mUpper,mLower,distanceProposal,dUpper,dLower));
+		pProposal = likelihood(maProposal,mbProposal,distanceProposal,fileName)+log((pow(maProposal,2)/mChirpProposal)*prior(maProposal,mbProposal,mUpper,mLower,distanceProposal,dUpper,dLower));
 
 		alpha = exp(pProposal-p);
 
@@ -138,7 +123,7 @@ int main() {
 			acceptance++;
 		}
 
-		if (i%(N/20)==0) {
+		if (i%(N/100)==0) {
 			std::cout << (i*100)/N << "% complete." << std::endl;
 		}
 
@@ -151,6 +136,7 @@ int main() {
 	std::cout<<"Accepted: "<<acceptance<<std::endl;
 	
 	saveToFile(mRatioArray,mChirpArray,distanceArray,1,N,"RawData.txt");
+	//saveToFile(mRatioArray,mChirpArray,distanceArray,1000,N,"ThinnedData.txt");
 
 	/*Frees the memory associated with the random
 	/ number generators and deallocates memory.*/

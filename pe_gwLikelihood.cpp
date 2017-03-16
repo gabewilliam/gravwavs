@@ -1,8 +1,6 @@
 #include "pe_gwLikelihood.h"
 #include "gwReadWrite.h"
-//#include "gwFFT.h"
-//#include "generate.h"
-#include "gwSigGen.h"
+#include "gwSigGenBasic.h"
 
 #include <cmath>
 #include <iostream>
@@ -16,96 +14,63 @@
 
 long double likelihood( double m1, double m2, double d, std::string signalFile ){
 
-	Signal dt;//Data signal (time domain)
-	std::vector< Signal > idt; //loadSignals requires std::vector
-	Signal df;//Data signal (freq domain)
-	Signal ht;//Model signal (time domain)
-	Signal hf;//Model signal (freq domain)
+	Signal dataSignal;//Data signal (frequency domain)
+	std::vector< Signal > idataSignal; //loadSignals requires std::vector
 
-	loadSignals("signal.csv", &idt, csv); //Loads signal into dt
+	loadSignals(signalFile, &idataSignal, csv); //Loads signal into dt
 
-	dt = idt[0];//converts from vector of signals to signal
+	dataSignal = idataSignal[0];//converts from vector of signals to signal
 
-	vec_d ht2 = ParameterFunction( m1, m2, d, dt.waveform[0] );//Creates model function for given masses.
+	vec_d modelAmplitude = ParameterFunction( m1, m2, d, dataSignal.waveform[0] );//Creates model function for given masses.
 
-	ht.waveform[0] = dt.waveform[0]; //ht uses same time scale as dt
-	ht.waveform[1] = ht2;	//sets ht equal to vector produced by function
-	
-	//Extractor Fourier = Extractor(); //performs fourier transforms on each of the time domain signals 
-	//Fourier.setSignal(&dt);
-	//Fourier.fft(&df);
-	//Fourier.setSignal(&ht);
-	//Fourier.fft(&hf);
-	
-
-	vec_d sf = NoiseFunction( dt.waveform[0] ); //creates noise probability function
-	int n = dt.waveform[0].size();//finds number of elements in freq domain signal
+	vec_d noiseAmplitude = NoiseFunction( dataSignal.waveform[0] ); //creates noise probability function
+	int n = dataSignal.waveform[0].size();//finds number of elements in freq domain signal
 
 	long double sum = 0.0;
 	long double SNR = 0.0;
-	vec_d vdf = dt.waveform[1]; //splits signal into std::vectors for use in loop
-	vec_d vhf = ht.waveform[1];
+	vec_d dataAmplitude = dataSignal.waveform[1];//splits signal into std::vectors for use in loop
 
 	int nan=0;
 
 	for( int i = 0; i < n; i++ ){ //evaluates the sum part in equation A20
-		//if (i==500) std::cout << vdf[i] << "\t" << vhf[i] << std::endl;	
-		if(!(vhf[i]==vhf[i])) {
-			vhf[i]=vdf[i];
+		if(!(modelAmplitude[i]==modelAmplitude[i])) {
+			modelAmplitude[i]=dataAmplitude[i];
 			nan++;
 		}
 
-		sum += pow( std::abs( vdf[i] - vhf[i] ), 2 )/sf[i];
-		SNR += pow( std::abs( vdf[i] ), 2 )/sf[i];
+		sum += pow( std::abs( dataAmplitude[i] - modelAmplitude[i] ), 2 )/noiseAmplitude[i];
+		SNR += pow( std::abs( dataAmplitude[i] ), 2 )/noiseAmplitude[i];
 	}
-	
-	//std::cout<<"SNR="<<SNR<<std::endl;
 
-	vec_d t = dt.waveform[0];//takes the time vector
-	int n2 = t.size();//finds the number of elements	
-	double T = t[n2-1];//takes the last element for T (total time elapsed)
+	double T = 100.0;//total time elapsed
 	SNR = sqrt(SNR/T);	
 	
 	long double pdh = (-2/T) * sum;//calculates p(d|h)
+
 	return pdh;
 
 }
 
 vec_d ParameterFunction( double m1, double m2, double d, vec_d t ){ 
-	
-	int n = t.size();
-	vec_d ht;
 
-	parameters PARAMS;
-	parameters *P = &PARAMS;
+	Parameters PARAMS;
+	Parameters *P = &PARAMS;
 
-	// Set the characteristic parameters
-	setFundamentalParameters(10.0, 
-							 20.0,
-							 0.0, 
-							 10.0, 
-							 m1, 
-							 m2, 
-							 d,
-							 0.0,
-							 0.0,
-							 0.0, 
-							 P);
+	NoisySignal NOISY;
+	NoisySignal *N = &NOISY;
 
-	complex<double> gravWav = 0.0;
-	complex<double> * gw = &gravWav;
+	Signal sig;
+	Signal *C = &sig;
 
-	double df = P->df;
-	double f;
+	Signal amp;
+	Signal* A = &amp;
 
-	for( int i = 0; i < n; i++ ){
+	vector<Signal> sigVect;
+	vector<Signal> *S = &sigVect;
 
-		f = double(i)*df;
+	gwSimulateDetection(m1,m2,d,0.0,0.0,10.0,100.0,P,A,C,N,S);
 
-		ht.push_back(updatedAmplitude(P,f,gw));
-	}
-
-	return ht;
+	return amp.waveform[1];
 }
 
 vec_d NoiseFunction( vec_d f ){
