@@ -14,9 +14,9 @@ distance = dataFile(:,3);
 % plot(mChirp)
 % figure
 % plot(distance)
-plotParams(mRatio, 'mass ratio', 'mass ratio', mChirp, 'chirp mass', 'chirp mass / kg');
+[mR,cM] = plotParams(mRatio, 'mass ratio', 'mass ratio', mChirp, 'chirp mass', 'chirp mass / kg');
 % plotParams(mChirp, 'chirp mass', 'chirp mass / kg', distance, 'distance', 'distance / m');
 % plotParams( distance, 'distance', 'distance / m', mRatio, 'mass ratio', 'mass ratio');
-
-
+ma = cM*(1+mR)^0.2*mR^-0.6
+mb = cM*(1+mR)^0.2*mR^0.4
 fclose(fid);

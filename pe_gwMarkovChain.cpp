@@ -34,7 +34,7 @@ int main() {
 
 	//Takes mass limits for the prior function
 	double mLower,mUpper,dLower,dUpper;
-	
+	/*
 	std::cout<< "Enter the mass upper limit in solar masses:" << std::endl;
 	std::cin >> mUpper;
 	std::cout<< "Enter the mass lower limit in solar masses:" << std::endl;
@@ -43,6 +43,11 @@ int main() {
 	std::cin >> dUpper;	
 	std::cout<< "Enter the distance lower limit in MPc:" << std::endl;
 	std::cin >> dLower;	
+	*/
+	mLower = 20;
+	mUpper = 63;
+	dLower = 450;
+	dUpper = 550;
 	
 	//Takes an input for the number of samples used in the Monte Carlo routine
 	std::cout<< "Enter the number of Monte-Carlo samples:" << std::endl;
