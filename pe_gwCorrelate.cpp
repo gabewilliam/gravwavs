@@ -27,7 +27,6 @@ int main(){
 		input.push_back( line );
 		++N;
 	}
-	std::cout << N << std::endl;
 
 	FILE * inFile;
 	inFile=fopen( fileName.c_str() ,"r" );
@@ -51,8 +50,8 @@ int main(){
 	
 	double acls [] = {corrFactorChirp, corrFactorRatio, corrFactorDistance};
 	int aclMax = *(std::max_element(acls,acls+3));
-
-	saveToFile( chirpMass, massRatio, distance, aclMax, N, "UncorrelatedData.txt" );
+	
+	saveToFile( chirpMass, massRatio, distance, aclMax, N, "DataUncorr.txt" );
 
 	delete [] chirpMass;
 	delete [] massRatio;	

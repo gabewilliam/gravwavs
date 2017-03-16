@@ -90,7 +90,7 @@ int main() {
 		p = likelihood(ma,mb,distance,fileName)+log((pow(ma,2)/mChirp)*prior(ma,mb,mUpper,mLower,distance,dUpper,dLower));
 
 		nZeroMChirp = gsl_ran_gaussian(normGen, 0.5);
-		nZeroMRatio = gsl_ran_gaussian(normGen, 0.005);
+		nZeroMRatio = gsl_ran_gaussian(normGen, 0.05);
 		nZeroDistance =	gsl_ran_gaussian(normGen, 1);
 
 		mChirpProposal = mChirp + nZeroMChirp;

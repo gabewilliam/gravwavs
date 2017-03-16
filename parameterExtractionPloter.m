@@ -9,9 +9,14 @@ mChirp = dataFile(:,2);
 distance = dataFile(:,3);
 
 %Plots various pairings of variables
+% plot(mRatio)
+% figure
+% plot(mChirp)
+% figure
+% plot(distance)
 plotParams(mRatio, 'mass ratio', 'mass ratio', mChirp, 'chirp mass', 'chirp mass / kg');
-plotParams(mChirp, 'chirp mass', 'chirp mass / kg', distance, 'distance', 'distance / m');
-plotParams( distance, 'distance', 'distance / m', mRatio, 'mass ratio', 'mass ratio');
+% plotParams(mChirp, 'chirp mass', 'chirp mass / kg', distance, 'distance', 'distance / m');
+% plotParams( distance, 'distance', 'distance / m', mRatio, 'mass ratio', 'mass ratio');
 
 
 fclose(fid);

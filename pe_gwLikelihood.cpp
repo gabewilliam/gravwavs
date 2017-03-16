@@ -68,7 +68,7 @@ vec_d ParameterFunction( double m1, double m2, double d, vec_d t ){
 	vector<Signal> sigVect;
 	vector<Signal> *S = &sigVect;
 
-	gwSimulateDetection(m1,m2,d,0.0,0.0,10.0,100.0,P,A,C,N,S);
+	gwSimulateDetection(m1,m2,d,0.0,0.0,10.0,3.0,P,A,C,N,S);
 
 	return amp.waveform[1];
 }
