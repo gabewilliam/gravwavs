@@ -254,6 +254,10 @@ void simulateGravitationalWave(Parameters *P,
 		signalComplex->waveform[0].push_back(0.0);
 		signalComplex->waveform[1].push_back(0.0);
 		
+	}
+	
+	for (int p=0; p < int(nPosFreq*2.0); p++){
+		
 		signalForNoise->frequency.push_back(0.0);
 		signalForNoise->compWave.push_back(0.0);
 		
@@ -287,12 +291,12 @@ void simulateGravitationalWave(Parameters *P,
 		signalAmplitude->waveform[1].push_back(hzAmplitude);
 		
 		//-- Store signal in format convenient for noise addition(1)
-		signalForNoise->frequency[nPosFreq - i] = -hzFreq;
-		signalForNoise->compWave[nPosFreq - i] = conj(hzWave);
+		signalForNoise->frequency[(nPosFreq - 1) - i] = -hzFreq;
+		signalForNoise->compWave[(nPosFreq - 1) - i] = conj(hzWave);
 		
 		//-- Store signal in format convenient for noise addition(2)
-		signalForNoise->frequency[i + nPosFreq + 1] = hzFreq;
-		signalForNoise->compWave[i + nPosFreq + 1] = hzWave;
+		signalForNoise->frequency[i + nPosFreq] = hzFreq;
+		signalForNoise->compWave[i + nPosFreq] = hzWave;
 		
 		//-- Store signal in format convenient for Signal Extraction(1)
 		signalComplex->waveform[0][2*i] = hzFreq;
@@ -419,6 +423,42 @@ void gwSimulateDetection(double M1,
 	//-- Compute the graviational wave signature
 	simulateGravitationalWave(P, A, C, N, S);
 	
+}
+
+//-- Really simple function to just compute the amplitude of the wave and 
+//-- nothing else for Parameter Extraction efficiency
+vector<double> gwWaveAmplitudes(double M1,
+							    double M2,
+							    double lumDistance,
+							    double arrivalTime,
+							    double phaseOffset,
+							    double minFreq,
+							    double totalTime,
+							    Parameters *P){
+						  
+	//-- Construct the system	
+	setParameters(M1, M2, 
+				  lumDistance, 
+				  arrivalTime, 
+				  phaseOffset, 
+				  minFreq, 
+				  totalTime, P);
+				  
+	//-- Instantiate the complex wave
+	complex<double> gWave;
+	complex<double> *G = &gWave;
+	
+	//-- Instantiate the vector of amplitudes to return
+	vector<double> outputAmplitudes;
+	
+	for (double f = 0.0; f <= P->fMaxFreq; f+=P->fDF){
+				
+		//-- Generate the wave
+		outputAmplitudes.push_back(updatedAmplitude(P, f, G));
+				  
+	}
+	
+	return outputAmplitudes;
 }
 
 //-- Simulate the detection and output the data to a file of the 
