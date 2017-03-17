@@ -44,10 +44,10 @@ int main() {
 	std::cout<< "Enter the distance lower limit in MPc:" << std::endl;
 	std::cin >> dLower;	
 	*/
-	mLower = 20;
+	mLower = 10;
 	mUpper = 63;
-	dLower = 450;
-	dUpper = 550;
+	dLower = 45;
+	dUpper = 55;
 	
 	//Takes an input for the number of samples used in the Monte Carlo routine
 	std::cout<< "Enter the number of Monte-Carlo samples:" << std::endl;
@@ -67,10 +67,15 @@ int main() {
 	double acceptance=0;
 
 	//Sets the starting ma and mb values for the routine as random integers.
-	
+	/*
 	ma = gsl_rng_uniform(startGen)*(mUpper-mLower)+mLower;
 	mb = gsl_rng_uniform(startGen)*(mUpper-mLower)+mLower;
 	distance = gsl_rng_uniform(startGen)*(dUpper-dLower)+dLower;
+	*/
+
+	ma = 30.0;
+	mb = 26.0;
+	distance = 50.0;
 
 	if (mb > ma) {
 		double mDummy = ma;
@@ -92,7 +97,7 @@ int main() {
 	/ is output to the file.*/
 	for(int i = 1; i <= N; i++) {
 
-		p = likelihood(30,26,distance,fileName,true)+log((pow(ma,2)/mChirp)*prior(ma,mb,mUpper,mLower,distance,dUpper,dLower));
+		p = likelihood(ma,mb,distance,fileName,true)+log((pow(ma,2)/mChirp)*prior(ma,mb,mUpper,mLower,distance,dUpper,dLower));
 
 		nZeroMChirp = gsl_ran_gaussian(normGen, 0.5);
 		nZeroMRatio = gsl_ran_gaussian(normGen, 0.05);

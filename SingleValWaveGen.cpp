@@ -12,11 +12,11 @@ int main(){
 	double M1 = 26.0;
 	double M2 = 30.0;
 	// Set distance of system (MPc)
-	double Dist = 500.0;
+	double Dist = 50.0;
 	// Set total time of signal (s)
-	double totalTime = 20.0;
+	double totalTime = 3.0;
 	// Set time of arrival of signal (s)
-	double initTime = 10.0;
+	double initTime = 0.0;
 	// Set phase of wave at arrival (rads)
 	double initPhase = 0.0;
 	// Set minimum detector frequency (Hz)

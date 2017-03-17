@@ -47,11 +47,13 @@ long double likelihood( double m1, double m2, double d, std::string signalFile, 
 
 	double T = 100.0;//total time elapsed
 	SNR = sqrt(SNR/T);	
+	//std::cout<<SNR<<std::endl;
 	
 	long double pdh = (-2/T) * sum;//calculates p(d|h)
-	//if(print==true){
-	//saveToFile(modelAmplitude,dataAmplitude,dataSignal.waveform[0],1,n,"AmplitudeTest");
-	//}
+	/*
+	if(print==true){
+	saveToFile(modelAmplitude,dataAmplitude,dataSignal.waveform[0],1,n,"AmplitudeTest");
+	}*/
 	return pdh;
 
 }
@@ -84,7 +86,7 @@ vec_d NoiseFunction( vec_d f ){
 	vec_d sf;
 
 	for( int i = 0; i < n; i++ ){
-		sf.push_back( 1e-39 ); //PLACEHOLDER: INSERT NOISE FUNCTION IN PARENTHESIS
+		sf.push_back( 1e-44 ); //PLACEHOLDER: INSERT NOISE FUNCTION IN PARENTHESIS
 	}
 
 	return sf;
