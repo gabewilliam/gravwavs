@@ -78,7 +78,7 @@ void Interpolator::setProb(std::string probName) {
 	
 	//Reads the file into a single column vector
 	while(feof(probFile) == 0) {
-		fscanf(probFile,"%lf,%lf\n",&z);
+		fscanf(probFile,"%lf\n",&z);
 		zCol.push_back(z);
 	}
 
