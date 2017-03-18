@@ -1,6 +1,7 @@
 #include <vector>
 #include <cstdio>
 #include <iostream>
+#include <cmath>
 
 #include "Interpolator.h"
 
@@ -32,21 +33,20 @@ void Interpolator::setGrid(char * gridName) {
 	FILE * gridFile;
 	gridFile = fopen(gridName,"r");
 	if(gridFile == NULL) {
-		std::cout << "File not found: " << gridFile <<std::endl;
+		std::cout << "File not found: " << gridName <<std::endl;
 		return;
 	}
 
 	double x, y;
 	std::vector <double> xTemp;
 	std::vector <double> yTemp;
-	int length = 30; //This is terribly hardcoded, whoops
-
-	for(int i = 0; i < length; i++) {
+	
+	while(feof(gridFile) == 0) {
 		fscanf(gridFile,"%lf,%lf\n",&x,&y);
 		xTemp.push_back(x);
 		yTemp.push_back(y);
 	}
-
+	
 	fX = xTemp;
 	fY = yTemp;
 
@@ -59,29 +59,30 @@ void Interpolator::setProb(char * probName) {
 	FILE * probFile;
 	probFile = fopen(probName,"r");
 	if(probFile == NULL) {
-		std::cout << "File not found: " << probFile <<std::endl;
+		std::cout << "File not found: " << probName <<std::endl;
 		return;
 	}
 
-	int length = 30; //Uh oh. Not again!
-
 	double z;
 	std::vector <double> zCol; //Column vector to store z values in
-	std::vector <std::vector <double> > zTemp(length); //z array
-
-	for(int i = 0; i < length*length; i++) {
+	
+	while(feof(probFile) == 0) {
 		fscanf(probFile,"%lf,%lf\n",&z);
 		zCol.push_back(z);
 	}
 
+	int length = zCol.size();
+	
 	fclose(probFile);
+	length = sqrt(length);
+	
+	std::vector <std::vector <double> > zTemp(length); //z array
 
 	int k = 0;
 	
 	for(int i = 0; i < length; i++) {
 
 		for(int j = 0; j < length; j++) {
-
 			zTemp[i].push_back(zCol[k]);
 			k++;
 					
@@ -100,11 +101,11 @@ void Interpolator::setProb(char * probName) {
 int Interpolator::rAbove(int var, double r) {
 
 	int nPts = fX.size();
-
+		
 	if(var==1){
 		
 		for(int i = 0; i < nPts; i++) {
-
+			
 			if(((r < fX[i]) && (i==0)) || ((r > fX[i]) && (i==(nPts-1)))) {
 				return -1;
 			}
@@ -137,12 +138,12 @@ int Interpolator::quadrangilate(double x, double y, double * xBelow,
 								int * xIndex, int * yIndex) {
 
 	int i,j;
-	i = rAbove(1,x);
-	j = rAbove(2,y);
-
+	i = this->rAbove(1,x);
+	j = this->rAbove(2,y);
+	//std::cout << i << " " << j << std::endl;
 	if((i<0)||(j<0)) { return -1; }
 	else {
-
+		
 		* xBelow = fX[i - 1];
 		* xAbove = fX[i];
 		* yBelow = fY[j - 1];
@@ -188,11 +189,11 @@ double Interpolator::estimateProb(double x, double y) {
 
 	double xBelow, xAbove, yBelow, yAbove, pInterp;
 	int quadSuccess, i, j;
-	quadSuccess = quadrangilate(x,y,&xBelow,&xAbove,&yBelow,&yAbove,&i,&j);
-
+	quadSuccess = this->quadrangilate(x,y,&xBelow,&xAbove,&yBelow,&yAbove,&i,&j);
+	
 	if(quadSuccess < 0) { pInterp = 0; }
 	else {
-		pInterp = interpolate(x,y,xBelow,xAbove,yBelow,yAbove,i,j);
+		pInterp = this->interpolate(x,y,xBelow,xAbove,yBelow,yAbove,i,j);
 	}
 
 	return pInterp;
