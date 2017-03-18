@@ -163,6 +163,13 @@ int Interpolator::rAbove(int var, double r) {
 	
 	}
 
+	//Returns -1 and gives an error message if an incorrect input is given
+	else {
+		std::cout << "Error in function Interpolator::rAbove (invalid input)"
+				  << std::endl;
+		return -1;
+	}
+
 }
 
 int Interpolator::quadrangilate(double x, double y, double * xBelow, 
