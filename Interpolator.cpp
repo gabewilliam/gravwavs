@@ -170,6 +170,9 @@ int Interpolator::rAbove(int var, double r) {
 		return -1;
 	}
 
+	//Seems necessary to remove warnings. Can't ever be triggered.
+	return -1;
+
 }
 
 int Interpolator::quadrangilate(double x, double y, double * xBelow, 
