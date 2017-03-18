@@ -6,14 +6,14 @@ class Interpolator {
 		//Constructors, the latter of which takes the input filenames as
 		//arguments
 		Interpolator();
-		Interpolator(char * gridName, char * probName);
+		Interpolator(std::string gridName, std::string probName);
 
 		//Destructor
 		virtual ~Interpolator();
 
 		//Functions to set the input files
-		void setGrid(char * gridName);
-		void setProb(char * probName);
+		void setGrid(std::string gridName);
+		void setProb(std::string probName);
 
 		//Function which finds the index of the coordinate (in one direction)
 		//which lies above the input point

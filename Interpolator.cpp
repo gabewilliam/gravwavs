@@ -2,6 +2,7 @@
 #include <cstdio>
 #include <iostream>
 #include <cmath>
+#include <string>
 
 #include "Interpolator.h"
 
@@ -11,7 +12,7 @@
 
 Interpolator::Interpolator() {}
 
-Interpolator::Interpolator(char * gridName, char * probName) {
+Interpolator::Interpolator(std::string gridName, std::string probName) {
 
 	//These read the two input files. The first should be a two column csv,
 	//the second should be a one column txt
@@ -30,12 +31,12 @@ Interpolator::~Interpolator() {}
 //SET METHODS
 //===========
 
-void Interpolator::setGrid(char * gridName) {
+void Interpolator::setGrid(std::string gridName) {
 
 	//Opens the input files and checks it is there. It will return a file
 	//not found message and segfault if it is not found.
 	FILE * gridFile;
-	gridFile = fopen(gridName,"r");
+	gridFile = fopen(gridName.c_str(),"r");
 	if(gridFile == NULL) {
 		std::cout << "File not found: " << gridName <<std::endl;
 		return;
@@ -61,11 +62,11 @@ void Interpolator::setGrid(char * gridName) {
 
 }
 
-void Interpolator::setProb(char * probName) {
+void Interpolator::setProb(std::string probName) {
 	
 	//Opens the file and checks it is there
 	FILE * probFile;
-	probFile = fopen(probName,"r");
+	probFile = fopen(probName.c_str(),"r");
 	if(probFile == NULL) {
 		std::cout << "File not found: " << probName <<std::endl;
 		return;
