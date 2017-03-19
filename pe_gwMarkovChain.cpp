@@ -11,9 +11,11 @@
 #include <gsl/gsl_statistics_double.h>
 
 #include "pe_gwLikelihood.h"
+#include "Interpolator.h"
 
 double gaussian(double, double, double, double, double);
 double prior(double, double, double, double, double, double, double);
+double distancePrior(double, double, double);
 void saveToFile(double [],double [],double [],int,int,std::string);
 
 int main() {
@@ -86,6 +88,8 @@ int main() {
 	mChirp = pow((ma*mb),3./5)/pow((ma+mb),1./5);
 	mRatio = mb/ma;
 
+	Interpolator chirpRatPrior = Interpolator("ChirpRatKernelGrid.csv","ChirpRatKernelProb.txt");
+
 	/*Loops over the number of iterations specified by the input. In each run,
 	/ the likelihood function is evaluated at (ma,mb). Then, one of the RNGs is
 	/ used to draw values from a normal distribution of width nSigma. The
@@ -97,7 +101,9 @@ int main() {
 	/ is output to the file.*/
 	for(int i = 1; i <= N; i++) {
 
-		p = likelihood(ma,mb,distance,fileName,true)+log((pow(ma,2)/mChirp)*prior(ma,mb,mUpper,mLower,distance,dUpper,dLower));
+		//p = likelihood(ma,mb,distance,fileName,true)+log((pow(ma,2)/mChirp)*prior(ma,mb,mUpper,mLower,distance,dUpper,dLower));
+
+		p = likelihood(ma,mb,distance,fileName,true)+log(distancePrior(distanceProposal,dUpper,dLower)*chirpRatPrior.estimateProb(mChirp,mRatio));	
 
 		nZeroMChirp = gsl_ran_gaussian(normGen, 0.5);
 		nZeroMRatio = gsl_ran_gaussian(normGen, 0.05);
@@ -114,7 +120,9 @@ int main() {
 			mRatioProposal = 1./mRatioProposal;
 		}
 		
-		pProposal = likelihood(maProposal,mbProposal,distanceProposal,fileName,false)+log((pow(maProposal,2)/mChirpProposal)*prior(maProposal,mbProposal,mUpper,mLower,distanceProposal,dUpper,dLower));
+		//pProposal = likelihood(maProposal,mbProposal,distanceProposal,fileName,false)+log((pow(maProposal,2)/mChirpProposal)*prior(maProposal,mbProposal,mUpper,mLower,distanceProposal,dUpper,dLower));
+
+		pProposal = likelihood(maProposal,mbProposal,distanceProposal,fileName,false)+log(distancePrior(distanceProposal,dUpper,dLower)*chirpRatPrior.estimateProb(mChirpProposal,mRatioProposal));
 
 		alpha = exp(pProposal-p);
 
@@ -168,6 +176,11 @@ double prior(double ma, double mb, double mUpper, double mLower, double d, doubl
 
 	else return 0;
 
+}
+
+double distancePrior(double d, double dUpper, double dLower) {
+	if (d < dUpper && d > dLower) return 1;
+	else return 0;
 }
 
 void saveToFile(double parameterA[], double parameterB[], double parameterC[], int lag, int size, std::string fileName) {
