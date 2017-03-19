@@ -14,6 +14,7 @@ class Binary {
 		double getRadius(int n);
 		double getSeparation();
 		double getRatio(int n);//input decides which mass is on top of fraction
+		double gettMerge();
 		
 		void printGets();//couts all the gets (above)
 
@@ -47,6 +48,7 @@ class Binary {
 		double fm2;
 		double fr1;
 		double fr2;
-		double fa;	//atm SPV5 assigns this in AU	
+		double fa;	//atm SPV5 assigns this in AU
+		double fTMerge;	
 		
 };

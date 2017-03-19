@@ -100,6 +100,12 @@ double Binary::getRatio(int n) {
     
 }
 
+double Binary::gettMerge(){
+
+	return fTMerge;
+
+}
+
 void Binary::printGets(){//easy to check information on a binary (could probably change to access datamembers directly)
 	
 	//std::cout<<"printing all gets"<<std::endl;
@@ -237,8 +243,8 @@ double Binary::mergeTime() {
 	double m1 = fm1*mSolar;
 	double m2 = fm2*mSolar;
 	double b = pow(a,4);
-	double Tmerge = (5.0/256.0)*(cFive/(GThree*m1*m2*(m1+m2)))*b;//In s 
-	return Tmerge;//In seconds
+	fTMerge = (5.0/256.0)*(cFive/(GThree*m1*m2*(m1+m2)))*b;//In s 
+	return fTMerge;//In seconds
 
 }
 
