@@ -164,32 +164,32 @@ double AligoSchutz::getASD(double f){
 
 AligoZeroDetHighP::AligoZeroDetHighP(){
 
-	this->loadCurve("NoiseGen/Curves/ZERO_DET_high_P.csv");
+	this->loadCurve("./Curves/ZERO_DET_high_P.csv");
 	
 }
 AligoZeroDetLowP::AligoZeroDetLowP(){
 	
-	this->loadCurve("NoiseGen/Curves/ZERO_DET_low_P.csv");
+	this->loadCurve("./Curves/ZERO_DET_low_P.csv");
 	
 }
 AligoNsnsOpt::AligoNsnsOpt(){
 	
-	this->loadCurve("NoiseGen/Curves/NSNS_Opt.csv");
+	this->loadCurve("./Curves/NSNS_Opt.csv");
 	
 }
 AligoNoSrm::AligoNoSrm(){
 	
-	this->loadCurve("NoiseGen/Curves/NO_SRM.csv");
+	this->loadCurve("./Curves/NO_SRM.csv");
 	
 }
 AligoHighFreq::AligoHighFreq(){
 	
-	this->loadCurve("NoiseGen/Curves/High_Freq.csv");
+	this->loadCurve("./Curves/High_Freq.csv");
 	
 }
 AligoBhbh20Deg::AligoBhbh20Deg(){
 	
-	this->loadCurve("NoiseGen/Curves/BHBH_20deg.csv");
+	this->loadCurve("./Curves/BHBH_20deg.csv");
 	
 }
 
