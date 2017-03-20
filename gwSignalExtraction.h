@@ -34,6 +34,7 @@ class Extractor
 		void Convolution();
 
 		void fftInverse(std::vector<Template>* out1, std::vector<Template>* out2);
+		void ifft(Template *in, Template *out);
 
 		double getASD(double f);
 
