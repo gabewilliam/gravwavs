@@ -383,7 +383,11 @@ bool Extractor::loadCurve(std::string filename)
 	std::ifstream inFile;
 	
 	inFile.open(filename.c_str());
-
+	if (inFile.fail())
+	{
+		std::cout<<"Could not find noise curve file"<<std::endl;
+		return false;
+	}
 	double d;
 	
 	std::string line, element;
