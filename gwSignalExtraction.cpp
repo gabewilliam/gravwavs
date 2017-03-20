@@ -1,22 +1,27 @@
 #include <gsl/gsl_fft_complex.h>
 #include "gwSignalExtraction.h"
+#include <cassert>
 
 #include <cmath>
 #include <iostream>
 
 Extractor::Extractor(){}
 
-void Extractor::setSignalT(Signal* sig){
+void Extractor::setSignalT(Signal* sig)
+{
+
 	mSignalT = sig;
 	return;
 }
 
-void Extractor::setSignalF(Signal* sig){
+void Extractor::setSignalF(Signal* sig)
+{
 	mSignalF = sig;
 	return;
 }
 
-void Extractor::setTemplates(std::vector<Template>* temps){
+void Extractor::setTemplates(std::vector<Template>* temps)
+{
 	mTemplates = temps;
 	return;
 }
@@ -26,10 +31,8 @@ void Extractor::splitSignal(){
 	int N = mSignalT->waveform[0].size();
 	double base = log2(N);
 	std::vector<Signal*> *dummy = new std::vector<Signal*>;
-	
 	int size = ceil(base);
-	
-	
+		
 	size = pow(2,size);
 	
 	double dt = mSignalT->waveform[0][2] - mSignalT->waveform[0][0];
@@ -92,8 +95,6 @@ void Extractor::fft(){
 	int N = (*mSignalsT)[0]->waveform[0].size()/2;
 	int I = (*mSignalsT).size();
 
-
-	
 	std::vector<Signal*>* dummy = new std::vector<Signal*>;
 	
 	double dt = ((*mSignalsT)[0]->waveform[0][2] - (*mSignalsT)[0]->waveform[0][0]);
@@ -107,7 +108,7 @@ void Extractor::fft(){
 	
 	gsl_fft_complex_workspace* complexWS =  gsl_fft_complex_workspace_alloc(N);
 	gsl_fft_complex_wavetable* complexWT = gsl_fft_complex_wavetable_alloc(N);
-	
+        
 	vec_d freq;
 	for(int j=0; j<N/2; j++){
 		freq.push_back(j*sampleFreq);
@@ -121,16 +122,14 @@ void Extractor::fft(){
 	vec_d amp;
 		
 	for (int i = 0; i < I; i++){
-				
+		
 		Signal *sig = new Signal;
 		
 		amp = (*mSignalsT)[i]->waveform[1];
 	
 		gsl_fft_complex_forward (&amp[0], 1, N, complexWT, complexWS);
 		
-		
 		sig->waveform[0] = freq;
-		
 		sig->waveform[1] = amp;
 		dummy->push_back(sig);
 	
@@ -160,7 +159,6 @@ void Extractor::Convolution/*crossCorrelation*/()
 	
 	I = mTemplates->size();
 	J = (*mSignalsF)[0]->waveform[1].size();
-	
 	
 	
 	std::vector<std::vector<Template*> *>* result = new std::vector<std::vector<Template*>* >;
@@ -262,10 +260,6 @@ void Extractor::Convolution/*crossCorrelation*/()
 		result->push_back(dummy);
 	}
 	mConResults = result;
-
-	
-	
-	
 	
 	return;
 }
@@ -295,7 +289,6 @@ void Extractor::fftInverse(std::vector<Template>* out1, std::vector<Template>* o
 		time2.push_back((*time1)[i]);
 	}
 	
-
 	I = (*mConResults)[0]->size();	
 	N = (*(*mConResults)[0])[0]->waveform[0].size();	
 
@@ -351,9 +344,6 @@ void Extractor::fftInverse(std::vector<Template>* out1, std::vector<Template>* o
 	
 	mToBeDeleted = final;
 	
-	
-	std::cout<<"hello"<<std::endl;
-	
 	for (int i = 0; i < I; i++){
 		std::cout<<i<<std::endl;
 		Template temp1;
@@ -377,17 +367,15 @@ void Extractor::fftInverse(std::vector<Template>* out1, std::vector<Template>* o
 		out2->push_back(temp2);
 
 	}
-	
-
 
 	//out2 = outs2;
 
 	std::cout<<"asdfvrfusbecd"<<std::endl;
 	std::cout<<(*out1)[0].waveform[0][0]<<std::endl;
 	gsl_fft_complex_workspace_free(complexWS);
-	gsl_fft_complex_wavetable_free(compWT);	
-	
-	
+	gsl_fft_complex_wavetable_free(compWT); 
+
+	return;
 }	
 
 bool Extractor::loadCurve(std::string filename)
@@ -432,7 +420,9 @@ bool Extractor::loadCurve(std::string filename)
 	
 	return true;
 }
-double Extractor::getASD(double f){
+
+double Extractor::getASD(double f)
+{
 	
 	if((f < fNoiseCurve.fMin) || (f > fNoiseCurve.fMax))
 		return 0;
@@ -468,7 +458,8 @@ double Extractor::getASD(double f){
 	return asd;
 }
 
-double Extractor::fAutoCorrComplex(Template* temp){
+double Extractor::fAutoCorrComplex(Template* temp)
+{
 	int N, pn; 
 	double result;
 	vec_d op;
