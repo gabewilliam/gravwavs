@@ -41,6 +41,8 @@ class NoiseGenerator{
 		double genMag(double); //Generate spectral magnitude for given frequency
 		double genPhase();
 		
+		void setMinFreq(double);
+		
 		Complex genSample(double); //Get both phase and magnitude of frequency bin
 		
 		bool genSpectrum(std::vector<double>*, std::vector<Complex>* ,double, double); //Generate entire frequency spectrum
@@ -50,11 +52,19 @@ class NoiseGenerator{
 	protected:
 	
 		double fRelativeAmplitude; //Relative amplitude to scale the noise
-		//NoiseCurve fNoiseCurve;
+		double fMinFreq;
 		
 };
 
 class AligoSchutz: public NoiseGenerator{
+	
+	public:
+		
+		double getASD(double);
+	
+};
+
+class WhiteNoise: public NoiseGenerator{
 	
 	public:
 		

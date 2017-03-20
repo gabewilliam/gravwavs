@@ -63,7 +63,8 @@ int main(){
 	<< "4) aLIGO NSNS Opt\r\n\t"
 	<< "5) aLIGO No SRM\r\n\t"
 	<< "6) aLIGO High Freq\r\n\t"
-	<< "7) aLIGO BHBH 20 Deg\r\n";
+	<< "7) aLIGO BHBH 20 Deg\r\n\t"
+	<< "8) White\r\n";
 	
 	int choice;
 	cin >> choice;
@@ -77,7 +78,8 @@ int main(){
 	else if(choice == 5){	nGen = new AligoNoSrm();		}
 	else if(choice == 6){	nGen = new AligoHighFreq();		}
 	else if(choice == 7){	nGen = new AligoBhbh20Deg();	}
-	else				{	nGen = new AligoSchutz();		}	
+	else if(choice == 8){	nGen = new WhiteNoise();		}
+	else				{	nGen = new WhiteNoise();		}	
 	
 	vector<double> *freq = new vector<double>;
 	vector<Complex> *noise = new vector<Complex>;
@@ -86,9 +88,9 @@ int main(){
 	fMax = oParams.fMaxFreq * C_CONST;
 	fStep = oParams.fDF * C_CONST;
 	
+	nGen->setMinFreq(inputs.fMin);
 	
-	nGen->genSpectrum(freq, noise, 8000.0, fStep);
-	
+	nGen->genSpectrum(freq, noise, 5000.0, fStep);
 	ofstream oFile;
 	oFile.open("NoisySignal.csv");
 	

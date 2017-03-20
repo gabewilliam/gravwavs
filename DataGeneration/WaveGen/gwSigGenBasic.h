@@ -348,7 +348,7 @@ void setParameters(double M1,
 	double nPoints = pow(2.0, 20.0);
 	
 	//-- Set maximum frequency
-	P->fMaxFreq = (nPoints - 5.0)*P->fDF/4.0;
+	P->fMaxFreq = 5000.0/C_CONST;
 	
 	//-- Set total mass
 	P->fTotalMass = P->fM1 + P->fM2;

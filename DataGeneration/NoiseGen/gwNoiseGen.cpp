@@ -2,6 +2,11 @@
 
 NoiseGenerator::NoiseGenerator(){
 		fRelativeAmplitude=1;
+		fMinFreq = 0;
+}
+
+void NoiseGenerator::setMinFreq(double freq){
+	fMinFreq = freq;
 }
 
 double NoiseGenerator::getASD(double freq){
@@ -11,10 +16,10 @@ double NoiseGenerator::getASD(double freq){
 
 double NoiseGenerator::genMag(double freq){ //Get a sample magnitude
 	
-	double sigma = this->getASD(freq); //Use ASD to get frequency dependent S.D.
+	double sigma = ( this->getASD(freq) ) / sqrt(2.0); //Use ASD to get frequency dependent S.D.
 	double noise = gaussianSample(freq, sigma); //Generate single gaussian value
 	
-	return noise * fRelativeAmplitude;
+	return noise;// * (1 / sqrt(freq));
 	
 }
 
@@ -30,13 +35,9 @@ Complex NoiseGenerator::genSample(double freq){ //Get real and imaginary parts o
 	
 	Complex sample;
 	
-	//Get phase and amplitude
-	double mod = this->genMag(freq);
-	double arg = this->genPhase();
-	
-	//Calculate real and imaginary parts from phase & amplitude
-	sample.real = mod * cos( arg );
-	sample.imag = mod * sin( arg );
+	//Calculate real and imaginary parts
+	sample.real = this->genMag(freq);
+	sample.imag = this->genMag(freq);
 	
 	return sample;
 	
@@ -45,39 +46,42 @@ Complex NoiseGenerator::genSample(double freq){ //Get real and imaginary parts o
 bool NoiseGenerator::genSpectrum(std::vector<double>* freqs, std::vector<Complex>* noise, double fMax, double fInc){
 	
 	//Calculate maximum number of elements for given sampling frequency fMax
-	int N = (int)( fMax / fInc );
-
+	int N = (int)( fMax / fInc ) + 1;
+	int NMax = 2*N;
 	Complex sample;
 
 	//Populate all elements with zeroes and fill frequency;
 	sample.real = 0.0;
 	sample.imag = 0.0;
+	std::cout<<N<<"\r\n";
+	double freq = 0;
 	
-	double freq = -fMax;
-	
-	for(int i=0; i <= 2*N; i++){
-		
+	for(int ii=0; ii<=NMax; ii++){ 
+		freqs->push_back(0.0);
 		noise->push_back(sample);
+	}
+	
+	for(int i=0;i<=N;i++){
 		
-		freqs->push_back(freq);
-		
+		freqs->at(N-i)=-freq;
+		freqs->at(N+i)=freq;
 		freq += fInc;
 
 	}
 	
-	for(int j=N; j <= 2*N; j++){
+	for(int j=0; j <= N; j++){
 
 		//Get a random complex sample
-		sample=this->genSample(freqs->at(j));
+		sample=this->genSample(freqs->at(N+j));
 		//Assign it to the spectrum
-		noise->at(j)=sample;
+		noise->at(N+j)=sample;
 		//Calculate complex conjugate of sample
-		sample.imag *= -1;
+		sample.imag *= -1.0;
 		//Assign complex conjugate to 'positive' frequency axis
-		noise->at(2*N-j+1)=sample;
+		noise->at(N-j)=sample;
 		
 	}
-	
+
 	return true;
 	
 }
@@ -127,13 +131,19 @@ bool NumNoise::loadCurve(std::string filename){
 	
 }
 
+double WhiteNoise::getASD(double f){
+	
+	return 0;
+	
+}
+
 //Analytic fit for Aligo noise curve
 //	from Sathyaprakash & Schutz ~  https://arxiv.org/abs/0903.0338v1
 double AligoSchutz::getASD(double f){
 	
 	double fs = 20.0; //Lowest frequency before fit blows up
 	
-	if(f > fs){
+	if(f > fs && f > fMinFreq){
 	
 		double f0 = 215.0;
 		double x = f/f0;
@@ -144,13 +154,13 @@ double AligoSchutz::getASD(double f){
 		double x1,x2,x3,x3_1,x3_2,x3_3,asd,psd;
 		
 		x1 = pow(x,-4.14);
-		x2 = -5.0 * pow(x, -2);
+		x2 = -5.0 * pow(x, -2.0);
 		
 		x3_1 = -(x * x);
-		x3_2 = 0.5 * pow(x,4);
+		x3_2 = 0.5 * pow(x,4.0);
 		x3_3 = 0.5 * x * x;
 		
-		x3 = 111.0*(1.0+x3_1 +x3_2) / (1+x3_3);
+		x3 = 111.0*(1.0+x3_1 +x3_2) / (1.0+x3_3);
 		
 		psd = x1 + x2 + x3;
 		asd = sqrt(psd);
@@ -158,7 +168,7 @@ double AligoSchutz::getASD(double f){
 		return asd*asd0;
 		
 	}
-	else{ return 0.0; }
+	else{ return 0; }
 	
 }
 
@@ -195,7 +205,7 @@ AligoBhbh20Deg::AligoBhbh20Deg(){
 
 double NumNoise::getASD(double f){
 	
-	if((f < fNoiseCurve.fMin) || (f > fNoiseCurve.fMax)){
+	if(((f < fNoiseCurve.fMin) && f > fMinFreq) || (f > fNoiseCurve.fMax)){
 		return 0;
 	}
 	
@@ -241,8 +251,8 @@ double gaussianSample(double f, double sigma){
 	
 	double result;
 	
-	y = 0; //If y=0, the log function explodes
-	while( y == 0 ){y = ( rand() / ( (double)RAND_MAX ) );}
+	y = 0.0; //If y=0, the log function explodes
+	while( y == 0.0 ){y = ( rand() / ( (double)RAND_MAX ) );}
 
 	x = cos( ( 2.0 * (double)C_PI ) * rand() / ( (double)RAND_MAX ) );
 	
