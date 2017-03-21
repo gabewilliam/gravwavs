@@ -3,8 +3,8 @@
 
 //----------- FREQUENCY DOMAIN GRAVITATIONAL WAVE GENERATOR ----------//
 //----(Simplest model, no redshift or incident angle dependencies)----//
-//--- Model simplified from IMRPhenomB model described by P. Ajith ---//
-//-------------------- et al. in paper available at ------------------// 
+//------- Model simplified from predecessor to IMRPhenomB model, -----//
+//-------- as described by P. Ajith et al. in paper available at -----// 
 //---------------- [https://arxiv.org/pdf/0710.2335.pdf] -------------//
 
 #ifndef GWSIGGEN_H
@@ -27,12 +27,12 @@
 #define G_CONST 6.6740831E-11
 #define SM_CONST 1.989E30
 #define MPc_CONST 3.086E22
+#define MHz_CONST 1E6
 
 //-- Definitions for error warnings
 #define SUCCESS 0
 #define FAILURE 1
 
-using namespace std;
 
 enum OutputType{
 	 SIG,
@@ -72,8 +72,8 @@ struct Parameters{
 //-- Struct for storing signal in format convenient for noise addition
 struct NoisySignal{
 	
-	vector<double> frequency;
-	vector< complex<double> > compWave;
+	std::vector<double> frequency;
+	std::vector< std::complex<double> > compWave;
 	
 };
 //--------------------------------------------------------------------//
@@ -149,25 +149,25 @@ double lorentzianFunction(Parameters *P, double currentFreq){
 //--------------------- Amplitude corrections:
 
 //-- Inspiral
-double inspiralPhenomBAmp(Parameters *P, double currentFreq){
+double inspiralAmp(Parameters *P, double currentFreq){
 	double fDash = currentFreq/P->fMerge;	
 	return pow(fDash, -7.0/6.0);	
 }
 
 //-- Merger
-double mergerPhenomBAmp(Parameters *P, double currentFreq){
+double mergerAmp(Parameters *P, double currentFreq){
 	double fDash = currentFreq/P->fMerge;
 	return pow(fDash, -2.0/3.0);
 }
 
 //-- Ringdown
-double ringdownPhenomBAmp(Parameters *P, double currentFreq){
+double ringdownAmp(Parameters *P, double currentFreq){
 	return wR(P)*lorentzianFunction(P, currentFreq);
 }
 
 //--------------------- Phase corrections:
 
-double phasePhenomB(Parameters *P, double currentFreq){
+double phaseTerms(Parameters *P, double currentFreq){
 	
 	double sumPhase = 2.0*M_PI*P->fArrivalTime*currentFreq
 													  + P->fPhaseOffset;
@@ -188,7 +188,7 @@ double phasePhenomB(Parameters *P, double currentFreq){
 //-- (Useful for Parameter Extraction subgroup)
 double updatedAmplitude(Parameters *P, 
 						double currentFreq,
-						complex<double> *gWave){
+						std::complex<double> *gWave){
 	
 	//-- Find the amplitude correction for the wave, windowing the 
 	//-- signal between the lower frequency sensitivity and the cutoff
@@ -197,15 +197,15 @@ double updatedAmplitude(Parameters *P,
 	if (currentFreq >= P->fMinFreq){
 		
 		if (currentFreq < P->fMerge){
-			correctedAmp = inspiralPhenomBAmp(P, currentFreq);
+			correctedAmp = inspiralAmp(P, currentFreq);
 		}
 		else if (currentFreq >= P->fMerge 
 				 && currentFreq < P->fRing){
-			correctedAmp = mergerPhenomBAmp(P, currentFreq);
+			correctedAmp = mergerAmp(P, currentFreq);
 		}
 		else if (currentFreq >= P->fMerge
 				 && currentFreq < P->fCutoff){
-			correctedAmp = ringdownPhenomBAmp(P, currentFreq);
+			correctedAmp = ringdownAmp(P, currentFreq);
 		}				
 		else{
 			correctedAmp = 0.0;
@@ -217,17 +217,17 @@ double updatedAmplitude(Parameters *P,
 	}
 	
 	//-- Set up imaginary root of -1						
-	const complex<double> J(0.0, 1.0);
+	const std::complex<double> J(0.0, 1.0);
 	
-	double wavePhase = phasePhenomB(P, currentFreq);
+	double wavePhase = phaseTerms(P, currentFreq);
 	
 	if (currentFreq == 0.0){			
 		*gWave = 0.0;
 	}else{		
-		*gWave = P->fScalingAmplitude*correctedAmp*exp(J*wavePhase);
+		*gWave = P->fScalingAmplitude*correctedAmp*exp(-J*wavePhase);
 	}
 	
-	double gwAmp = abs(*gWave);
+	double gwAmp = std::abs(*gWave);
 	
 	// Return the absolute magnitude in SI units (Hz^-1)
 	return gwAmp/C_CONST;							
@@ -240,7 +240,7 @@ void simulateGravitationalWave(Parameters *P,
 							   Signal *signalAmplitude,
 							   Signal *signalComplex,
 							   NoisySignal *signalForNoise,
-							   vector<Signal> *signalVector){
+							   std::vector<Signal> *signalVector){
 	
 	//-- Number of positive frequencies
 	double nPosFreq = P->fMaxFreq/P->fDF + 1.0;
@@ -253,10 +253,6 @@ void simulateGravitationalWave(Parameters *P,
 		signalComplex->waveform[0].push_back(0.0);
 		signalComplex->waveform[1].push_back(0.0);
 		
-	}
-	
-	for (int p=0; p < int(nPosFreq*2.0); p++){
-		
 		signalForNoise->frequency.push_back(0.0);
 		signalForNoise->compWave.push_back(0.0);
 		
@@ -264,9 +260,9 @@ void simulateGravitationalWave(Parameters *P,
 	
 	//-- Set up complex number for the wave itself and its complex 
 	//-- amplitude in Hz-1
-	complex<double> mWave, hzWave;
+	std::complex<double> mWave, hzWave;
 	//-- Pointer to wave
-	complex<double> * gW = &mWave;
+	std::complex<double> * gW = &mWave;
 	
 	//-- Frequency in Hz and amplitude in Hz^-1
 	double hzFreq, hzAmplitude;
@@ -274,7 +270,7 @@ void simulateGravitationalWave(Parameters *P,
 	//-- Initialise frequency in m^-1
 	double mFreq = 0.0;
 	
-	for (int i = 0; i < int(nPosFreq); i++){
+	for (int i = 0; i <= int(nPosFreq); i++){
 		
 		mFreq = double(i)*P->fDF;
 		
@@ -290,12 +286,8 @@ void simulateGravitationalWave(Parameters *P,
 		signalAmplitude->waveform[1].push_back(hzAmplitude);
 		
 		//-- Store signal in format convenient for noise addition(1)
-		signalForNoise->frequency[(nPosFreq - 1)- i] = -hzFreq;
-		signalForNoise->compWave[(nPosFreq - 1) - i] = conj(hzWave);
-		
-		//-- Store signal in format convenient for noise addition(2)
-		signalForNoise->frequency[i + nPosFreq] = hzFreq;
-		signalForNoise->compWave[i + nPosFreq] = hzWave;
+		signalForNoise->frequency[i+nPosFreq] = hzFreq;
+		signalForNoise->compWave[i+nPosFreq] = hzWave;
 		
 		//-- Store signal in format convenient for Signal Extraction(1)
 		signalComplex->waveform[0][2*i] = hzFreq;
@@ -305,7 +297,11 @@ void simulateGravitationalWave(Parameters *P,
 		signalComplex->waveform[1][2*i+1] = hzWave.imag();
 		
 		//-- Repeat the procedure for negative frequencies
-		int k = nDataPoints - 2*(i + 1);
+		int k = nPosFreq - i;
+		
+		//-- Store signal in format convenient for noise addition(2)
+		signalForNoise->frequency[k] = -hzFreq;
+		signalForNoise->compWave[k] = conj(hzWave);
 		
 		//-- Store signal in format convenient for Signal Extraction(2)
 		signalComplex->waveform[0][k] = -hzFreq;
@@ -328,12 +324,16 @@ void setParameters(double M1,
 				   double arrivalTime,
 				   double phaseOffset,
 				   double minFreq,
-				   double totalTime,
+				   double maxFreq,
 				   Parameters *P){
 
 	//-- Assign stored variables in natural geometric units
 	
 	double massConversionFactor = SM_CONST*G_CONST/pow(C_CONST, 2.0);
+	
+	
+	//-- Number of data points
+	double nPoints = pow(2.0, 22.0);
 	
 	P->fM1 = M1*massConversionFactor;
 	P->fM2 = M2*massConversionFactor;
@@ -341,14 +341,12 @@ void setParameters(double M1,
 	P->fArrivalTime = arrivalTime*C_CONST;
 	P->fPhaseOffset = phaseOffset;
 	P->fMinFreq = minFreq/C_CONST;
-	P->fTotalTime = totalTime*C_CONST;
-	P->fDF = 1.0/P->fTotalTime;
+	P->fMaxFreq = maxFreq/C_CONST;
 	
-	//-- Number of data points
-	double nPoints = pow(2.0, 20.0);
+	//-- Set frequency increment
+	P->fDF = (4.0*P->fMaxFreq)/(nPoints - 5.0);
 	
-	//-- Set maximum frequency
-	P->fMaxFreq = 5000.0/C_CONST;
+	P->fTotalTime = 1.0/P->fDF;
 	
 	//-- Set total mass
 	P->fTotalMass = P->fM1 + P->fM2;
@@ -356,7 +354,7 @@ void setParameters(double M1,
 	//-- Set symmetric mass ratio
 	P->fSymmetricMass = (P->fM1*P->fM2)/pow(P->fTotalMass, 2.0);
 	
-	//-- Set IMRPhenomB model coefficients
+	//-- Set coefficients
 	//-- Values taken from P. Ajith et al., accessed at 
 	//-- [http://link.aps.org/doi/10.1103/PhysRevD.77.104017]
 	
@@ -401,12 +399,12 @@ void gwSimulateDetection(double M1,
 						 double arrivalTime,
 						 double phaseOffset,
 						 double minFreq,
-						 double totalTime,
+						 double maxFreq,
 						 Parameters *P,
 						 Signal *A,
 						 Signal *C,
 						 NoisySignal *N,
-						 vector<Signal> *S){
+						 std::vector<Signal> *S){
 						  
 	//-- Construct the system	
 	setParameters(M1, M2, 
@@ -414,7 +412,7 @@ void gwSimulateDetection(double M1,
 				  arrivalTime, 
 				  phaseOffset, 
 				  minFreq, 
-				  totalTime, P);
+				  maxFreq, P);
 	
 	//-- Compute the graviational wave signature
 	simulateGravitationalWave(P, A, C, N, S);
@@ -429,19 +427,19 @@ int gwGenerateAndPack(double M1,
 					  double arrivalTime,
 					  double phaseOffset,
 					  double minFreq,
-					  double totalTime,
+					  double maxFreq,
 					  Parameters *P,
 					  OutputType OUT){
 	
 	//-- Assign a vector of signals for passing to gwReadWrite functions
-	vector<Signal> vectorSignal;
+	std::vector<Signal> vectorSignal;
 	//-- Pointer to vector
-	vector<Signal> *S = &vectorSignal;
+	std::vector<Signal> *S = &vectorSignal;
 	
 	//-- Assign a vector of templates for passing to gwReadWrite functions
 	//-- (if OUT == TEMP)
-	vector<Template> vectorTemplate;
-	vector<Template> *T = &vectorTemplate;
+	std::vector<Template> vectorTemplate;
+	std::vector<Template> *T = &vectorTemplate;
 	
 	//-- Signals for passing through the simulation	
 	Signal sigAmplitude, sigComplex;
@@ -457,12 +455,10 @@ int gwGenerateAndPack(double M1,
 						arrivalTime,
 						phaseOffset,
 						minFreq,
-						totalTime,
+						maxFreq,
 						P, A, C, N, S);
 	
 	if (OUT == TEMP){
-		
-		vector<Template> vectorTemplate;
 		
 		//-- Set up a template to pass the signal into
 		Template outputTemplate;
@@ -487,7 +483,7 @@ int gwGenerateAndPack(double M1,
 	}
 		
 	//-- Set up the name of the data file
-	ostringstream s1, s2, s3, s4;
+	std::ostringstream s1, s2, s3, s4;
 	
 	if (OUT == SIG){
 		s1 << "SIG";
@@ -496,9 +492,9 @@ int gwGenerateAndPack(double M1,
 		s1 << "TEMP";
 	}
 	
-	s2 << M1;
-	s3 << M2;
-	string del = "csv";
+	s2 << M1 + M2;
+	s3 << P->fMinFreq*C_CONST;
+	std::string del = "csv";
 	s4 << del;
 	std::string fileIdentity = s1.str() + "_"
 							   + s2.str() + "_" 
@@ -510,8 +506,8 @@ int gwGenerateAndPack(double M1,
 		
 		if (saveSignals(fileIdentity, S, csv)){
 			
-			cout << "Signal stored successfully in the file " 
-				 << fileIdentity << "." << endl;
+			std::cout << "Signal stored successfully in the file " 
+				      << fileIdentity << "." << std::endl;
 				 
 		return SUCCESS;
 		
@@ -521,15 +517,15 @@ int gwGenerateAndPack(double M1,
 		
 		if (saveTemplates(fileIdentity, T, csv)){
 			
-			cout << "Template stored successfully in the file " 
-				 << fileIdentity << "." << endl;
+			std::cout << "Template stored successfully in the file " 
+					  << fileIdentity << "." << std::endl;
 				 
 		return SUCCESS;
 		
 		}
 	}
 
-	cout << "There was an error" << endl;
+	std::cout << "There was an error" << std::endl;
 	
 	return FAILURE;	
 						  

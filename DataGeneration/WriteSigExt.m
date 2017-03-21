@@ -5,7 +5,7 @@ n = csvread('NoisySignal.csv');
 f = n(:,1);
 z = n(:,2) + n(:,3) .* sqrt(-1);
 
-nt = ifft(z, 'symmetric');
+nt = ifft(z,'symmetric');
 
 h = floor(length(f)/2) + 2;
 
@@ -27,7 +27,6 @@ a3=a3(:)';
 
 signal(1,:) = tdub(1,:);
 signal(2,:) = a3;
-
+csvwrite('NoisySignals/30_30_whit_01.csv',signal);
 plot(t,nt);
 soundsc(nt);
-csvwrite('NoisySignals/30_30_whit_01.csv',signal);

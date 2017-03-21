@@ -17,7 +17,7 @@
 #include "WaveGen/gwSigGenBasic.h"
 
 struct IniParams{
-	double fMin, m1, m2, lumDist, tArrival, tTotal, phaseOffset;
+	double fMin, m1, m2, lumDist, tArrival, fMax, phaseOffset;
 };
 
 IniParams inputParams();
@@ -38,8 +38,8 @@ int main(){
 	NoisySignal sNoise;
 	NoisySignal *N = &sNoise;
 	
-	vector<Signal> sigs;
-	vector<Signal> *S = &sigs;
+	std::vector<Signal> sigs;
+	std::vector<Signal> *S = &sigs;
 	
 	gwSimulateDetection(inputs.m1,
 						 inputs.m2,
@@ -47,7 +47,7 @@ int main(){
 						 inputs.tArrival,
 						 inputs.phaseOffset,
 						 inputs.fMin,
-						 inputs.tTotal,
+						 inputs.fMax,
 						 P,
 						 A,
 						 C,
@@ -56,7 +56,7 @@ int main(){
 
 	srand(time(NULL));
 
-	cout<<"\r\n\r\n\tNOISE SETTINGS [* * * *]\r\n\r\nSelect type of noise:\r\n\t"
+	std::cout<<"\r\n\r\n\tNOISE SETTINGS [* * * *]\r\n\r\nSelect type of noise:\r\n\t"
 	<< "1) aLIGO Schutz\r\n\t"
 	<< "2) aLIGO Zero Det High P\r\n\t"
 	<< "3) aLIGO Zero Det Low P\r\n\t"
@@ -67,7 +67,7 @@ int main(){
 	<< "8) White\r\n";
 	
 	int choice;
-	cin >> choice;
+	std::cin >> choice;
 	
 	NoiseGenerator *nGen;
 	
@@ -81,17 +81,17 @@ int main(){
 	else if(choice == 8){	nGen = new WhiteNoise();		}
 	else				{	nGen = new WhiteNoise();		}	
 	
-	vector<double> *freq = new vector<double>;
-	vector<Complex> *noise = new vector<Complex>;
+	std::vector<double> *freq = new std::vector<double>;
+	std::vector<Complex> *noise = new std::vector<Complex>;
 	
 	double fMax, fStep;
-	fMax = oParams.fMaxFreq * C_CONST;
+	
 	fStep = oParams.fDF * C_CONST;
 	
-	nGen->setMinFreq(inputs.fMin);
+	nGen->setMinFreq(20.0);
 	
 	nGen->genSpectrum(freq, noise, 5000.0, fStep);
-	ofstream oFile;
+	std::ofstream oFile;
 	oFile.open("NoisySignal.csv");
 	
 	double ff,rr,ii;
@@ -120,7 +120,7 @@ int main(){
 
 IniParams inputParams(){ //Get parameter input
 	
-	double fMin, m1, m2, lumDist, tArrival, tTotal, phaseOffset;
+	double fMin, m1, m2, lumDist, tArrival, fMax, phaseOffset;
 	
 	//		SOURCE
 	
@@ -136,20 +136,20 @@ IniParams inputParams(){ //Get parameter input
 	//		SIGNAL SETTINGS
 	
 	// Set total time of signal (s)
-	std::cout << "\r\n\r\n\tSIGNAL SETTINGS [* * - -]\r\n\r\n(1/3)\tEnter total time of signal (s):\r\n";
-	std::cin >> tTotal;
+	std::cout << "\r\n\r\n\tSIGNAL SETTINGS [* * - -]\r\n\r\n(1/3)\tEnter max freq (Hz):\r\n";
+	std::cin >> fMax;
 	// Set time of arrival of signal (s)
 	std::cout << "(2/3)\tEnter time of arrival of signal (s):\r\n";
-	cin >> tArrival;
+	std::cin >> tArrival;
 	// Set phase of wave at arrival (rads)
 	std::cout << "(3/3)\tEnter phase offset of wave at arrival (rads):\r\n";
-	cin >> phaseOffset;
+	std::cin >> phaseOffset;
 	
 	// 		FREQUENCIES
 	
 	// Set lower frequency sensitivity (Hz)
 	std::cout << "\r\n\r\n\tFREQUENCY SETTINGS [* * * -]\r\n\r\n(1/1)\tEnter minimum detector frequency (Hz):\r\n";
-	cin >> fMin;
+	std::cin >> fMin;
 
 	
 	//Assign parameter inputs
@@ -160,7 +160,7 @@ IniParams inputParams(){ //Get parameter input
 	params.m2=m2;
 	params.lumDist=lumDist;
 	params.tArrival=tArrival;
-	params.tTotal=tTotal;
+	params.fMax=fMax;
 	params.phaseOffset=phaseOffset;
 	
 	return params;

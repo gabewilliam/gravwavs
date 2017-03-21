@@ -39,6 +39,11 @@ Complex NoiseGenerator::genSample(double freq){ //Get real and imaginary parts o
 	sample.real = this->genMag(freq);
 	sample.imag = this->genMag(freq);
 	
+	if(freq != 0){
+		sample.real /= sqrt(fabs(freq));
+		sample.real /= sqrt(fabs(freq));
+	}
+	
 	return sample;
 	
 }
@@ -133,7 +138,7 @@ bool NumNoise::loadCurve(std::string filename){
 
 double WhiteNoise::getASD(double f){
 	
-	return 0;
+	return 5E-23;
 	
 }
 
