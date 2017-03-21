@@ -35,10 +35,12 @@ int main() {
 	gsl_rng_set(startGen, gsl_rng_get(seedGen));
 
 	//Takes mass limits for the prior function
-	double dLower,dUpper;
+	double mLower,mUpper,dLower,dUpper;
 
-	dLower = 45;
-	dUpper = 55;
+	mLower = 10;
+	mUpper = 63;
+	dLower = 475;
+	dUpper = 525;
 	
 	//Takes an input for the number of samples used in the Monte Carlo routine
 	std::cout<< "Enter the number of Monte-Carlo samples:" << std::endl;
@@ -46,7 +48,7 @@ int main() {
 	std::cin >> N;
 
 	//Declares the variables used throughout the routine
-	std::string fileName = "19_25.csv";
+	std::string fileName = "31_46.csv";
 	double ma, mb, maProposal, mbProposal;
 	double mChirp, mRatio, mChirpProposal, mRatioProposal;
 	double distance, distanceProposal;
@@ -71,7 +73,6 @@ int main() {
 
 	for( int i = 0; i < nFreq; i++ ){
 		sf.push_back( pow(noise.getASD(dataSignal.waveform[0][i]),2) );
-		//sf.push_back( 1e-44 );
 	}
 
 	//Sets the starting ma and mb values for the routine as random integers.
@@ -81,9 +82,9 @@ int main() {
 	distance = gsl_rng_uniform(startGen)*(dUpper-dLower)+dLower;
 	*/
 
-	ma = 25.0;
-	mb = 19.0;
-	distance = 50.0;
+	ma = 46.0;
+	mb = 31.0;
+	distance = 500.0;
 
 	if (mb > ma) {
 		double mDummy = ma;

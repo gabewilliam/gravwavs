@@ -196,7 +196,7 @@ AligoBhbh20Deg::AligoBhbh20Deg(){
 double NumNoise::getASD(double f){
 	
 	if((f < fNoiseCurve.fMin) || (f > fNoiseCurve.fMax)){
-		return 1;
+		return 1e-43;
 	}
 	
 	double fTest=0.0, fPrev=0.0, asdTest=0.0, asdPrev=0.0, grad=0.0, asd=0.0;
