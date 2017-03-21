@@ -15,7 +15,9 @@ void saveToFile(vec_d,vec_d,vec_d,int,int,std::string);
 
 long double likelihood( double m1, double m2, double d, std::string signalFile, Signal dataSignal, vec_d noiseAmplitude){
 
-	vec_d modelAmplitude = ParameterFunction( m1, m2, d, dataSignal.waveform[0] );//Creates model function for given masses.
+	double T = 1/(dataSignal.waveform[0][1]-dataSignal.waveform[0][0]);//total time elapsed
+
+	vec_d modelAmplitude = ParameterFunction( m1, m2, d, dataSignal.waveform[0], T );//Creates model function for given masses.
 
 	int n = dataSignal.waveform[0].size();//finds number of elements in freq domain signal
 	//std::cout<<n<<"\t"<<modelAmplitude.size()<<std::endl;
@@ -32,7 +34,6 @@ long double likelihood( double m1, double m2, double d, std::string signalFile, 
 		//std::cout<<SNR<<std::endl;
 	}
 
-	double T = 1/(dataSignal.waveform[0][1]-dataSignal.waveform[0][0]);//total time elapsed
 	//std::cout<<T<<std::endl;
 	SNR = sqrt(SNR/T);	
 	//std::cout<<SNR<<std::endl;
@@ -43,7 +44,7 @@ long double likelihood( double m1, double m2, double d, std::string signalFile, 
 
 }
 
-vec_d ParameterFunction( double m1, double m2, double d, vec_d f ){ 
+vec_d ParameterFunction( double m1, double m2, double d, vec_d f, double T ){ 
 
 	int n = f.size();
 	vec_d modelAmplitude;	
@@ -51,7 +52,7 @@ vec_d ParameterFunction( double m1, double m2, double d, vec_d f ){
 	parameters PARAMS;
 	parameters *P = &PARAMS;
 
-	setFundamentalParameters(0.0,3.0,0.0,10.0,m1,m2,d,0.0,0.0,0.0,P);
+	setFundamentalParameters(0.0,T,0.0,10.0,m1,m2,d,0.0,0.0,0.0,P);
 	
 	complex<double> GRAVWAV = 0.0;
 	complex<double> *G = &GRAVWAV;
