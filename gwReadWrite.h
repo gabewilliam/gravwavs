@@ -11,7 +11,7 @@
 
 enum delimiter {tab, csv};
 
-bool loadTemplates(std::string filename, std::vector<Template>* temps, delimiter delim)
+inline bool loadTemplates(std::string filename, std::vector<Template>* temps, delimiter delim)
 {
 	std::ifstream inFile;
 	inFile.open(filename.c_str());
@@ -73,7 +73,7 @@ bool loadTemplates(std::string filename, std::vector<Template>* temps, delimiter
 	return true;
 }
 
-bool saveTemplates(std::string filename, std::vector<Template>* temps, delimiter delim)
+inline bool saveTemplates(std::string filename, std::vector<Template>* temps, delimiter delim)
 {
 	std::ofstream outFile;
 	outFile.open(filename.c_str());	
@@ -124,7 +124,7 @@ bool saveTemplates(std::string filename, std::vector<Template>* temps, delimiter
 	return true;
 }
 
-bool loadSignals(std::string filename, std::vector<Signal>* sigs, delimiter delim)
+inline bool loadSignals(std::string filename, std::vector<Signal>* sigs, delimiter delim)
 {
 	std::ifstream inFile;
 	inFile.open(filename.c_str());
@@ -178,7 +178,7 @@ bool loadSignals(std::string filename, std::vector<Signal>* sigs, delimiter deli
 	return true;
 }
 
-bool saveSignals(std::string filename, std::vector<Signal>* sigs, delimiter delim)
+inline bool saveSignals(std::string filename, std::vector<Signal>* sigs, delimiter delim)
 {
 	std::ofstream outFile;
 	outFile.open(filename.c_str());	
