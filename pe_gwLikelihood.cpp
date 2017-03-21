@@ -1,5 +1,4 @@
 #include "pe_gwLikelihood.h"
-#include "gwReadWrite.h"
 #include "gwSigGen.h"
 
 #include <cmath>
@@ -14,18 +13,10 @@ void saveToFile(vec_d,vec_d,vec_d,int,int,std::string);
 //Uses d(f), h(f) and s(f) using equation A20 in "Veich, Vecchio (2010)" to calculate likelihood using two parameters m1 and m2.
 //Returns a NON-NORMALISED likelihood.
 
-long double likelihood( double m1, double m2, double d, std::string signalFile, AligoZeroDetHighP noise){
-
-	Signal dataSignal;//Data signal (frequency domain)
-	std::vector< Signal > idataSignal; //loadSignals requires std::vector
-
-	loadSignals(signalFile, &idataSignal, csv); //Loads signal into dt
-
-	dataSignal = idataSignal[0];//converts from vector of signals to signal
+long double likelihood( double m1, double m2, double d, std::string signalFile, Signal dataSignal, vec_d noiseAmplitude){
 
 	vec_d modelAmplitude = ParameterFunction( m1, m2, d, dataSignal.waveform[0] );//Creates model function for given masses.
 
-	vec_d noiseAmplitude = NoiseFunction( dataSignal.waveform[0], noise ); //creates noise probability function
 	int n = dataSignal.waveform[0].size();//finds number of elements in freq domain signal
 	//std::cout<<n<<"\t"<<modelAmplitude.size()<<std::endl;
 	long double sum = 0.0;
@@ -48,10 +39,6 @@ long double likelihood( double m1, double m2, double d, std::string signalFile, 
 	
 	long double pdh = (-2/T) * sum;//calculates p(d|h)
 
-	/*
-	if(print==true){
-	saveToFile(modelAmplitude,dataAmplitude,dataSignal.waveform[0],1,n,"AmplitudeTest");
-	}*/
 	return pdh;
 
 }
@@ -64,7 +51,7 @@ vec_d ParameterFunction( double m1, double m2, double d, vec_d f ){
 	parameters PARAMS;
 	parameters *P = &PARAMS;
 
-	setFundamentalParameters(0.0,5.0,0.0,10.0,m1,m2,d,0.0,0.0,0.0,P);
+	setFundamentalParameters(0.0,3.0,0.0,10.0,m1,m2,d,0.0,0.0,0.0,P);
 	
 	complex<double> GRAVWAV = 0.0;
 	complex<double> *G = &GRAVWAV;
@@ -77,18 +64,6 @@ vec_d ParameterFunction( double m1, double m2, double d, vec_d f ){
 	return modelAmplitude;
 }
 
-vec_d NoiseFunction( vec_d f, AligoZeroDetHighP noise ){
-	
-	int n = f.size();	
-	vec_d sf;
-
-	for( int i = 0; i < n; i++ ){
-		sf.push_back( pow(noise.getASD(f[i]),2) );
-		//sf.push_back( 1e-44 );
-	}
-
-	return sf;
-}
 
 void saveToFile(vec_d parameterA, vec_d parameterB, vec_d parameterC, int lag, int size, std::string fileName) {
 	

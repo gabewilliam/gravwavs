@@ -2,7 +2,6 @@
 #include <cmath>
 #include <cstdio>
 #include <ctime>
-#include <string>
 #include <iomanip>
 #include <algorithm>
 
@@ -10,9 +9,9 @@
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_statistics_double.h>
 
+#include "gwNoiseGen.h"
 #include "pe_gwLikelihood.h"
 #include "Interpolator.h"
-#include "gwNoiseGen.h"
 
 double gaussian(double, double, double, double, double);
 double prior(double, double, double, double, double, double, double);
@@ -38,8 +37,8 @@ int main() {
 	//Takes mass limits for the prior function
 	double dLower,dUpper;
 
-	dLower = 450;
-	dUpper = 550;
+	dLower = 45;
+	dUpper = 55;
 	
 	//Takes an input for the number of samples used in the Monte Carlo routine
 	std::cout<< "Enter the number of Monte-Carlo samples:" << std::endl;
@@ -47,7 +46,7 @@ int main() {
 	std::cin >> N;
 
 	//Declares the variables used throughout the routine
-	std::string fileName = "19_25_edited.csv";
+	std::string fileName = "19_25.csv";
 	double ma, mb, maProposal, mbProposal;
 	double mChirp, mRatio, mChirpProposal, mRatioProposal;
 	double distance, distanceProposal;
@@ -58,7 +57,22 @@ int main() {
 	double* distanceArray = new double[N];
 	double acceptance=0;
 	AligoZeroDetHighP noise;
+	
 
+	Signal dataSignal;//Data signal (frequency domain)
+	std::vector< Signal > idataSignal; //loadSignals requires std::vector
+
+	loadSignals(fileName, &idataSignal, csv); //Loads signal into dt
+
+	dataSignal = idataSignal[0];//converts from vector of signals to signal
+
+	int nFreq = dataSignal.waveform[0].size();	
+	vec_d sf;
+
+	for( int i = 0; i < nFreq; i++ ){
+		sf.push_back( pow(noise.getASD(dataSignal.waveform[0][i]),2) );
+		//sf.push_back( 1e-44 );
+	}
 
 	//Sets the starting ma and mb values for the routine as random integers.
 	/*
@@ -69,7 +83,7 @@ int main() {
 
 	ma = 25.0;
 	mb = 19.0;
-	distance = 500.0;
+	distance = 50.0;
 
 	if (mb > ma) {
 		double mDummy = ma;
@@ -80,6 +94,7 @@ int main() {
 	mChirp = pow((ma*mb),3./5)/pow((ma+mb),1./5);
 	mRatio = mb/ma;
 
+	//Initialises the interpolator for the chirp mass/mass ratio prior from CHE
 	Interpolator chirpRatPrior = Interpolator("ChirpRatKernelGrid.csv","ChirpRatKernelProb.txt");
 
 	/*Loops over the number of iterations specified by the input. In each run,
@@ -93,7 +108,7 @@ int main() {
 	/ is output to the file.*/
 	for(int i = 1; i <= N; i++) {
 
-		p = likelihood(ma,mb,distance,fileName,noise)+log(distancePrior(distanceProposal,dUpper,dLower)*chirpRatPrior.estimateProb(mChirp,mRatio));	
+		p = likelihood(ma,mb,distance,fileName,dataSignal,sf)+log(distancePrior(distanceProposal,dUpper,dLower)*chirpRatPrior.estimateProb(mChirp,mRatio));	
 
 		nZeroMChirp = gsl_ran_gaussian(normGen, 0.5);//0.5
 		nZeroMRatio = gsl_ran_gaussian(normGen, 0.05);//0.05
@@ -110,7 +125,7 @@ int main() {
 			mRatioProposal = 1./mRatioProposal;
 		}
 
-		pProposal = likelihood(maProposal,mbProposal,distanceProposal,fileName,noise)+log(distancePrior(distanceProposal,dUpper,dLower)*chirpRatPrior.estimateProb(mChirpProposal,mRatioProposal));
+		pProposal = likelihood(maProposal,mbProposal,distanceProposal,fileName,dataSignal,sf)+log(distancePrior(distanceProposal,dUpper,dLower)*chirpRatPrior.estimateProb(mChirpProposal,mRatioProposal));
 
 		alpha = exp(pProposal-p);
 
@@ -142,7 +157,6 @@ int main() {
 	std::cout<<"Accepted: "<<acceptance<<std::endl;
 	
 	saveToFile(mRatioArray,mChirpArray,distanceArray,1,N,"DopeData.txt");
-	//saveToFile(mRatioArray,mChirpArray,distanceArray,1000,N,"ThinnedData.txt");
 
 	/*Frees the memory associated with the random
 	/ number generators and deallocates memory.*/
@@ -154,8 +168,8 @@ int main() {
 
 }
 
-/*Defines a prior function which is a step of height 1, centred on the origin,
-/ with a width of w.*/
+//Defines a flat prior function which is a step of height 1, centred on the origin, with a width of w.
+//Since obtaining the new prior from CHE, we no longer use this
 double prior(double ma, double mb, double mUpper, double mLower, double d, double dUpper, double dLower) {
 
 	if((ma < mUpper && ma > mLower) 
@@ -166,11 +180,13 @@ double prior(double ma, double mb, double mUpper, double mLower, double d, doubl
 
 }
 
+//The flat prior for the distance parameter only
 double distancePrior(double d, double dUpper, double dLower) {
 	if (d < dUpper && d > dLower) return 1;
 	else return 0;
 }
 
+//Useful function used to save the parameter arrays to a file as columns
 void saveToFile(double parameterA[], double parameterB[], double parameterC[], int lag, int size, std::string fileName) {
 	
 	//Opens the output text file
