@@ -12,6 +12,7 @@
 
 #include "pe_gwLikelihood.h"
 #include "Interpolator.h"
+#include "gwNoiseGen.h"
 
 double gaussian(double, double, double, double, double);
 double prior(double, double, double, double, double, double, double);
@@ -35,21 +36,10 @@ int main() {
 	gsl_rng_set(startGen, gsl_rng_get(seedGen));
 
 	//Takes mass limits for the prior function
-	double mLower,mUpper,dLower,dUpper;
-	/*
-	std::cout<< "Enter the mass upper limit in solar masses:" << std::endl;
-	std::cin >> mUpper;
-	std::cout<< "Enter the mass lower limit in solar masses:" << std::endl;
-	std::cin >> mLower;	
-	std::cout<< "Enter the distance upper limit in MPc:" << std::endl;
-	std::cin >> dUpper;	
-	std::cout<< "Enter the distance lower limit in MPc:" << std::endl;
-	std::cin >> dLower;	
-	*/
-	mLower = 10;
-	mUpper = 63;
-	dLower = 45;
-	dUpper = 55;
+	double dLower,dUpper;
+
+	dLower = 450;
+	dUpper = 550;
 	
 	//Takes an input for the number of samples used in the Monte Carlo routine
 	std::cout<< "Enter the number of Monte-Carlo samples:" << std::endl;
@@ -57,7 +47,7 @@ int main() {
 	std::cin >> N;
 
 	//Declares the variables used throughout the routine
-	std::string fileName = "26_30.csv";
+	std::string fileName = "19_25_edited.csv";
 	double ma, mb, maProposal, mbProposal;
 	double mChirp, mRatio, mChirpProposal, mRatioProposal;
 	double distance, distanceProposal;
@@ -67,6 +57,8 @@ int main() {
 	double* mRatioArray = new double[N];
 	double* distanceArray = new double[N];
 	double acceptance=0;
+	AligoZeroDetHighP noise;
+
 
 	//Sets the starting ma and mb values for the routine as random integers.
 	/*
@@ -75,9 +67,9 @@ int main() {
 	distance = gsl_rng_uniform(startGen)*(dUpper-dLower)+dLower;
 	*/
 
-	ma = 30.0;
-	mb = 26.0;
-	distance = 50.0;
+	ma = 25.0;
+	mb = 19.0;
+	distance = 500.0;
 
 	if (mb > ma) {
 		double mDummy = ma;
@@ -101,13 +93,11 @@ int main() {
 	/ is output to the file.*/
 	for(int i = 1; i <= N; i++) {
 
-		//p = likelihood(ma,mb,distance,fileName,true)+log((pow(ma,2)/mChirp)*prior(ma,mb,mUpper,mLower,distance,dUpper,dLower));
+		p = likelihood(ma,mb,distance,fileName,noise)+log(distancePrior(distanceProposal,dUpper,dLower)*chirpRatPrior.estimateProb(mChirp,mRatio));	
 
-		p = likelihood(ma,mb,distance,fileName,true)+log(distancePrior(distanceProposal,dUpper,dLower)*chirpRatPrior.estimateProb(mChirp,mRatio));	
-
-		nZeroMChirp = gsl_ran_gaussian(normGen, 0.5);
-		nZeroMRatio = gsl_ran_gaussian(normGen, 0.05);
-		nZeroDistance =	gsl_ran_gaussian(normGen, 1);
+		nZeroMChirp = gsl_ran_gaussian(normGen, 0.5);//0.5
+		nZeroMRatio = gsl_ran_gaussian(normGen, 0.05);//0.05
+		nZeroDistance =	gsl_ran_gaussian(normGen, 1);//1
 
 		mChirpProposal = mChirp + nZeroMChirp;
 		mRatioProposal = mRatio + nZeroMRatio;
@@ -119,10 +109,8 @@ int main() {
 		if (mRatioProposal > 1) {
 			mRatioProposal = 1./mRatioProposal;
 		}
-		
-		//pProposal = likelihood(maProposal,mbProposal,distanceProposal,fileName,false)+log((pow(maProposal,2)/mChirpProposal)*prior(maProposal,mbProposal,mUpper,mLower,distanceProposal,dUpper,dLower));
 
-		pProposal = likelihood(maProposal,mbProposal,distanceProposal,fileName,false)+log(distancePrior(distanceProposal,dUpper,dLower)*chirpRatPrior.estimateProb(mChirpProposal,mRatioProposal));
+		pProposal = likelihood(maProposal,mbProposal,distanceProposal,fileName,noise)+log(distancePrior(distanceProposal,dUpper,dLower)*chirpRatPrior.estimateProb(mChirpProposal,mRatioProposal));
 
 		alpha = exp(pProposal-p);
 
@@ -153,7 +141,7 @@ int main() {
 
 	std::cout<<"Accepted: "<<acceptance<<std::endl;
 	
-	saveToFile(mRatioArray,mChirpArray,distanceArray,1,N,"RawData.txt");
+	saveToFile(mRatioArray,mChirpArray,distanceArray,1,N,"DopeData.txt");
 	//saveToFile(mRatioArray,mChirpArray,distanceArray,1000,N,"ThinnedData.txt");
 
 	/*Frees the memory associated with the random

@@ -14,7 +14,7 @@ void saveToFile(vec_d,vec_d,vec_d,int,int,std::string);
 //Uses d(f), h(f) and s(f) using equation A20 in "Veich, Vecchio (2010)" to calculate likelihood using two parameters m1 and m2.
 //Returns a NON-NORMALISED likelihood.
 
-long double likelihood( double m1, double m2, double d, std::string signalFile, bool print ){
+long double likelihood( double m1, double m2, double d, std::string signalFile, AligoZeroDetHighP noise){
 
 	Signal dataSignal;//Data signal (frequency domain)
 	std::vector< Signal > idataSignal; //loadSignals requires std::vector
@@ -25,31 +25,29 @@ long double likelihood( double m1, double m2, double d, std::string signalFile, 
 
 	vec_d modelAmplitude = ParameterFunction( m1, m2, d, dataSignal.waveform[0] );//Creates model function for given masses.
 
-	vec_d noiseAmplitude = NoiseFunction( dataSignal.waveform[0] ); //creates noise probability function
+	vec_d noiseAmplitude = NoiseFunction( dataSignal.waveform[0], noise ); //creates noise probability function
 	int n = dataSignal.waveform[0].size();//finds number of elements in freq domain signal
 	//std::cout<<n<<"\t"<<modelAmplitude.size()<<std::endl;
 	long double sum = 0.0;
 	long double SNR = 0.0;
-	vec_d dataAmplitude = dataSignal.waveform[1];//splits signal into std::vectors for use in loop
+	vec_d dataAmplitude = dataSignal.waveform[1];//splits signal into std::vectors for use in loop	
 
-	int nan=0;
-	
 	for( int i = 0; i < n; i++ ){ //evaluates the sum part in equation A20
-		if(!(modelAmplitude[i]==modelAmplitude[i])) {
-			modelAmplitude[i]=dataAmplitude[i];
-			nan++;
-		}
-
+		//std::cout<<noiseAmplitude[i]<<std::endl;
+		//std::cout<<dataAmplitude[50]<<"\t"<<noiseAmplitude[i]<<std::endl;
 		sum += pow( std::abs( dataAmplitude[i] - modelAmplitude[i] ), 2 )/noiseAmplitude[i];
+		//std::cout<<modelAmplitude[i]<<std::endl;
 		SNR += pow( std::abs( dataAmplitude[i] ), 2 )/noiseAmplitude[i];
-
+		//std::cout<<SNR<<std::endl;
 	}
 
-	double T = 100.0;//total time elapsed
+	double T = 1/(dataSignal.waveform[0][1]-dataSignal.waveform[0][0]);//total time elapsed
+	//std::cout<<T<<std::endl;
 	SNR = sqrt(SNR/T);	
 	//std::cout<<SNR<<std::endl;
 	
 	long double pdh = (-2/T) * sum;//calculates p(d|h)
+
 	/*
 	if(print==true){
 	saveToFile(modelAmplitude,dataAmplitude,dataSignal.waveform[0],1,n,"AmplitudeTest");
@@ -62,31 +60,31 @@ vec_d ParameterFunction( double m1, double m2, double d, vec_d f ){
 
 	int n = f.size();
 	vec_d modelAmplitude;	
-	double freq = 0.0;
 
 	parameters PARAMS;
 	parameters *P = &PARAMS;
 
-	setFundamentalParameters(0.0,3.0,0.0,10.0,m1,m2,d,0.0,0.0,0.0,P);
+	setFundamentalParameters(0.0,5.0,0.0,10.0,m1,m2,d,0.0,0.0,0.0,P);
 	
 	complex<double> GRAVWAV = 0.0;
 	complex<double> *G = &GRAVWAV;
 
 	for(int i=0; i<n; i++){
-		freq = double(i)*P->df;
-		modelAmplitude.push_back(updatedAmplitude(P,freq,G));
+		modelAmplitude.push_back(updatedAmplitude(P,f[i]/C_CONST,G));
+		//std::cout<<updatedAmplitude(P,f[i]/C_CONST,G)<<std::endl;
 	}
 	
 	return modelAmplitude;
 }
 
-vec_d NoiseFunction( vec_d f ){
+vec_d NoiseFunction( vec_d f, AligoZeroDetHighP noise ){
 	
 	int n = f.size();	
 	vec_d sf;
 
 	for( int i = 0; i < n; i++ ){
-		sf.push_back( 1e-44 ); //PLACEHOLDER: INSERT NOISE FUNCTION IN PARENTHESIS
+		sf.push_back( pow(noise.getASD(f[i]),2) );
+		//sf.push_back( 1e-44 );
 	}
 
 	return sf;
