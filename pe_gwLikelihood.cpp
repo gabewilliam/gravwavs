@@ -28,15 +28,18 @@ long double likelihood( double m1, double m2, double d, std::string signalFile, 
 	for( int i = 0; i < n; i++ ){ //evaluates the sum part in equation A20
 		//std::cout<<noiseAmplitude[i]<<std::endl;
 		//std::cout<<dataAmplitude[50]<<"\t"<<noiseAmplitude[i]<<std::endl;
+		if(dataSignal.waveform[0][i]>9){
 		sum += pow( std::abs( dataAmplitude[i] - modelAmplitude[i] ), 2 )/noiseAmplitude[i];
 		//std::cout<<modelAmplitude[i]<<std::endl;
+		
 		SNR += pow( std::abs( dataAmplitude[i] ), 2 )/noiseAmplitude[i];
+		}
 		//std::cout<<SNR<<std::endl;
 	}
 
-	//std::cout<<T<<std::endl;
+	//std::cout<<n<<std::endl;
 	SNR = sqrt(SNR/T);	
-	//std::cout<<SNR<<std::endl;
+	//std::cout<<SNR<<"\t"<<sum<<std::endl;
 	
 	long double pdh = (-2/T) * sum;//calculates p(d|h)
 

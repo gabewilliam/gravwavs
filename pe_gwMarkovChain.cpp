@@ -39,8 +39,8 @@ int main() {
 
 	mLower = 10;
 	mUpper = 63;
-	dLower = 475;
-	dUpper = 525;
+	dLower = 40;
+	dUpper = 60;
 	
 	//Takes an input for the number of samples used in the Monte Carlo routine
 	std::cout<< "Enter the number of Monte-Carlo samples:" << std::endl;
@@ -73,18 +73,20 @@ int main() {
 
 	for( int i = 0; i < nFreq; i++ ){
 		sf.push_back( pow(noise.getASD(dataSignal.waveform[0][i]),2) );
+		//sf.push_back( 1e-44 );
 	}
 
 	//Sets the starting ma and mb values for the routine as random integers.
-	/*
+	
 	ma = gsl_rng_uniform(startGen)*(mUpper-mLower)+mLower;
 	mb = gsl_rng_uniform(startGen)*(mUpper-mLower)+mLower;
 	distance = gsl_rng_uniform(startGen)*(dUpper-dLower)+dLower;
-	*/
-
+	
+	/*
 	ma = 46.0;
 	mb = 36.0;
 	distance = 500.0;
+	*/
 
 	if (mb > ma) {
 		double mDummy = ma;
@@ -110,7 +112,7 @@ int main() {
 	for(int i = 1; i <= N; i++) {
 
 		p = likelihood(ma,mb,distance,fileName,dataSignal,sf)+log(distancePrior(distanceProposal,dUpper,dLower)*chirpRatPrior.estimateProb(mChirp,mRatio));	
-
+		//p = likelihood(ma,mb,distance,fileName,dataSignal,sf);	
 		nZeroMChirp = gsl_ran_gaussian(normGen, 0.5);//0.5
 		nZeroMRatio = gsl_ran_gaussian(normGen, 0.05);//0.05
 		nZeroDistance =	gsl_ran_gaussian(normGen, 1);//1
@@ -119,14 +121,15 @@ int main() {
 		mRatioProposal = mRatio + nZeroMRatio;
 		distanceProposal = distance + nZeroDistance;
 
-		maProposal = mChirpProposal*pow((1+mRatioProposal),1./5)*pow(mRatioProposal,-3./5);
-		mbProposal = mChirpProposal*pow((1+mRatioProposal),1./5)*pow(mRatioProposal,2./5);
-
 		if (mRatioProposal > 1) {
 			mRatioProposal = 1./mRatioProposal;
 		}
 
+		maProposal = mChirpProposal*pow((1+mRatioProposal),1./5)*pow(mRatioProposal,-3./5);
+		mbProposal = mChirpProposal*pow((1+mRatioProposal),1./5)*pow(mRatioProposal,2./5);
+
 		pProposal = likelihood(maProposal,mbProposal,distanceProposal,fileName,dataSignal,sf)+log(distancePrior(distanceProposal,dUpper,dLower)*chirpRatPrior.estimateProb(mChirpProposal,mRatioProposal));
+		//pProposal = likelihood(maProposal,mbProposal,distanceProposal,fileName,dataSignal,sf);
 
 		alpha = exp(pProposal-p);
 
