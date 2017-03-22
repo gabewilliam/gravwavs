@@ -29,7 +29,7 @@ void Extractor::splitSignal(){
 	
 	double time = (*mTemplates)[0].waveform[0][2] - (*mTemplates)[0].waveform[0][0];
 	time = 1/(time*0.5*(*mTemplates)[0].waveform[0].size());
-	
+	std::cout<<"TAMPLAT "<<(*mTemplates)[0].waveform[0].size()<<" "<<(*mTemplates)[0].waveform[1].size()<<std::endl;
 	
 	std::cout<<dn<<std::endl;
 	double base = log2(N);
@@ -140,7 +140,7 @@ void Extractor::fft(){
 		Signal *sig = new Signal;
 		
 		amp = (*mSignalsT)[i]->waveform[1];
-	
+		std::cout<<"FFT "<<i<<std::endl;
 		gsl_fft_complex_forward (&amp[0], 1, N, complexWT, complexWS);
 		
 		
@@ -276,7 +276,7 @@ void Extractor::Convolution/*crossCorrelation*/()
 		
 			realTemp = 0;
 			imagTemp = 0;
-		
+
 			//not sure if this is looping through all of the elements correctly;
 			//the alternative for the more sensible frequency packing is commented out
 			for(int j = 0 ; j < J/2; j++){
@@ -299,7 +299,7 @@ void Extractor::Convolution/*crossCorrelation*/()
 					reD = (*mSignalsF)[k]->waveform[1][2*j];
 					imD = (*mSignalsF)[k]->waveform[1][2*j+1];
 					realResult = (reD*reH + imD*imH)* noiseNorms[j];
-					(imD*reH - reD*imH) * noiseNorms[j];
+					imagResult = (imD*reH - reD*imH) * noiseNorms[j];
 				}
 				
 				
@@ -365,11 +365,7 @@ void Extractor::fftInverse(std::vector<Template>* out1, std::vector<Template>* o
 	
 	std::vector<std::vector<Template*>* >* final = new std::vector<std::vector<Template*>* >;
 	
-
-	
 	std::cout<<mNorms[0]<<std::endl;
-	
-	
 	
 	std::cout<<(*mSignalsT)[0]->waveform[0].size()<<"  ,  "<<N<<std::endl;
 	
