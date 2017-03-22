@@ -48,7 +48,7 @@ int main() {
 	std::cin >> N;
 
 	//Declares the variables used throughout the routine
-	std::string fileName = "31_46.csv";
+	std::string fileName = "36_46_big_boi.csv";
 	double ma, mb, maProposal, mbProposal;
 	double mChirp, mRatio, mChirpProposal, mRatioProposal;
 	double distance, distanceProposal;
@@ -83,7 +83,7 @@ int main() {
 	*/
 
 	ma = 46.0;
-	mb = 31.0;
+	mb = 36.0;
 	distance = 500.0;
 
 	if (mb > ma) {
