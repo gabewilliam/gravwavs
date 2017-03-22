@@ -170,7 +170,7 @@ void Binary::updateRadii() {
 }
 
 double Binary::radius(int n) {
-	
+	/*
 	//Defines the constants for the equation
 	double theta = 1.71535900;
 	double iota = 6.59778800;
@@ -181,7 +181,7 @@ double Binary::radius(int n) {
 	double xi = 3.08223400;
 	double o = 17.84778000;
 	double pie = 0.00022582;
-
+	*/
 	double m;
 
 	if(n==1) {
@@ -195,7 +195,7 @@ double Binary::radius(int n) {
     else {
         std::cout<<"you fucked it (radius)"<<std::endl;
     }
-
+	/*
 	//Calculates the numerator
 	double num = theta*pow(m,2.5) + iota*pow(m,6.5) + kappa*pow(m,11) + 
 					lambda*pow(m,19) + mu*pow(m,19.5);
@@ -205,7 +205,9 @@ double Binary::radius(int n) {
 
 	//Returns the answer
 	return num/den;//rSolar
+	*/
 
+	return pow(m,0.6);
 }
 
 double Binary::rocheLobe(int n) {
@@ -381,7 +383,7 @@ bool Binary::checkHomogeneousMixing() {
 	double mr2 = this->mixingRatio(2);
 	double omegaC1 = this->omegaC(1);
 	double omegaC2 = this->omegaC(2);
-	if(omegaC1 >= mr1 && omegaC2 >= mr2){// && this->checkBreakup()) {
+	if(omegaC1 >= mr1 && omegaC2 >= mr2) { //&& this->checkBreakup()) {
 		return true;
 	}
 	else {
