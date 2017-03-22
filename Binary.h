@@ -23,8 +23,8 @@ class Binary {
 
 		void updateRadii();
 
+		double radius(int n);
 		double rocheLobe(int n);
-		double keplerFrequency();
 		double mixingRatio(int n);
 		double omegaC(int n);
 		double mergeTime();
@@ -36,11 +36,11 @@ class Binary {
 		bool checkMassRange();
 		bool checkRocheLobe();
 		bool checkHomogeneousMixing();
+		bool checkBreakup();
 		bool checkPairInstability();
 		bool checkMergeTime();
 		int checkCandidate();
-		bool steveIsATotalLoserAndDeservesToDie();
-			
+		
 
 	private:
 		

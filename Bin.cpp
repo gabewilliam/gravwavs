@@ -1,22 +1,38 @@
 #include "Bin.h"
+
 #include <gsl/gsl_integration.h>
 #include <gsl/gsl_sf_gamma.h>
 
+
+
 //CONSTRUCTORS
+
 Bin::Bin() {}
 
-Bin::Bin(double redshift):fredshift(redshift){
-fmergeRateSum=0;
-fcounter=0;
-ftLookback=tLookback(fredshift);
+Bin::Bin(double redshift,double (*func)(double,void*)):fRedshift(redshift){
+
+	//Resets the merge rate sum and counter
+	fMergeRateSum=0;
+	fCounter=0;
+
+	//Finds the lookback time
+	ftLookback=Integrator(fRedshift,func);
+
 }
 
+
+
 //DESTRUCTOR
+
 Bin::~Bin() {}
+
+
+
+//GET METHODS
 
 double Bin::getRedshift(){
 
-	return fredshift;
+	return fRedshift;
 
 }
 
@@ -28,86 +44,86 @@ double Bin::gettLookback(){
 
 double Bin::getMergeRateSum(){
 
-	return fmergeRateSum;
+	return fMergeRateSum;
 
 }
 
 double Bin::getCounter(){
 
-	return fcounter;
+	return fCounter;
 
 }
 
 
+
+//CALCULATIONS
+
 double Bin::CDF(double Z, double z){
+
+	//Defines constants
 	const double ZSolar = 0.0134;
 	double alpha = -1.16;
 	double beta = 2;
 
+	//Finds the variables which are input into the gamma
 	double a = alpha + 2;
 	double Zbeta = pow((Z/ZSolar),beta);
 	double tenbetaz=pow(10,(0.15*beta*z));
 	double x=Zbeta*tenbetaz; 
 
+	//Finds the CDF
 	return gsl_sf_gamma_inc_P(a,x);
+
 }
 
 double Bin::dMSFRdtdV(double z){
 
+	//Finds the numerator and denominator
 	double num=pow((1+z), 2.7);
 	double denom=pow((1+(1+z)/2.9),5.6);
 	
-	return 0.015*num/denom;
+	return 0.015*num/denom*1e9; //Returns in Gpc^_3yr^-1
 
 }
 
-double Bin::Ez(double z){
-	const double omegaLambda = 0.718;
-	const double omegaM = 1-omegaLambda;
+double Bin::Integrator(double z,double (*func)(double,void*)){
 	
-	double Esquared = omegaM*pow((1+z),3) + omegaLambda;
-
-	return sqrt(Esquared);
-
-}
-
-double Bin::tIntegrand(double z, void * params) {
-
-	return 1/(Ez(z)*(1+z));
-}
-
-double Bin::tLookback(double z){
-
-	double tH= 4.55e17; //s
-	const double yr=365.25*24*60*60; //s
-	tH=tH/yr; //converts the Hubble time to years
-
+	//Creates an integration workspace
 	gsl_integration_workspace * w = gsl_integration_workspace_alloc(1000);
 
-	double tL, tError;
+	//Creates variables for the return values
+	double ans, tError;
+
+	/*Defines a dummy paramter and the relative error which is to be
+	/calculated to.*/
 	double param = 1;
 	double epsRel=1e-5;
 
-	gsl_function tInt;
-	tInt.function = &tIntegrand;
-	tInt.params = &param;
+	//Takes the input function and turns it into a GSL function
+	gsl_function fInt;
+	fInt.function = func;
+	fInt.params = &param;
 
-	gsl_integration_qag(&tInt, 0, z, 0, epsRel, 1000, 6, w, &tL, &tError);
+	//Integrates from 0 to z
+	gsl_integration_qag(&fInt, 0, z, 0, epsRel, 1000, 6, w, &ans, &tError);
 
+	//Frees the workspace memory
 	gsl_integration_workspace_free(w);
 
-	return tH*tL;
+	return ans;
+
 }
 
-void Bin::addToMergeRateSum(double birthrate){
-
-	fmergeRateSum=fmergeRateSum + birthrate;
+void Bin::addToMergeRateSum(double birthRate){
+	
+	//Adds an input value to the merge rate sum
+	fMergeRateSum=fMergeRateSum + birthRate;
 
 }
 
 void Bin::addToCounter(){
 
-	fcounter=fcounter + 1;
+	fCounter=fCounter + 1;
 
 }
 

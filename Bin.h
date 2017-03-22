@@ -7,7 +7,7 @@ class Bin {
 
 		Bin();
 		
-		Bin(double redshift);
+		Bin(double redshift,double (*func)(double,void*));
 
 		virtual ~Bin();
 
@@ -22,12 +22,8 @@ class Bin {
 		double CDF(double Z, double z);
 
 		double dMSFRdtdV(double z);	
-		
-		double Ez(double z);
 
-		double tIntegrand(double z, void * params);
-
-		double tLookback(double z); 
+		double Integrator(double z,double (*func)(double,void*)); 
 		
 		void addToMergeRateSum(double birthrate);
 
@@ -37,12 +33,12 @@ class Bin {
 
 		std::vector<Binary>fbinaries;
 
-		double fredshift;
+		double fRedshift;
 
-		double fmergeRateSum;
+		double fMergeRateSum;
 
 		double ftLookback;
 
-		double fcounter;
+		double fCounter;
 
 };
