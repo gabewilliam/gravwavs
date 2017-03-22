@@ -8,10 +8,10 @@ int main()
 	std::vector<Signal> sigs;
 	std::vector<Template> temps;
 	
-	if(!loadSignals("../data/SpecialNoiseSignalForEverybody.csv", &sigs, csv))
+	if(!loadSignals("../data/33_31_zdlp_01.csv", &sigs, csv))
 		return 0;
 
-	if(!loadTemplates("../data/temp_50_30.csv", &temps, csv))
+	if(!loadTemplates("../data/temp_70_15.csv", &temps, csv))
 		return 0;
 
 	int N, n;
@@ -32,7 +32,7 @@ int main()
 
 	Extractor bill;
 	
-	if(bill.loadCurve("noisecurve.csv")){
+	if(bill.loadCurve("../data/ZERO_DET_low_P.csv")){
 		std::cout<<"noise successfully loaded"<<std::endl;
 	}else{
 		std::cout<<"no noise I'm afraid"<<std::endl;
@@ -64,19 +64,16 @@ int main()
 	std::vector<Template> output1;
 	std::vector<Template> output2;
 
-	bill.fftInverse(&output1);
+	bill.fftInverse(&output1,&output2);
 	std::cout<<"doe breah"<<std::endl;
 	std::cout<<output1[0].waveform[0][345]<<std::endl;
 	
-	std::cout << "Saving output to output.dat..." << std::endl;
+	std::cout << "Saving output to output.dat..." << std::endl;	
 	
-	
-	
-	
-	
-	saveTemplates("../data/output1.dat", &output1, csv);
+	saveSNRs("../data/outSNR.dat",&output1,csv);
+	//saveTemplates("../data/output1.dat", &output1, csv);
 	//saveTemplates("../data/output2.dat", output2, csv);
-	std::cout<<"here"<<std::endl;
+	std::cout<<"Complete."<<std::endl;
 	
 	bill.clearOtherMemory();
 
