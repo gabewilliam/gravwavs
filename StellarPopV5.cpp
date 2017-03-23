@@ -1,3 +1,4 @@
+
 #include "Bin.h"
 
 #include <iostream>
@@ -30,10 +31,6 @@ const double pi = 4*atan(1);
 
 
 int main() {
-
-	int loopy = 0;
-	std::vector <int> fruitloops;
-
 
 	//Probabilities of the three IMF regions
 	size_t K = 3;
@@ -94,16 +91,11 @@ int main() {
 	size_t b;
 	double alpha;
 
-	fruitloops.push_back(0);
-	fruitloops.push_back(0);
-	fruitloops.push_back(0);
-	fruitloops.push_back(0);
 	/*Generates N binaries with component masses governed by the expressions
 	/ cited in the Mandel and deMink paper. Also assigns period (and thus
 	/ separation based on the same paper.*/
 	while(n < N) {//1
 
-		fruitloops[0]++;
 		//Picks one of the three IMF regions
 		b = gsl_ran_discrete(m1Gen, mAGen);
 				
@@ -111,24 +103,21 @@ int main() {
 		if(b==0) {//2
 			alpha = -0.7;
 			m1 = 0.01549;//mSolar
-			fruitloops[1]++;
 		}
 		else if(b==1) {//3
 			alpha = 0.3;
 			m1 = 0.1010;//mSolar
-			fruitloops[2]++;
 		}
 		else if (b==2) {//4
 			alpha = 1.3;
 			m1 = -1;
 			//Draws a mass from the Kroupa.
-			while(m1<0.5 || m1>150){
+			while(m1<0.5){
 
 				m1 = gsl_ran_pareto(m1Gen,alpha,1);//mSolar
 
 			}
-			fruitloops[3]++;
-
+			
 		} 
 		
 		//Finds the mass ratio, and thus m2
@@ -140,14 +129,14 @@ int main() {
 		r2 = pow(m2,0.6);//rSolar
 		
 		//Finds log(P), and uses this to find P and the separation
-		/*lP = -1;
+		lP = -1;
 		while(lP < 0.075 || lP >3.5) {
 			lP = gsl_ran_pareto(PGen,-0.5,3.5);
 		}
 		P = pow(10,lP)*24*60*60;//s
 		a = pow((G*(m1*mSolar+m2*mSolar)*P*P)/(4*pi*pi),(1.0/3.0))/AU;//AU
-		*/
-
+		
+		/*
 		//Alternative sampler, which samples a instead
 		//Finds the lower limits on separation and its logarithm
 		aMin = (r1*rSolar) + (r2*rSolar);
@@ -157,7 +146,7 @@ int main() {
 		la = gsl_ran_flat(aGen,laMin,laMax);
 		a = pow(10,la);	
 		a = a/AU;//AU
-		
+		*/
 		//Pushes the generated binary to the vector		
 		binaries.push_back(Binary(m1, m2, a));
 		n++;
@@ -181,12 +170,10 @@ int main() {
 	double tm;
 	double mCandidates = 0;
 
-	fruitloops.push_back(0);
-	fruitloops.push_back(0);
-	fruitloops.push_back(0);
+
 	//Cycles through the binaries and discards them if they aren't candidates
 	for(int i = N-1; i >= 0; i--) {//5
-		fruitloops[4]++;
+
 		//Checks each candidate and records whether it was succesful.
 		check = binaries[i].checkCandidate();
 		whatWentWrong[check]++;
@@ -195,7 +182,6 @@ int main() {
 		if(check > 0) {//6
 			binaries.erase(binaries.begin() + i);
 			Nr=Nr-1;
-			fruitloops[5]++;
 		}
 		//Keeps it if it passed (and writes it to file)
 		else {//7
@@ -205,7 +191,6 @@ int main() {
 			m2 = binaries[i].getMass(2);
 			fprintf(popFile,"%.15g,%.15g,%.15g,%.15g\n", m1, m2, a, tm);
 			mCandidates += (m1+m2);
-			fruitloops[6]++;
 		}
 
 		std::cout << "\r" << std::setw(9) << std::right
@@ -271,8 +256,8 @@ int main() {
 			
 
 	fclose(popFile);
- 	FILE * hateFile;
-	hateFile = fopen("massivedeath.csv","w");
+ 	FILE * rateFile;
+	rateFile = fopen("rate.csv","w");
 			
 
 	//Frees the memory associated with the RNGs
@@ -309,7 +294,6 @@ int main() {
 	bool massiveError;
 
 	
-	fruitloops.push_back(0);
 	/*Creating a vector of redshift bins, each of width 1 and at redshifts 
 	/ ranging from 0-maxZ.*/
 	std::vector <Bin> redshiftBins; 
@@ -324,7 +308,7 @@ int main() {
 		Bin ithRedShiftBin(z,&tIntegrand);
 
 		redshiftBins.push_back(ithRedShiftBin);
-		fruitloops[7]++;
+
 	}
 
 
@@ -332,12 +316,6 @@ int main() {
 	double birthRate, desiredMergeLookbackTime, dtiDivdtj;
 
 
-	fruitloops.push_back(0);
-	fruitloops.push_back(0);
-	fruitloops.push_back(0);
-	fruitloops.push_back(0);
-	fruitloops.push_back(0);
-	fruitloops.push_back(0);
 	/*Performing the calculation. Requires second for-loop accross the same 
 	/ thing as all redshift bins must have been created before can do the 
 	/ rest.*/
@@ -348,19 +326,17 @@ int main() {
 		z = redshiftBins[i].getRedshift();
 	
 		//Step one: calculate the birth rate for binaries in bin i.
-		birthRate=(redshiftBins[i].CDF(z,metallicity))*(redshiftBins[i].dMSFRdtdV(z))*binaryPercent/mTotal; //Gpc^_3yr^-1 //make into a function
+		birthRate=(redshiftBins[i].CDF(z,metallicity))*(redshiftBins[i].dMSFRdtdV(z))*binaryPercent/mTotal; //Gpc^_3yr^-1 
 		
 		//Finds the width of the birth time bin
 		birthWidth = redshiftBins[i+1].gettLookback() -
 						 redshiftBins[i].gettLookback();//yr
 
 		
-		fruitloops[8]++;
 		/*Step 2: for each binary, j, calculate the lookback time at the 
 		/ point of merging.*/ 
 		for (int j=0; j<Nr; j++){//10
 
-			fruitloops[9]++;
 			desiredMergeLookbackTime=(redshiftBins[i].gettLookback()) -
 											binaries[j].gettMerge()/yr;//yr 
 			
@@ -372,20 +348,16 @@ int main() {
 			/ lookback time than desired.*/
 			//Checks the binary merges in the past or present
 			if (desiredMergeLookbackTime>=0){//11
-
-				fruitloops[10]++;
-				
+								
 				//This is fine
 				massiveError = true;
 
 				//Loops over all merge time bins
 				for (int k=0; k<=i; k++){//12
 	
-					fruitloops[11]++;
 					//Picks out the right binary
 					if (desiredMergeLookbackTime<redshiftBins[k].gettLookback() && massiveError == true){//13
 
-						fruitloops[12]++;
 						//Finds the width of the merge time bin
 						mergeWidth = redshiftBins[k].gettLookback() - 
 										redshiftBins[k-1].gettLookback();//yr
@@ -416,7 +388,6 @@ int main() {
 	//Loops back over all of the bins to find quantities of interest
 	for (int i=0; i<binTot; i++){//14
 
-		fruitloops[13]++;
 		//Finds the total merge rate
 		mergeRate=(redshiftBins[i].getMergeRateSum());//Gpc^_3yr^-1
 		//Finds the redshift
@@ -426,24 +397,41 @@ int main() {
 		//Finds the comoving volume in Mpc^3
 		Vc=redshiftBins[i].Integrator(z,&VcIntegrand);
 		//Otputs the rates to the console			
-		std::cout<<"For redshift bin "<<i<<" the merge rate is "<<mergeRate<<std::endl;
+		std::cout<<"For redshift bin "<< i 
+				 <<" the merge rate is "<< mergeRate << std::endl;
 		//Outputs everything to file
-		fprintf(hateFile,"%.15g,%.15g,%.15g,%.15g,%.15g\n",
+		fprintf(rateFile,"%.15g,%.15g,%.15g,%.15g,%.15g\n",
 				z,dL,Vc,redshiftBins[i].gettLookback(),mergeRate);
 
 	}
 
-	
-	//Outputs a load of loop counters
-	std::cout<<std::endl;
-	for(int i=0; i<=13; i++){ 
-		std::cout << i+1 << " " << fruitloops[i] <<std::endl;
+	//Declares some variables used to find the cumulative merger rate
+	double zMax = 2;
+	double binMax = zMax/binWidth;
+	double dVc, dz;
+	void * fudge;
+	double cumRate = 0;
+
+	//Loops up to the required redshift and accumulates the merger rate
+	for(int i=0; i<binMax; i++) {
+
+		z = redshiftBins[i].getRedshift();
+		mergeRate=(redshiftBins[i].getMergeRateSum());//Gpc^_3yr^-1
+		dVc = VcIntegrand(z, &fudge); //Mpc^3
+		
+		cumRate += mergeRate*(1e-9)*(dVc/binWidth)/(1+z);//yr^-1
+
 	}
 
-	
+	//Outputs the result
+	std::cout<<std::endl;
+	std::cout << "Merge rate within z = " <<zMax<< " : " 
+			  << cumRate << "yr^-1" << std::endl;
+
+		
 	//Closes the file
 	std::cout << "Massive Death" <<std::endl;
-	fclose(hateFile);
+	fclose(rateFile);
 	
 }
 
