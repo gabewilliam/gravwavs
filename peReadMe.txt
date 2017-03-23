@@ -30,7 +30,6 @@ pe_gwMarkovChain.cpp
 
 pe_gwLikelihood.cpp / pe_gwLikelihood.h
 
-
 - Computes the likelihood function for the posterior calculation in the MCMC
 - Also calculates the signal to noise ratio
 - Produces the model data signal using Izzie's gwSigGen.h functions
@@ -46,3 +45,16 @@ pe_gwCorrelate.cpp
 - Reads in and out a text file of three columns with equal numbers of rows using the pe_gwSaveToFile.h file
 
 -----------------------------------------------------------------------------------
+
+parameterExtractionPlotter.m
+
+- Plots data from specified text file
+- Produces scatter of all points, histogram and kernel density plots
+- Calculates highest probability value and a 90% credible interval around this value
+- Includes a number of different options to make different plots that can be commented in or out as necessary
+
+-----------------------------------------------------------------------------------
+
+plotParams.m
+
+- Function called by parameterExtractionPlotter.m to plot the mass parameters
