@@ -112,9 +112,9 @@ int main() {
 			alpha = 1.3;
 			m1 = -1;
 			//Draws a mass from the Kroupa.
-			while(m1<0.5){
+			while(m1<0.5 || m1>150){
 
-				m1 = gsl_ran_pareto(m1Gen,alpha,1);//mSolar
+				m1 = gsl_ran_pareto(m1Gen,alpha,0.5);//mSolar
 
 			}
 			
@@ -275,7 +275,7 @@ int main() {
 	//Declares the number of redshift bins, and their range
 	double binTot = 200.0;
 	double minRedshift = 0;
-	double maxRedshift = 10;
+	double maxRedshift = 2;
 
 	
 	/*Declares the metalicity limit, and the fraction of stars which are 
@@ -407,20 +407,27 @@ int main() {
 
 	//Declares some variables used to find the cumulative merger rate
 	double zMax = 2;
-	double binMax = zMax/binWidth;
-	double dVc, dz;
+	int binMax = 1+zMax/binWidth;
+	double lastVc, dVc, dz;
 	void * fudge;
-	double cumRate = 0;
+	double cumRate = 0;//rofl
+	Vc=0;
+
+	
 
 	//Loops up to the required redshift and accumulates the merger rate
 	for(int i=0; i<binMax; i++) {
+		lastVc=Vc;
+		z = redshiftBins[i+1].getRedshift();
 
-		z = redshiftBins[i].getRedshift();
-		mergeRate=(redshiftBins[i].getMergeRateSum());//Gpc^_3yr^-1
-		dVc = VcIntegrand(z, &fudge); //Mpc^3
+		if(z<zMax){
+			mergeRate=(redshiftBins[i+1].getMergeRateSum());//Gpc^{-3}yr^{-1}
+			Vc = redshiftBins[i+1].Integrator(z, &VcIntegrand); //Mpc^3
+			dVc = Vc-lastVc;
+			
+			cumRate += mergeRate*(1e-9)*(dVc)/(1+z);//yr^-1
+		}
 		
-		cumRate += mergeRate*(1e-9)*(dVc/binWidth)/(1+z);//yr^-1
-
 	}
 
 	//Outputs the result
@@ -430,8 +437,9 @@ int main() {
 
 		
 	//Closes the file
-	std::cout << "Massive Death" <<std::endl;
+	
 	fclose(rateFile);
+	std::cout << "Massive Death" <<std::endl;
 	
 }
 
