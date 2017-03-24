@@ -273,7 +273,7 @@ int main() {
 
 
 	//Declares the number of redshift bins, and their range
-	double binTot = 200.0;
+	double binTot = 50.0;
 	double minRedshift = 0;
 	double maxRedshift = 2;
 
